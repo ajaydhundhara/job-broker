@@ -62,6 +62,34 @@ The database file comes from the `BROKER_DB` environment variable (default
 
 FastAPI's `/docs` page is the full API reference.
 
+## Submission notes
+
+- **Interface.** The brief asks for "a small HTTP API (submit, get, cancel,
+  list queue/nodes, cost report)", so there is no React or other UI. The API
+  is shown by FastAPI's Swagger page (`/docs`, `/openapi.json`), the *API*
+  table below (checked against the served routes by `tests/test_docs.py`),
+  the HTTP tests, the YAML cases that also run against a live server, and
+  the reports in `reports/`.
+- **AI tools used, and what each was used for:** [Ajay to complete with actual details]
+- **Start time:** [Ajay to complete with actual details]
+- **Finish time:** [Ajay to complete with actual details]
+- **Total hours worked, including AI-assisted work:** [Ajay to complete with actual details]
+- **Not built (documented as known limitations; Ajay to confirm which were deliberate cuts):**
+  - interruptible nodes (optional in the brief) and preemption: priority
+    only orders the queue (*Scope*, *Known limitations*);
+  - the MiniLM backend: optional, never installed or evaluated here, so
+    every retrieval number is tfidf (*Retrieval*);
+  - authentication, and more than one process or worker on one database
+    (*Known limitations*);
+  - autoscaling across regions, and estimated minutes in placement
+    (*Known limitations*).
+- **What we would do next:** the replay's recommendations
+  (`reports/replay_analysis.md`, "what we would change"); retrieval's
+  *Known limits and next steps*; and the open items in
+  `reports/final_validation_report.md` (false positives from fix wording,
+  inference with labelled empty-resolution data, the shared-vocabulary
+  inference case).
+
 ## API
 
 | Method | Path | What it does |
@@ -136,7 +164,11 @@ Errors: 404 unknown job or failure id, 409 a conflict with the current state
   before reaping, minimum top-up). Idle is charged to the owner because that
   team's demand caused the launch; showing it separately tells Finance where
   the waste is. Failed launches go to `provider_overhead`, charged to no team.
-  A job's run is clipped to its node's life, so idle cost never goes negative.
+  A job's run is clipped to its node's life, so busy time never exceeds
+  billed time. Idle cost over a window that starts at the node's launch is
+  never negative; a window that starts later can show an idle residual of
+  −1 micro-dollar from rounding (busy and total are each floored once, see
+  *Money*), displayed as $0.00 (tested in `tests/test_cost_validation.py`).
 - **Money.** Computed in integer micro-dollars. A window's cost is the
   node's running total at the window's end minus its running total at the
   start, each floored once, so cost windows add up exactly: [a, b) + [b, c)
@@ -448,14 +480,22 @@ index, search and API (C), and evaluation with parameter selection (D).
   (scikit-learn) with one warning; `tfidf` and `minilm` force one. MiniLM is
   not installed here, so the service runs, and every number below was
   measured, on tfidf. The backend in use is in every response.
-- **Grouping assumption.** Logs with the same resolution text (case and
-  spacing ignored) share a cause; results are ranked and returned group by
-  group. Two different texts for one real cause would form two groups.
-- **Inferred-resolution assumption.** A log with an empty resolution joins
-  the group of its most similar log if that hybrid score is at least
-  `ASSIGN_MIN = 0.3`, and is returned as `inferred` with a note; otherwise it
-  is `none` with resolution `null` and the note "no resolution recorded for
-  this failure". In this corpus 3 logs are inferred (see *Resolutions*).
+- **Grouping assumption (a heuristic).** Logs with the same resolution text
+  (case and spacing ignored) are treated as sharing a cause; results are
+  ranked and returned group by group. This is a resolution-based heuristic,
+  not a root-cause classifier: a generic fix ("relaunch the job") merges
+  different causes, and two wordings of one fix split a cause. Against
+  log-only labels the real corpus scores pairwise precision 0.833 and recall
+  0.992 (false merges: GPU OOM with host-memory OOMKilled, reclaim notices
+  with heartbeat loss; false split: the identical-log conflict pair);
+  `reports/final_validation_report.md`, *Cause grouping*.
+- **Inferred-resolution assumption.** A log with an empty resolution is
+  compared with the recorded logs on failure evidence only (signal lines,
+  not resolution text). Its fix is `inferred` only when exactly one cause
+  group scores at least `ASSIGN_MIN = 0.3`; with two or more it is
+  ambiguous and no fix is shown; with none it is a singleton (see
+  *Resolutions*, SPEC_DECISIONS #17). In this corpus 2 logs are inferred
+  and 1 is ambiguous.
 - **Evaluation limits.** 24 labelled queries (18 answerable), all seen
   while building; numbers are tfidf only; one answerable query still fails;
   details under *Known limits and next steps*.
@@ -545,6 +585,14 @@ about 3 s.
   `--extra` with new questions is the real test.
 - **Lexical at heart.** tfidf can't bridge synonyms the glossary lacks;
   MiniLM (or another local embedding model) would, but is untested here.
+- **False positives from fix wording.** Resolution text is part of the
+  relevance documents, because questions are often worded like the fix
+  (removing it dropped CV P@5 to 0.81–0.88 and CV rejection to 0.75). So a
+  how-to question that only shares a fix's wording ("how do I enable
+  gradient checkpointing…") and some failures absent from the corpus pass
+  TAU, and some paraphrases with no shared words are rejected. Pinned as
+  strict xfails in `tests/test_retrieval_false_positives.py`; the reviewer
+  holdout's read-only audit is in `reports/final_validation_report.md`.
 - **Next steps:**
   - re-rank the top groups with a cross-encoder;
   - add an LLM summary of the fix, grounded only in the returned logs (in
@@ -591,13 +639,19 @@ cause groups, the inferred resolutions and the conflicts.
 - **`score`** is the cause group's score, the number compared with TAU, so
   logs in one group share it. Within a group, logs are ordered by their own
   score.
+- **`resolution_status`** is unchanged in form (`recorded`, `inferred`,
+  `none`). `none` with `resolution: null` covers both "no group was similar
+  enough" and "ambiguous"; the `note` says which and, when ambiguous, lists
+  the candidate groups and scores. A `none` record is never shown a fix.
 
 ### Pipeline
 
 ```
 ingest: JSONL → redact → learn noise templates → signal lines
         → per-log docs (signal + resolution): BM25 + embedding matrix
-        → cause groups (by resolution; empty ones inferred) + conflicts
+        → cause groups (by resolution) + conflicts; an empty resolution joins
+          its best group on signal lines only, and its fix is inferred only
+          if exactly one group reaches ASSIGN_MIN
         → per-group docs (members' signal lines + resolution): BM25 + matrix
 query:  text → redact → log? signal lines : question? + glossary terms
         → per-log hybrid → per-group score → TAU threshold → group by group
@@ -626,7 +680,10 @@ query:  text → redact → log? signal lines : question? + glossary terms
   the glossary. `input_type` reports the result. Tiers, first match wins:
   1. Structural log evidence → log: several non-blank lines, a stack trace,
      a structured record (JSON object, 3+ `key=value` fields), or a line
-     starting like a record (timestamp, level, `SomeError:`).
+     starting like a record (timestamp, level, `SomeError:`, or
+     `Error response from <component>:` in any case, optionally after a
+     `tool: ` prefix, as docker prints it). The component and its colon are
+     required, so "Error when pulling the image" stays a symptom (SPEC #18).
   2. A question cue → question: a question or request word first (what,
      why, how, explain, …), or a `?` that ends a sentence. A `?` inside a
      URL does not count.
@@ -654,17 +711,36 @@ query:  text → redact → log? signal lines : question? + glossary terms
 
 - **Cause groups** are built by normalised resolution text (case and
   spacing ignored).
-- **An empty resolution** joins the group of its most similar member (the
-  max per-log hybrid score) if that score is at least `ASSIGN_MIN`. It is
-  then marked `inferred`, the group's resolution is shown, and a note says
-  none was recorded. Otherwise it is a singleton with status `none`,
-  resolution `null`, and the note "no resolution recorded for this
-  failure".
+- **An empty resolution** is scored against every recorded group on
+  failure evidence only: its signal lines against each member's signal
+  lines (the max per-log hybrid score), with resolution text left out. A
+  fix's wording is metadata, not evidence that two failures share a cause
+  (SPEC_DECISIONS #17). Then:
+  - exactly one group at or above `ASSIGN_MIN`: status `inferred`, the
+    group's resolution is shown, and the note says none was recorded and
+    gives the similarity;
+  - two or more: **ambiguous**. Status `none`, resolution `null`, and the
+    note "no resolution recorded for this log; not inferred: N cause groups
+    reach the inference threshold 0.3: g07 (0.491), g03 (0.366), …". The log
+    still joins its best group, so search results are unchanged;
+  - none: a singleton with status `none`, resolution `null`, and the note
+    "no resolution recorded for this failure".
   - The max rather than the mean: a cause group is worded differently on
-    purpose. Measured here (tuned tfidf parameters), an OOMKilled log
-    scored 0.806 against its look-alike but 0.188 as a group mean.
-  - Here all three empty logs are out-of-memory logs and are inferred into
-    the batch-size group, at 0.482, 0.806 and 0.806.
+    purpose (an OOMKilled log scores far higher against its look-alike than
+    against the group mean).
+  - No new number: the rule reuses `ASSIGN_MIN`. A margin between the top
+    two groups was rejected, because 3 unlabelled empty logs can't justify
+    a value. Moving an ambiguous log out of its group (a singleton) was
+    measured and rejected too: CV rejection fell to 0.750, below the floor.
+  - Here all three empty logs are out-of-memory logs. F911 and F912 are
+    inferred into the batch-size group (0.911, 0.910; the only group above
+    0.3). F910 is ambiguous: the batch-size group scores 0.491, but the
+    driver/framework (0.366), NCCL (0.330) and registry (0.317) groups also
+    reach 0.3, so its fix is not shown although a reader would call it OOM.
+  - Not solved: a log that shares words with only one wrong group (for
+    example a bucket-policy 403 that says "checkpoint") is still inferred to
+    that group's fix (`tests/test_final_validation_retrieval.py`, case 4,
+    a strict xfail).
 - **Conflicts:** identical signal text with different resolutions. Here
   that is one byte-identical pair, which keep their own resolutions; both
   carry the note "conflicting resolutions recorded for an identical log".

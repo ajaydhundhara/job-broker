@@ -370,23 +370,28 @@ def _groups_section(path) -> list[str]:
         "### Inferred resolutions",
         "",
         (
-            "An empty resolution joins the group of its most similar member (max "
-            f"per-log hybrid score) if that score is at least ASSIGN_MIN={p.assign_min}; "
-            "otherwise it stays a singleton with resolution_status `none`."
+            "Scores compare the log's signal lines with each recorded group's "
+            "signal lines only (best member, hybrid score); resolution text is "
+            "not used as evidence. An empty resolution joins its best group if "
+            f"that score is at least ASSIGN_MIN={p.assign_min}. Its fix is "
+            "inferred only if that is the one group at or above ASSIGN_MIN; with "
+            "two or more it is ambiguous (status `none`, no fix shown); with none "
+            "it stays a singleton (SPEC_DECISIONS #17)."
         ),
         "",
-        "| id | status | group | similarity | signal lines |",
-        "|---|---|---|---|---|",
+        "| id | status | group | decision | groups at or above ASSIGN_MIN | signal lines |",
+        "|---|---|---|---|---|---|",
     ]
     for r in idx.records:
         if r.resolution.strip():
             continue
-        sim = (
-            f"{idx.inferred[r.id]:.3f}" if r.id in idx.inferred else "below ASSIGN_MIN"
-        )
+        found = idx.candidates(r.id)
+        decision = {0: "below ASSIGN_MIN", 1: "inferred"}.get(len(found), "ambiguous")
+        listed = ", ".join(f"{g} {s:.3f}" for g, s in found) or "—"
         lines = "<br>".join(_code(x) for x in idx.signal[r.id])
         out.append(
-            f"| {r.id} | {idx.status[r.id]} | {idx.group_of[r.id]} | {sim} | {lines} |"
+            f"| {r.id} | {idx.status[r.id]} | {idx.group_of[r.id]} | {decision} | "
+            f"{listed} | {lines} |"
         )
     out += ["", "### Conflicts", ""]
     if not idx.conflicts:

@@ -6,6 +6,123 @@ Source inspection and executed tests are kept apart: "inspected" means read
 in the code, "tested" means a test or command was run and its output is
 quoted.
 
+**Pre-submission update.** Section 0 records a later review that changed
+retrieval inference and classification, the README and the docs. It
+supersedes the earlier sections where they say so ("*Update:*"); the rest
+of the report is the original validation pass, kept as measured.
+
+## 0. Pre-submission review (update)
+
+Baseline: HEAD `645007fe4913fcdac37571481017824b20f5da84` ("final test") on
+`main`, equal to `origin/main` (read from `.git/`; `git status` not run).
+Nothing was committed or pushed.
+
+### Status of the issues found in the validation pass
+
+| # | Issue (sections below) | Status | What changed |
+|---|---|---|---|
+| 1 | Hard negatives / false positives (§4, §11.1) | **unchanged, documented** | No scoring change: every variant that removes resolution text from the relevance documents failed the CV floors (table below). Pinned in `tests/test_retrieval_false_positives.py`; README *Known limits* updated. |
+| 2 | Ambiguous inference assigned silently (§5, case 3) | **fixed** | Inference scores use failure evidence only (signal lines, no resolution text). Inferred only when exactly one group reaches `ASSIGN_MIN`; two or more: ambiguous, status `none`, no fix, note lists the candidates (SPEC_DECISIONS #17). |
+| 3 | Shared vocabulary infers a wrong fix (§5, case 4) | **unchanged** | E4 still reaches only the disk group (0.360; token 0.229), so it is still inferred. Strict xfail kept, with an updated reason. |
+| 4 | One-line docker daemon error is a "question" (§7) | **fixed** | `Error response from <component>:` is a record start (SPEC_DECISIONS #18). Strict xfail replaced by 5 positive and 4 negative examples plus a redaction check. |
+| 5 | README "idle cost never goes negative" (§3, §11.5) | **fixed** | README *Cost attribution*: non-negative over a window starting at launch; a later window can show −1 micro-dollar, displayed as $0.00. |
+| 6 | AI-tool and time disclosure missing (§9, §12.1) | **partial** | README *Submission notes* added with placeholders `[Ajay to complete with actual details]`; only the author can fill them. |
+| 7 | Grouping is a heuristic (§6, §11.3) | **unchanged, documented** | Grouping rules unchanged; README *Retrieval as implemented* now calls it a resolution-based heuristic and cites the pairwise numbers. |
+
+### Part A: why the scoring was not changed (public queries only, tfidf)
+
+Each variant was cross-validated with the official folds and parameter grid
+(scratch scripts; no repository code changed for them).
+
+| Variant | CV P@3 | CV P@5 | CV rejection | Floors (P@5 ≥ 0.88, rej ≥ 0.95) |
+|---|---|---|---|---|
+| Current (signal + resolution in log and group documents) | 0.938 | 0.938 | 1.000 | met |
+| V1: signal-only log and group documents | 0.812 | 0.812 | 0.750 | **fail** |
+| V2: signal-only log documents | 0.875 | 0.875 | 0.750 | **fail** |
+| V3: signal-only group documents | 0.875 | 0.875 | 0.750 | **fail** |
+
+An evidence-only acceptance gate was also examined and rejected: answerable
+public questions score as low on failure evidence as new negatives do
+(one answerable at 0.401 against negatives at 0.424–0.452), so no
+threshold separates them without tuning to individual queries.
+
+New regression tests (`tests/test_retrieval_false_positives.py`, examples
+written for this review, not from the public or holdout sets): 4 pass
+(2 absent failure families rejected, a disk-full paraphrase, a pasted NCCL
+log with the result contract), 6 strict xfails stating the desired
+behaviour (3 how-to questions sharing only fix wording, a license-server
+failure, 2 paraphrases with no shared words).
+
+### Part B: inference, before and after
+
+| Record | Before (score, status) | After: candidates ≥ 0.3 | After status |
+|---|---|---|---|
+| F910 (real) | g07 0.482, inferred | g07 0.491, g03 0.366, g05 0.330, g08 0.317 | **none (ambiguous)**, no fix shown |
+| F911 (real) | g07 0.806, inferred | g07 0.911 (next 0.292) | inferred |
+| F912 (real) | g07 0.806, inferred | g07 0.910 (next 0.292) | inferred |
+| E1 clear | 0.770, inferred | g1 0.891 | inferred |
+| E2 weak | 0.272, none | none (best 0.228) | none (singleton) |
+| E3 two groups | disk 0.572 inferred | g2 0.649, g1 0.449 | **none (ambiguous)** |
+| E4 shared words | disk 0.398, inferred | g2 0.360 | inferred (**still wrong**, xfail) |
+| E6 same evidence, two fixes | (new) | g1 0.827, g2 0.730 | none (ambiguous) |
+
+Alternatives measured and rejected: making an ambiguous log a singleton
+(CV rejection 0.750, below the floor) and a top-two margin (no labelled data
+to pick its value). Group membership is unchanged, so search results and
+every retrieval metric are unchanged.
+
+The evaluator builds its index with default `Params()`, the API with
+`retrieval/params.json`; inference can therefore differ between them. This
+was pre-existing and is documented (SPEC_DECISIONS #17), not changed.
+
+### Metrics before and after (kept separate)
+
+| Set | Metric | Before | After |
+|---|---|---|---|
+| Public CV (`retrieval.evaluate`, tfidf) | P@3 / P@5 / rejection | 0.938 / 0.938 / 1.000 | 0.938 / 0.938 / 1.000 (`retrieval_eval.*` and `params.json` byte-identical) |
+| Public full set | P@3 / P@5 / rejection | 0.944 / 0.944 / 1.000 | 0.944 / 0.944 / 1.000 |
+| New regression tests | pass / strict xfail | n/a | 4 / 6 |
+| Holdout (read-only audit, run last) | P@3 / P@5 / MRR | 0.979 / 0.9625 / 1.000 | 0.979 / 0.9625 / 1.000 |
+| Holdout | rejection / false acceptances | 0.625 / 3 of 8 | 0.625 / 3 of 8 |
+
+The only holdout change: R20 (the docker daemon line) is now classified as
+a log; same top 5, score 0.871 → 0.892. Nothing was adjusted after the
+audit.
+
+### Commands run (repository root, `RETRIEVAL_BACKEND=tfidf`)
+
+| Command | Result |
+|---|---|
+| `pytest -q -rsx` | 815 passed, 1 skipped (MiniLM not cached), 7 xfailed, 1 warning (Starlette `httpx` deprecation), 66.2 s |
+| `ruff check .` / `ruff format --check .` | "All checks passed!" / "70 files already formatted" |
+| `python -m retrieval.evaluate --queries 01c_retrieval_queries.jsonl --out-dir <scratch> --params-out <scratch copy>` | exit 0; outputs identical to the committed ones |
+| `python -m retrieval.quality` | exit 0; `reports/retrieval_data_quality.md` regenerated (inferred table: F910 ambiguous) |
+| `python -m broker.trace 01a_trace.csv --out <scratch>` | identical |
+| `python -m replay.run_replay --trace 01a_trace.csv --out-dir <scratch>` | exit 0, 103.0 s; all three outputs identical |
+| `uvicorn broker.api:app --port 8766` (scratch DB) + `curl` | `/failures/F910`: status `none`, resolution null, ambiguous note; `/failures/F911`: inferred; docker line → `input_type: log`, registry group; `/docs` 200; empty `POST /jobs` 422 |
+| `python -m tests.reviewer_holdout_eval` (last) | exit 0; metrics above; `reports/reviewer_query_results.json` regenerated by the scorer |
+
+Integrity: `01a_trace.csv`, `01b_failure_logs.jsonl`,
+`01c_retrieval_queries.jsonl`, `Take_Home_Exercise.docx`, the holdout file,
+`requirements*.txt` and `pyproject.toml` match their HEAD blobs (git blob
+hashes computed from the files and read from `.git/objects`). No dependency
+added. A scan of reports and docs for the fake test secrets and common key
+patterns found nothing. The temporary `.claude/launch.json` was deleted.
+
+### Files changed in this review
+
+| File | Change |
+|---|---|
+| `retrieval/index.py` | evidence-only inference matrix; `Index.inference`, `Index.candidates`; ambiguity rule |
+| `retrieval/search.py` | ambiguous note |
+| `retrieval/clean.py` | `Error response from <component>:` record start |
+| `retrieval/quality.py` | inferred-resolutions table shows the decision and candidates |
+| `tests/test_retrieval_false_positives.py` | new |
+| `tests/test_final_validation_retrieval.py` | case 3 and daemon xfails → passing tests; `RECORDED_ROWS` fixture; case 4 xfail kept |
+| `tests/test_retrieval_search.py` | 2 tests changed for the ambiguity rule (approved) |
+| `README.md`, `SPEC_DECISIONS.md` (#17, #18), `tests/TEST_MIGRATION_MAP.md` | docs |
+| `reports/retrieval_data_quality.md`, `reports/reviewer_query_results.json`, this report | regenerated / updated |
+
 ## 1. Executive summary
 
 **Verdict: READY WITH CAVEATS.**
@@ -18,7 +135,8 @@ quoted.
     0 false rejections;
   - rejection is the weak point: 5 of 8 unanswerable queries rejected (0.625),
     against 1.000 on the public set.
-- **Three behaviour gaps**, pinned as strict-xfail tests and not fixed:
+- **Three behaviour gaps**, pinned as strict-xfail tests and not fixed
+  (*Update:* the first and third are fixed, see section 0):
   - an ambiguous top-two inference is assigned silently;
   - shared vocabulary can infer a fix for a different root cause;
   - a one-line docker daemon error is classified as a question.
@@ -270,6 +388,9 @@ Per-query evidence (machine-readable: `reports/reviewer_query_results.json`):
 
 ## 5. Resolution inference
 
+*Update:* superseded by section 0, Part B (now 56 recorded, 2 inferred,
+1 none; F910 ambiguous). The text below is the original pass.
+
 **Corpus status counts (tested):** 56 recorded, 3 inferred, 0 none.
 
 | Inferred | Score | Group | Runner-up group (score) | Margin |
@@ -413,6 +534,8 @@ contains a secret.
 | 13 | bearer + `password=` + JWT + AuthError | log | ✔ all three secrets redacted before classification; none in the response |
 | 14 | `""`, `"   "`, `"\n\t  \n"` | API 422 | ✔ (`classify` returns "question", as documented) |
 
+*Update:* fixed, see section 0 (SPEC_DECISIONS #18).
+
 **Gap found (strict xfail, not fixed).** A one-line docker daemon error,
 `Error response from daemon: pull access denied …`, has no level, timestamp
 or `SomeError:` prefix, so it is classified as a question and
@@ -429,6 +552,8 @@ with no log syntax, like R31's timeout line, is a question by design; the
 glossary then adds only related terms.
 
 ## 8. Full verification
+
+*Update:* the re-run after the pre-submission changes is in section 0.
 
 All commands were run from the repository root with the venv above and
 `RETRIEVAL_BACKEND=tfidf`. Generated reports were written to a scratch
@@ -497,6 +622,8 @@ The original brief (`Take_Home_Exercise.docx`) was inspected (text extracted).
 
 ## 10. Changed files
 
+*Update:* the pre-submission review's files are listed in section 0.
+
 | File | Change | Why | Behaviour impact |
 |---|---|---|---|
 | `tests/test_cost_validation.py` | new, 18 tests | cost cases not covered by `test_costs.py` | none (tests only) |
@@ -514,6 +641,8 @@ afterwards. Nothing was committed or pushed.
 
 ## 11. Known limitations and risks
 
+*Update:* 2 is partly fixed (ambiguity) and 5 is fixed; see section 0.
+
 1. **Hard negatives.** Rejection accuracy is 0.625 on the holdout's 8
    unanswerable queries vs 1.000 on the public 6. τ does not separate
    in-domain off-topic questions or absent failure families (R37–R39).
@@ -530,6 +659,10 @@ afterwards. Nothing was committed or pushed.
    starting after launch can show −1 micro-dollar (displayed $0.00).
 
 ## 12. Verdict
+
+*Update:* items 1 and 3 are partly addressed by the pre-submission review
+(placeholders added, README fixed); the disclosure still has to be written
+by the author.
 
 **READY WITH CAVEATS.** The service, cost accounting and public-set retrieval
 meet their documented contracts and floors, and every generated report

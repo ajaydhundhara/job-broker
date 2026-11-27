@@ -507,10 +507,15 @@ Each change kept the test's intent; none weakened, skipped or deleted a test.
 | P0-06 | `tests/test_engine.py`, `tests/test_integration.py` | comments only: ids are sequential | D16 |
 | Finding 1 | `tests/test_replay_candidates.py` (P0-07) | removed with `reports/replay_analysis_candidates.md`; its figure check moved to `tests/test_replay_analysis.py` (now whole-figure matches against the tables only) | its `test_the_report_keeps_its_analysis_headings_as_todo` asserted the TODOs the finding requires removing; the candidates became the analysis |
 | Finding 1 | `tests/test_docs.py::test_no_reviewer_facing_doc_holds_a_todo` | its allowance for the four Analysis placeholders removed: no doc may hold one | the report now carries the analysis |
+| Pre-submission | `tests/test_retrieval_search.py::test_empty_resolutions_are_inferred_from_the_out_of_memory_group` | renamed `…_join_the_out_of_memory_group_and_are_inferred_unless_ambiguous`; still asserts all 3 empty logs are OOM logs in the batch-size group; now inferred only with one candidate group (F911, F912), F910 ambiguous | SPEC_DECISIONS #17 |
+| Pre-submission | `tests/test_retrieval_search.py::test_inferred_and_missing_resolutions_say_so` | uses the first inferred empty log (the first empty log, F910, is now ambiguous) and also checks the ambiguous hit: no fix, note "not inferred" | SPEC_DECISIONS #17 |
+| Pre-submission | `tests/test_final_validation_retrieval.py` (added in final validation) | case 3 and the daemon-error strict xfails became passing tests; record C3 moved to its own fixture (`RECORDED_ROWS`, case 5) because its OOM wording under another fix makes OOM evidence ambiguous; the score helper now reads `Index.inference`; case 4's xfail kept | SPEC_DECISIONS #17, #18 |
 
 Tests added after the snapshot: `test_clock_advance.py` (P0-01),
 `test_query_classification.py` (P0-02), `test_exit_137.py` (P0-03),
 `test_state_machine.py` (P0-04), `test_idempotency.py` (P0-05),
 `test_replay_restart.py` (P0-06), `test_burst_metrics.py` (P0-07; `test_replay_candidates.py`, also P0-07, was
 removed by Finding 1), `test_docs.py` (P0-08), `test_replay_analysis.py`
-(Finding 1).
+(Finding 1), `test_cost_validation.py` and
+`test_final_validation_retrieval.py` (final validation),
+`test_retrieval_false_positives.py` (pre-submission review).

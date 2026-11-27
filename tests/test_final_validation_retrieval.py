@@ -5,10 +5,12 @@ Fixture corpora are small, hand-written and live in this file; their
 expected-cause labels (CAUSE) are written independently of the grouping rule
 (normalised resolution text) so the two can be compared.
 
-Gaps found are pinned as strict xfail tests stating the DESIRED behaviour:
-they fail today (so xfail passes) and turn into errors the day the behaviour
-changes, forcing the xfail to be removed. No rule, threshold or glossary entry
-was changed to make anything here pass.
+Gaps still open are pinned as strict xfail tests stating the DESIRED
+behaviour: they fail today (so xfail passes) and turn into errors the day the
+behaviour changes, forcing the xfail to be removed. Two earlier xfails (the
+ambiguous inference, case 3, and the one-line daemon error) are now passing
+tests, because the behaviour was changed (SPEC_DECISIONS #17, #18). No
+threshold or glossary entry was changed.
 """
 
 import json
@@ -36,6 +38,12 @@ def write_corpus(tmp_path, rows) -> str:
 
 
 # --- §4 resolution inference ---------------------------------------------------------
+#
+# Policy (SPEC_DECISIONS #17): inference compares the empty log's signal lines
+# with the recorded logs' signal lines ONLY (resolution text is not evidence).
+# Exactly one group at or above ASSIGN_MIN -> inferred; none -> none; two or
+# more -> ambiguous: status none, no fix shown, the note lists the candidates.
+# The record still joins its best group for retrieval, so search is unchanged.
 
 INFERENCE_ROWS = [
     ("A1", "RuntimeError: CUDA error: out of memory while running forward pass at step 10", OOM),
@@ -44,8 +52,6 @@ INFERENCE_ROWS = [
     ("B2", "write /scratch/out.log: no space left on device", DISK),
     ("C1", "401 Unauthorized: token expired at 2025-03-04T18:40:00Z", TOK),
     ("C2", "AuthError: bearer token expired, rejected by auth service", TOK),
-    # recorded, but worded like the OOM group: inference must not touch it
-    ("C3", "CUDA error: out of memory while running forward pass", TOK),
     ("E1", "RuntimeError: CUDA error: out of memory while running forward pass at step 77", ""),
     ("E2", "kernel module nvsomething failed to load firmware blob", ""),
     ("E3", "CUDA out of memory while saving checkpoint: no space left on device", ""),
@@ -56,10 +62,27 @@ INFERENCE_ROWS = [
            "RuntimeError: CUDA error: out of memory at step 5"), ""),
 ]  # fmt: skip
 
+# Case 5 on its own corpus: a recorded log worded like the OOM group but filed
+# under a different fix. It must keep its fix, and it makes OOM evidence
+# genuinely ambiguous, so it is kept out of the corpus above.
+RECORDED_ROWS = [
+    ("A1", "RuntimeError: CUDA error: out of memory while running forward pass at step 10", OOM),
+    ("A2", "torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB", OOM),
+    ("C1", "401 Unauthorized: token expired at 2025-03-04T18:40:00Z", TOK),
+    ("C3", "CUDA error: out of memory while running forward pass", TOK),
+    ("E6", "RuntimeError: CUDA error: out of memory while running forward pass at step 9", ""),
+]  # fmt: skip
+
 
 @pytest.fixture(scope="module")
 def inf_index(tmp_path_factory):
     path = write_corpus(tmp_path_factory.mktemp("inf"), INFERENCE_ROWS)
+    return index.build_index(path, backend="tfidf")
+
+
+@pytest.fixture(scope="module")
+def rec_index(tmp_path_factory):
+    path = write_corpus(tmp_path_factory.mktemp("rec"), RECORDED_ROWS)
     return index.build_index(path, backend="tfidf")
 
 
@@ -70,19 +93,9 @@ def inf_client(inf_index, tmp_path_factory):
         yield c
 
 
-def group_scores(idx, log_id) -> dict[str, float]:
-    """Best-member score of an empty-resolution log against each recorded group,
-    computed the way build_index does (for evidence, not re-implementing it)."""
-    s = index._log_scores(idx.embedder, idx.log_bm25, idx.log_vecs,
-                          " ".join(idx.signal[log_id]), idx.params)  # fmt: skip
-    out = {}
-    for g in idx.groups:
-        recorded = [m for m in g.members if idx.status[m] == "recorded"]
-        if recorded:
-            out[g.resolution] = round(
-                max(float(s[idx.position[m]]) for m in recorded), 6
-            )
-    return out
+def candidates(idx, log_id) -> list[tuple[str, float]]:
+    """Recorded groups at or above ASSIGN_MIN, best first (from the index)."""
+    return [(g, s) for g, s in idx.inference[log_id] if s >= idx.params.assign_min]
 
 
 def test_inference_threshold_is_the_saved_assign_min(inf_index):
@@ -90,35 +103,57 @@ def test_inference_threshold_is_the_saved_assign_min(inf_index):
     assert inf_index.params == index.load_params("tfidf")
 
 
+def test_inference_scores_ignore_resolution_text(tmp_path):
+    """Two corpora that differ ONLY in a resolution's wording give the same
+    inference scores: the fix text is metadata, not failure evidence."""
+    rows = [("A1", "RuntimeError: CUDA error: out of memory", OOM),
+            ("B1", "write /scratch/out.log: no space left on device", DISK),
+            ("E1", "CUDA error: out of memory at step 3", "")]  # fmt: skip
+    plain = index.build_index(write_corpus(tmp_path, rows), backend="tfidf")
+    (tmp_path / "b").mkdir()
+    worded = [(i, log, res + " out of memory CUDA error" if res else res)
+              for i, log, res in rows]  # fmt: skip
+    noisy = index.build_index(write_corpus(tmp_path / "b", worded), backend="tfidf")
+    assert [s for _, s in plain.inference["E1"]] == [
+        s for _, s in noisy.inference["E1"]
+    ]
+
+
 def test_case1_a_clear_resemblance_is_inferred_with_its_score(inf_index):
     assert inf_index.status["E1"] == "inferred"
     assert inf_index.group("E1").resolution == OOM
-    assert inf_index.inferred["E1"] == group_scores(inf_index, "E1")[OOM]
-    assert inf_index.inferred["E1"] > 0.7
+    (group, score), *others = candidates(inf_index, "E1")
+    assert others == []  # the only group at or above ASSIGN_MIN
+    assert inf_index.group_of["E1"] == group
+    assert inf_index.inferred["E1"] == score > 0.7
 
 
 def test_case2_a_weak_match_stays_none(inf_index):
-    scores = group_scores(inf_index, "E2")
-    assert max(scores.values()) < inf_index.params.assign_min
+    assert inf_index.inference["E2"][0][1] < inf_index.params.assign_min
+    assert candidates(inf_index, "E2") == []
     assert inf_index.status["E2"] == "none"
+    assert inf_index.group("E2").members == ("E2",)  # a singleton
     assert search.resolution(inf_index, "E2") is None
 
 
-def test_case3_two_close_groups_are_measured(inf_index):
-    scores = sorted(group_scores(inf_index, "E3").values(), reverse=True)
-    assert scores[0] >= scores[1] >= inf_index.params.assign_min  # both qualify
-    assert inf_index.status["E3"] == "inferred"  # today: the higher one wins
+def test_case3_two_plausible_groups_are_ambiguous_and_no_fix_is_shown(inf_index):
+    found = candidates(inf_index, "E3")
+    assert len(found) >= 2  # both the OOM and the disk group qualify
+    assert inf_index.status["E3"] == "none"
+    assert "E3" not in inf_index.inferred
+    assert search.resolution(inf_index, "E3") is None
+    assert (
+        inf_index.group_of["E3"] == found[0][0]
+    )  # still retrieved with its best group
+    note = search.get_failure(inf_index, "E3")["note"]
+    assert "not inferred" in note
+    for group, score in found:
+        assert f"{group} ({score:.3f})" in note
 
 
-@pytest.mark.xfail(strict=True, reason="no top-two margin check: an ambiguous "
-                   "log is inferred and its note names only the winning group")  # fmt: skip
-def test_case3_desired_an_ambiguous_match_is_not_inferred_silently(inf_index):
-    note = search.get_failure(inf_index, "E3")["note"] or ""
-    assert inf_index.status["E3"] == "none" or "runner-up" in note
-
-
-@pytest.mark.xfail(strict=True, reason="assign_min 0.3 lets shared words "
-                   "('checkpoint', 'token') infer a fix for a different root cause")  # fmt: skip
+@pytest.mark.xfail(strict=True, reason="evidence-only scoring still puts the "
+                   "bucket-policy 403 above ASSIGN_MIN for the disk group (shared "
+                   "'checkpoint'), and it is the only group there, so it is inferred")  # fmt: skip
 def test_case4_desired_misleading_shared_vocabulary_is_not_inferred(inf_index):
     # A 403 from a bucket policy is neither a full disk nor an expired token.
     assert inf_index.status["E4"] == "none"
@@ -127,23 +162,32 @@ def test_case4_desired_misleading_shared_vocabulary_is_not_inferred(inf_index):
 def test_case4_actual_behaviour_is_recorded(inf_index):
     assert inf_index.status["E4"] == "inferred"
     assert inf_index.group("E4").resolution == DISK
+    assert len(candidates(inf_index, "E4")) == 1
     assert inf_index.params.assign_min <= inf_index.inferred["E4"] < 0.45
 
 
-def test_case5_a_recorded_resolution_is_never_overwritten(inf_index):
-    assert inf_index.status["C3"] == "recorded"
-    assert search.resolution(inf_index, "C3") == TOK
-    assert "C3" not in inf_index.inferred
+def test_case5_a_recorded_resolution_is_never_overwritten(rec_index):
+    assert rec_index.status["C3"] == "recorded"
+    assert search.resolution(rec_index, "C3") == TOK
+    assert "C3" not in rec_index.inferred
+    # The same evidence filed under two fixes: the empty log is not given either.
+    assert len(candidates(rec_index, "E6")) == 2
+    assert rec_index.status["E6"] == "none"
 
 
-def test_case6_inferred_is_visible_in_the_api(inf_client, inf_index):
+def test_case6_inference_status_is_visible_in_the_api(inf_client, inf_index):
     body = inf_client.get("/failures/E1").json()
     assert body["resolution_status"] == "inferred"
     assert body["resolution"] == OOM
     assert f"similarity {inf_index.inferred['E1']:.3f}" in body["note"]
+    ambiguous = inf_client.get("/failures/E3").json()
+    assert ambiguous["resolution_status"] == "none"
+    assert ambiguous["resolution"] is None
+    assert "not inferred" in ambiguous["note"]
     hits = inf_client.post("/failures/search", json={"text": "CUDA out of memory"})
-    statuses = {h["id"]: h["resolution_status"] for h in hits.json()["results"]}
-    assert statuses.get("E1") == "inferred" and statuses.get("A1") == "recorded"
+    by_id = {h["id"]: h for h in hits.json()["results"]}
+    assert by_id["E1"]["resolution_status"] == "inferred"
+    assert by_id["A1"]["resolution_status"] == "recorded"
 
 
 def test_case7_an_unavailable_resolution_is_null_not_invented(inf_client):
@@ -156,11 +200,11 @@ def test_case7_an_unavailable_resolution_is_null_not_invented(inf_client):
 def test_case8_secrets_are_redacted_before_inference_and_indexing(
     inf_index, inf_client
 ):
-    assert (
-        inf_index.status["E5"] == "inferred"
-    )  # inference still works on redacted text
+    # inference still works on the redacted text
+    assert inf_index.status["E5"] == "inferred"
     stored = json.dumps([inf_index.by_id["E5"].log, inf_index.signal["E5"],
-                         inf_index.log_docs, inf_index.group_docs])  # fmt: skip
+                         inf_index.log_docs, inf_index.group_docs,
+                         inf_index.inference])  # fmt: skip
     assert not any(s in stored for s in SECRET_VALUES)
     assert inf_index.by_id["E5"].redactions >= 3
     api = (
@@ -389,10 +433,41 @@ def test_case14_blank_input_is_rejected_by_the_api(real_client, blank):
     assert real_client.post("/failures/search", json={"text": blank}).status_code == 422
 
 
-@pytest.mark.xfail(strict=True, reason="a one-line docker daemon error has no "
-                   "level, timestamp or 'SomeError:' prefix, so it is classified as "
-                   "a question and glossary-expanded (retrieval still finds g08)")  # fmt: skip
-def test_desired_a_one_line_daemon_error_is_a_log():
-    text = ("Error response from daemon: pull access denied for registry.internal/ml/eval, "
-            "repository does not exist or may require login")  # fmt: skip
+DAEMON_LOGS = [
+    (
+        "Error response from daemon: pull access denied for registry.internal/ml/eval, "
+        "repository does not exist or may require login"
+    ),
+    "error response from containerd: failed to mount rootfs",
+    "ERROR RESPONSE FROM REGISTRY: 401 unauthorized",
+    "Error Response From kubelet: image pull back-off",
+    "docker: Error response from daemon: manifest for registry.internal/ml/x:9 not found",
+]
+NOT_DAEMON_LOGS = [  # sentences that start with "Error" but are not records
+    "Error when pulling the image",
+    "error response times are high on the registry",
+    "Error response from the registry was slow",  # no "<component>:"
+    "why do I get error response from daemon: access denied?",  # a question first
+]
+
+
+@pytest.mark.parametrize("text", DAEMON_LOGS)
+def test_a_one_line_component_error_record_is_a_log(real_index, text):
     assert clean.classify(text) == "log"
+    kind, scored = search.prepare_query(real_index, text)
+    assert kind == "log"  # cleaned, not glossary-expanded
+    assert scored == "\n".join(clean.signal_lines(clean.redact(text), real_index.noise))
+
+
+@pytest.mark.parametrize("text", NOT_DAEMON_LOGS)
+def test_other_sentences_starting_with_error_are_not_forced_to_logs(text):
+    assert clean.classify(text) == "question"
+
+
+def test_a_daemon_record_is_redacted_before_it_is_classified(real_client):
+    text = ("Error response from daemon: Get https://registry.internal/v2/?"
+            "token=abcDEF1234567890xyz: unauthorized")  # fmt: skip
+    assert "abcDEF1234567890xyz" not in clean.redact(text)
+    body = real_client.post("/failures/search", json={"text": text})
+    assert body.json()["input_type"] == "log"
+    assert "abcDEF1234567890xyz" not in body.text

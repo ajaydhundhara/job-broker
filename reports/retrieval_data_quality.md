@@ -114,7 +114,7 @@ Built by `retrieval.index.build_index` with backend **tfidf**; W_DENSE=0.5, LEX_
 | g04 | 6 | 6 | 0 | Interruptible node was taken back: rerun on regular capacity or enable checkpoint-resume. |
 | g05 | 6 | 6 | 0 | Multi-GPU communication timeout: check node interconnect health and NCCL version, relaunch on a fresh node. |
 | g06 | 1 | 1 | 0 | Provider API slow: retry with backoff; no action for the job. |
-| g07 | 9 | 6 | 3 | Reduce batch size or request a larger GPU class; enable gradient checkpointing. |
+| g07 | 9 | 6 | 2 | Reduce batch size or request a larger GPU class; enable gradient checkpointing. |
 | g08 | 6 | 6 | 0 | Registry credentials expired: rotate the pull secret and relaunch. |
 | g09 | 6 | 6 | 0 | Scratch disk full: clean /tmp, write checkpoints to the attached volume. |
 | g10 | 6 | 6 | 0 | Service token expired: renew the team token and resubmit. |
@@ -122,13 +122,13 @@ Built by `retrieval.index.build_index` with backend **tfidf**; W_DENSE=0.5, LEX_
 
 ### Inferred resolutions
 
-An empty resolution joins the group of its most similar member (max per-log hybrid score) if that score is at least ASSIGN_MIN=0.3; otherwise it stays a singleton with resolution_status `none`.
+Scores compare the log's signal lines with each recorded group's signal lines only (best member, hybrid score); resolution text is not used as evidence. An empty resolution joins its best group if that score is at least ASSIGN_MIN=0.3. Its fix is inferred only if that is the one group at or above ASSIGN_MIN; with two or more it is ambiguous (status `none`, no fix shown); with none it stays a singleton (SPEC_DECISIONS #17).
 
-| id | status | group | similarity | signal lines |
-|---|---|---|---|---|
-| F910 | inferred | g07 | 0.482 | `torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 512.00 MiB (GPU 0; 15.4 GiB total capacity)` |
-| F911 | inferred | g07 | 0.806 | `Container exited with code 137 (OOMKilled) after loading dataset shard 6153` |
-| F912 | inferred | g07 | 0.806 | `Container exited with code 137 (OOMKilled) after loading dataset shard 3929` |
+| id | status | group | decision | groups at or above ASSIGN_MIN | signal lines |
+|---|---|---|---|---|---|
+| F910 | none | g07 | ambiguous | g07 0.491, g03 0.366, g05 0.330, g08 0.317 | `torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 512.00 MiB (GPU 0; 15.4 GiB total capacity)` |
+| F911 | inferred | g07 | inferred | g07 0.911 | `Container exited with code 137 (OOMKilled) after loading dataset shard 6153` |
+| F912 | inferred | g07 | inferred | g07 0.910 | `Container exited with code 137 (OOMKilled) after loading dataset shard 3929` |
 
 ### Conflicts
 

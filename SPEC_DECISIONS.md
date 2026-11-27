@@ -340,3 +340,59 @@ processes, and restarted mid-boot, mid-failing-launch, mid-backoff, with
 jobs running and queued, and before the drain, compared on every table and
 the cost report; `tests/test_no_wall_clock.py` now also rejects `uuid`,
 `secrets` and `os.urandom` in `broker/`.
+
+## 17. Inference uses failure evidence and never guesses between groups
+
+An empty resolution used to join the group of its most similar recorded log
+whenever that hybrid score was at least `ASSIGN_MIN` (0.3), and the group's
+fix was shown as `inferred`. Two problems (final validation): the score
+included each recorded log's resolution text, so a fix's wording could
+make a log look like a group; and a log that matched several groups got the
+best one's fix silently (F910's runner-up was 0.098 behind).
+
+Now:
+
+- Inference scores use a separate signal-lines-only matrix (BM25 + the
+  embedding; tfidf is refitted on the signal lines). Search keeps its
+  documents (signal + resolution): removing the resolution there failed the
+  CV floors.
+- `Index.inference[id]` holds every recorded group's score, best first;
+  `Index.candidates(id)` those at or above `ASSIGN_MIN`.
+- One candidate: `inferred`, as before. Two or more: ambiguous, status
+  `none`, `resolution: null`, and a note listing the candidates. None: a
+  singleton, as before.
+- An ambiguous log still joins its best group, so group membership and
+  group documents, and therefore every search result, are unchanged.
+
+No new number: the rule reuses `ASSIGN_MIN`. Rejected alternatives:
+
+- a top-two margin: no labelled data to choose it (3 empty logs);
+- an ambiguous log as a singleton: CV rejection fell to 0.750 (the
+  training folds' TAU shifted and admitted a public negative);
+- a new status value: it would change the API's `resolution_status`
+  contract; the note carries the detail instead.
+
+Effect here: F911 and F912 stay inferred (0.911, 0.910; next group 0.292);
+F910 becomes ambiguous (0.491, with three more groups between 0.317 and
+0.366), so its fix is withheld although a reader would call it OOM. A log
+that shares words with only one wrong group is still inferred
+(`tests/test_final_validation_retrieval.py` case 4, strict xfail).
+
+The evaluator builds its index with default `Params()` and the API with
+`retrieval/params.json`, so inference can differ between the two; with
+membership unchanged this affects only which fix is displayed, not any
+retrieval metric.
+
+Tested by `tests/test_final_validation_retrieval.py` (§4) and
+`tests/test_retrieval_search.py`.
+
+## 18. "Error response from <component>:" is a log record
+
+A pasted one-line docker error (`Error response from daemon: pull access
+denied …`) has no timestamp, level or `SomeError:` prefix, so it was
+classified as a question and glossary-expanded. `clean._RECORD_START` now
+also accepts `Error response from <component>:` in any case, optionally
+after a `tool: ` prefix. The component and its colon are required, so
+"Error when pulling the image" and "error response times are high" stay
+questions, and a line that starts with a question word is unaffected.
+Tested in `tests/test_final_validation_retrieval.py` (§6).

@@ -4,8 +4,10 @@ build_index(logs_path, backend, params), in this order:
 1. load the JSONL, skipping malformed lines; redact BEFORE anything is stored
 2. learn the noise templates; signal text of each log
 3. per-log documents (signal text + resolution) -> BM25 + embedding matrix
-4. cause groups by normalised resolution; empty resolutions are inferred
-   from the most similar group or left as singletons; conflicts recorded
+4. cause groups by normalised resolution; an empty resolution joins its most
+   similar group (failure evidence only, never resolution text); its fix is
+   inferred only if that is the one group at or above ASSIGN_MIN, otherwise
+   it is ambiguous (status none) or a singleton; conflicts recorded
 5. per-group documents (members' signal lines + resolution) -> BM25 + matrix
 
 No vector database: 59 documents fit in a NumPy matrix, and a search is one
@@ -37,7 +39,9 @@ class Params:
     lex_k: float = 5.0  # lexical = bm25 / (bm25 + lex_k), squashed into [0, 1)
     g_member: float = 0.7  # group = g_member * best member + rest * group document
     tau: float = 0.20  # below this best group score: "no similar past failure"
-    assign_min: float = 0.30  # an empty resolution joins a group only above this
+    # an empty resolution joins a group only at or above this; its fix is
+    # inferred only when exactly one group reaches it (SPEC_DECISIONS #17)
+    assign_min: float = 0.30
     noise_df: float = clean.DEFAULT_NOISE_DF
 
 
@@ -98,6 +102,9 @@ class Index:
     status: dict[str, str]  # recorded | inferred | none
     inferred: dict[str, float]  # id -> similarity to the group it joined
     conflicts: list[Conflict]
+    # empty-resolution id -> (group id, evidence score) for every recorded
+    # group, best first: the evidence behind inferred / ambiguous / none
+    inference: dict[str, tuple[tuple[str, float], ...]] = field(default_factory=dict)
     by_id: dict[str, Record] = field(init=False)
     group_of: dict[str, str] = field(init=False)
     _groups: dict[str, Group] = field(init=False)
@@ -111,6 +118,12 @@ class Index:
 
     def group(self, log_id: str) -> Group:
         return self._groups[self.group_of[log_id]]
+
+    def candidates(self, log_id: str) -> list[tuple[str, float]]:
+        """Recorded groups at or above ASSIGN_MIN for an empty-resolution log,
+        best first. One -> inferred; two or more -> ambiguous; none -> none."""
+        return [(g, s) for g, s in self.inference.get(log_id, ())
+                if s >= self.params.assign_min]  # fmt: skip
 
 
 def _log_scores(embedder, bm25: BM25, vecs: np.ndarray, text: str, p: Params):
@@ -147,36 +160,52 @@ def build_index(logs_path=DEFAULT_LOGS, backend: str | None = None,
     keys = sorted(by_key)
     members = {k: [r.id for r in by_key[k]] for k in keys}
     pos = {r.id: i for i, r in enumerate(records)}
-    inferred, singletons = {}, []
+    # Inference evidence is the logs' signal lines ONLY. log_docs also hold
+    # each recorded resolution (questions are often worded like the fix, and
+    # removing it from search fails the CV floors), but for inference a fix's
+    # wording is metadata, not evidence that two failures share a cause.
+    evidence = [" ".join(signal[r.id]) for r in records]
+    ev_embedder = (
+        embed.TfidfEmbedder().fit(evidence) if embedder.name == "tfidf" else embedder
+    )
+    ev_bm25 = BM25([clean.tokenize(d) for d in evidence])
+    ev_vecs = ev_embedder.embed(evidence)
+    inferred, singletons, ranked_by_id = {}, [], {}
     for r in records:
         if r.resolution.strip():
             continue
         # How alike is this log to each group? Its BEST member (max), as in
         # search: a cause group is worded differently on purpose, so the mean
-        # is dragged down by siblings that share the cause but not the words
-        # (measured: an OOMKilled log scored 0.76 against its look-alike, a
-        # group mean of 0.17). ASSIGN_MIN guards against a weak best match.
-        scores = _log_scores(
-            embedder, log_bm25, log_vecs, " ".join(signal[r.id]), params
-        )
-        best_key, best = None, -1.0
-        for k in keys:
-            s = float(np.max([scores[pos[m.id]] for m in by_key[k]]))
-            if s > best:  # ties keep the first key in sorted order
-                best_key, best = k, s
-        if best_key is not None and best >= params.assign_min:
-            members[best_key].append(r.id)
-            status[r.id] = "inferred"
-            inferred[r.id] = round(best, 6)
+        # is dragged down by siblings that share the cause but not the words.
+        scores = _log_scores(ev_embedder, ev_bm25, ev_vecs, evidence[pos[r.id]], params)
+        ranked = sorted(
+            ((round(float(np.max([scores[pos[m.id]] for m in by_key[k]])), 6), k)
+             for k in keys),
+            key=lambda x: (-x[0], x[1]),  # ties: the first key in sorted order
+        )  # fmt: skip
+        ranked_by_id[r.id] = ranked
+        qualifying = [k for score, k in ranked if score >= params.assign_min]
+        if qualifying:
+            members[qualifying[0]].append(r.id)  # retrieved with its best group
         else:
-            status[r.id] = "none"
             singletons.append(r.id)
-        logger.info("empty resolution: %s -> %s", r.id, status[r.id])
+        if len(qualifying) == 1:
+            status[r.id] = "inferred"
+            inferred[r.id] = ranked[0][0]
+        else:
+            # none qualifies, or several do: no fix is guessed (ambiguous ones
+            # keep their best group for retrieval; the note lists candidates)
+            status[r.id] = "none"
+        logger.info("empty resolution: %s -> %s (%d candidate group(s))",
+                    r.id, status[r.id], len(qualifying))  # fmt: skip
     width = len(str(len(keys) + len(singletons)))
     groups = [Group(f"g{i:0{width}d}", by_key[k][0].resolution.strip(), tuple(members[k]))
               for i, k in enumerate(keys, 1)]  # fmt: skip
     groups += [Group(f"g{len(keys) + i:0{width}d}", "", (log_id,))
                for i, log_id in enumerate(singletons, 1)]  # fmt: skip
+    group_id = {k: f"g{i:0{width}d}" for i, k in enumerate(keys, 1)}
+    inference = {log_id: tuple((group_id[k], score) for score, k in ranked)
+                 for log_id, ranked in ranked_by_id.items()}  # fmt: skip
 
     # identical signal text, different recorded resolutions: a conflict.
     # Each log keeps its own resolution; the API adds a note to both.
@@ -203,7 +232,7 @@ def build_index(logs_path=DEFAULT_LOGS, backend: str | None = None,
         malformed=malformed, noise=noise, signal=signal, log_docs=log_docs,
         log_bm25=log_bm25, log_vecs=log_vecs, groups=groups, group_docs=group_docs,
         group_bm25=group_bm25, group_vecs=group_vecs, status=status,
-        inferred=inferred, conflicts=conflicts,
+        inferred=inferred, conflicts=conflicts, inference=inference,
     )  # fmt: skip
 
 

@@ -161,15 +161,27 @@ def test_every_log_belongs_to_one_group_and_groups_follow_resolutions(idx):
         assert len(recorded) <= 1  # one group = one resolution text
 
 
-def test_empty_resolutions_are_inferred_from_the_out_of_memory_group(idx):
+def test_empty_resolutions_join_the_out_of_memory_group_and_are_inferred_unless_ambiguous(
+    idx,
+):
+    # SPEC_DECISIONS #17: every empty log joins its best group for retrieval;
+    # its fix is inferred only when that is the ONLY group at or above
+    # ASSIGN_MIN. F910 also reaches the driver/framework and NCCL groups, so it
+    # is ambiguous: status none, no fix shown.
     empty = [r for r in idx.records if not r.resolution.strip()]
     assert len(empty) == 3
     for r in empty:
         assert re.search(r"(?i)out of memory|oom", " ".join(idx.signal[r.id]))
-        assert idx.status[r.id] == "inferred", (r.id, idx.inferred.get(r.id))
         group = idx.group(r.id)
         assert "batch size" in group.resolution.lower()
-        assert idx.inferred[r.id] >= idx.params.assign_min
+        qualifying = [g for g, s in idx.inference[r.id] if s >= idx.params.assign_min]
+        assert qualifying[0] == group.id
+        expected = "inferred" if len(qualifying) == 1 else "none"
+        assert idx.status[r.id] == expected, (r.id, idx.inference[r.id][:3])
+        if expected == "inferred":
+            assert idx.inferred[r.id] >= idx.params.assign_min
+    assert {r.id: idx.status[r.id] for r in empty} == {
+        "F910": "none", "F911": "inferred", "F912": "inferred"}  # fmt: skip
 
 
 def test_a_low_similarity_empty_resolution_stays_a_singleton(tmp_path):
@@ -289,12 +301,22 @@ def test_a_conflicting_match_carries_a_note(idx):
 
 
 def test_inferred_and_missing_resolutions_say_so(idx):
-    empty = next(r for r in idx.records if not r.resolution.strip())
-    out = search.search(idx, empty.log)
-    hit = next(r for r in out.results if r["id"] == empty.id)
+    # The first empty log (F910) is ambiguous under SPEC_DECISIONS #17, so the
+    # inferred case uses the first INFERRED empty log; the ambiguous one is
+    # checked too: no fix, and a note naming its candidate groups.
+    empty = [r for r in idx.records if not r.resolution.strip()]
+    inferred = next(r for r in empty if idx.status[r.id] == "inferred")
+    out = search.search(idx, inferred.log)
+    hit = next(r for r in out.results if r["id"] == inferred.id)
     assert hit["resolution_status"] == "inferred"
-    assert hit["resolution"] == idx.group(empty.id).resolution
+    assert hit["resolution"] == idx.group(inferred.id).resolution
     assert "inferred" in hit["note"]
+    ambiguous = next(r for r in empty if idx.status[r.id] == "none")
+    out = search.search(idx, ambiguous.log)
+    hit = next(r for r in out.results if r["id"] == ambiguous.id)
+    assert hit["resolution_status"] == "none"
+    assert hit["resolution"] is None
+    assert "not inferred" in hit["note"]
 
 
 # --- API -------------------------------------------------------------------------------

@@ -67,6 +67,16 @@ def _note(index: Index, log_id: str) -> str | None:
             "no resolution was recorded for this log; resolution inferred from its "
             f"most similar cause group (similarity {index.inferred[log_id]:.3f})"
         )
+    elif status == "none" and len(index.candidates(log_id)) > 1:
+        # Ambiguous (SPEC_DECISIONS #17): several groups' failure evidence is
+        # close enough, so no fix is guessed; the candidates are shown instead.
+        found = index.candidates(log_id)
+        listed = ", ".join(f"{g} ({s:.3f})" for g, s in found)
+        notes.append(
+            "no resolution recorded for this log; not inferred: "
+            f"{len(found)} cause groups reach the inference threshold "
+            f"{index.params.assign_min:g}: {listed}"
+        )
     elif status == "none":
         notes.append("no resolution recorded for this failure")
     if any(log_id in c.ids for c in index.conflicts):

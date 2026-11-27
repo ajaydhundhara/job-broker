@@ -127,7 +127,8 @@ def signal_lines(log: str, noise) -> list[str]:
 # One classifier, in tiers; the first that applies decides:
 #   1. structural log evidence -> log: several non-blank lines, a stack trace,
 #      a structured record (JSON object, 3+ key=value fields), or a line that
-#      starts like a log record (timestamp, level, "SomeError:")
+#      starts like a log record (timestamp, level, "SomeError:",
+#      "Error response from <component>:")
 #   2. a question cue -> question: starts with a question / request word, or
 #      has a "?" ending a sentence ("?" inside a URL does not count)
 #   3. log words inside one line -> log: exception class, exit code, errno,
@@ -157,6 +158,10 @@ _RECORD_START = re.compile(
     rf"|\[?{_LEVELS}\]?(?=[\s:\]])"  # upper-case level
     rf"|(?i:\[{_LEVELS}\]|{_LEVELS}:)"  # [error] / error: in any case
     r"|(?:[a-z_]\w*\.)*[A-Z]\w*(?:Error|Exception)\s*:"  # SomeError: / a.b.SomeError:
+    # "Error response from <component>:" (docker, containerd, a registry), in
+    # any case, optionally after a "tool: " prefix. The component and its
+    # colon are required, so "Error when pulling the image" stays a symptom.
+    r"|(?:[\w.-]+:\s+)?(?i:error response from)\s+[\w.-]+:"
     r")",
     re.MULTILINE,
 )
