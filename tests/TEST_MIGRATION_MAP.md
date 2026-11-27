@@ -505,9 +505,12 @@ Each change kept the test's intent; none weakened, skipped or deleted a test.
 | P0-06 | `tests/test_no_wall_clock.py` | also rejects `uuid`, `secrets`, `uuid4()` and `os.urandom`; 4 guard cases added | job ids are sequential (D16); the scan keeps random ids out |
 | P0-06 | `tests/test_replay_scenario.py::test_the_invariant_check_catches_a_broken_state` | `service.new_id("job")` → `service.next_job_id(conn)` to make distinct ids | `new_id` was removed with the random ids |
 | P0-06 | `tests/test_engine.py`, `tests/test_integration.py` | comments only: ids are sequential | D16 |
+| Finding 1 | `tests/test_replay_candidates.py` (P0-07) | removed with `reports/replay_analysis_candidates.md`; its figure check moved to `tests/test_replay_analysis.py` (now whole-figure matches against the tables only) | its `test_the_report_keeps_its_analysis_headings_as_todo` asserted the TODOs the finding requires removing; the candidates became the analysis |
+| Finding 1 | `tests/test_docs.py::test_no_reviewer_facing_doc_holds_a_todo` | its allowance for the four Analysis placeholders removed: no doc may hold one | the report now carries the analysis |
 
 Tests added after the snapshot: `test_clock_advance.py` (P0-01),
 `test_query_classification.py` (P0-02), `test_exit_137.py` (P0-03),
 `test_state_machine.py` (P0-04), `test_idempotency.py` (P0-05),
-`test_replay_restart.py` (P0-06), `test_burst_metrics.py` and
-`test_replay_candidates.py` (P0-07), `test_docs.py` (P0-08).
+`test_replay_restart.py` (P0-06), `test_burst_metrics.py` (P0-07; `test_replay_candidates.py`, also P0-07, was
+removed by Finding 1), `test_docs.py` (P0-08), `test_replay_analysis.py`
+(Finding 1).

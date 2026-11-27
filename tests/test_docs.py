@@ -2,8 +2,8 @@
 
 Checked mechanically, so they can't drift again: the README's API table lists
 exactly the app's routes; the retrieval parameters the README quotes are the
-ones in retrieval/params.json; no reviewer-facing doc holds a TODO except the
-replay report's Analysis headings, which the author writes (P0-07).
+ones in retrieval/params.json; no reviewer-facing doc holds a TODO (the
+replay report's Analysis comes from reports/replay_analysis.md).
 """
 
 import json
@@ -26,12 +26,6 @@ REVIEWER_DOCS = [
 ]
 # A TODO marker; AGENTS.md's rule "write TODO and say so" is not one.
 TODO = re.compile(r"\bTODO\b(?! and say so)")
-ANALYSIS_TODOS = [
-    "- TODO: fair vs fifo",
-    "- TODO: the burst window",
-    "- TODO: idle timeout: cost vs wait",
-    "- TODO: what we would change",
-]
 DOC_ROUTES = ("/openapi.json", "/docs", "/docs/oauth2-redirect", "/redoc")
 
 
@@ -73,13 +67,7 @@ def test_no_reviewer_facing_doc_holds_a_todo():
         for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             if TODO.search(line):
                 found.append(f"{path.relative_to(ROOT)}:{n}: {line.strip()}")
-    allowed = [f"reports/replay_results.md:{n}: {t}" for n, t in _analysis_lines()]
-    assert sorted(found) == sorted(allowed)
-
-
-def _analysis_lines():
-    lines = (ROOT / "reports" / "replay_results.md").read_text().splitlines()
-    return [(n, line) for n, line in enumerate(lines, 1) if line in ANALYSIS_TODOS]
+    assert found == []
 
 
 def test_agents_md_states_the_scope():

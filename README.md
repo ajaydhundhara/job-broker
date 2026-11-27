@@ -30,7 +30,7 @@ nothing real runs), **test-only** (exists only so tests can be exact),
 | Cost report: GPU-hours and cost per team for a window (req. 6) | implemented | `GET /reports/cost`, *Billing* |
 | Idle cost charged to the node's owning team, failed launches to `provider_overhead` | policy choice | *Cost attribution* |
 | Restart without losing jobs, nodes or cost history (req. 7) | implemented | *Restart recovery* |
-| Trace replay, wait percentiles, cost, fair vs fifo (req. 8) | implemented | *Running the replay*, `reports/replay_results.md` |
+| Trace replay, wait percentiles, cost, fair vs fifo (req. 8) | implemented | *Running the replay*, `reports/replay_results.md` (analysis: `reports/replay_analysis.md`) |
 | HTTP API (req. 9) | implemented | *API* |
 | Failure retrieval for a log or a question (Retrieval track) | implemented | *Retrieval* |
 | Fake provider: boot 4–8 min, ~3% never ready, capacity bursts, billing | simulation-only | `broker/provider.py`, D4, D10 |
@@ -351,13 +351,20 @@ also in `reports/replay_results.json`, money in micro-dollars), and the trace's
 data quality in [reports/data_quality.md](reports/data_quality.md). Options:
 `--policies fair,fifo`, `--idle-minutes 10`, `--sweep-idle 2,10,30`,
 `--seeds 42,43,44,45,46`, `--burst-window 2025-03-05T05:00Z,2025-03-05T08:00Z`,
-`--keep-duplicates`, `--check-invariants`, `--out-dir reports`.
+`--keep-duplicates`, `--check-invariants`, `--out-dir reports`,
+`--analysis reports/replay_analysis.md`.
 `python -m broker.trace 01a_trace.csv` writes only the data-quality report.
-Candidate observations for the report's Analysis section, for author review
-and tied to its tables, are in
-[reports/replay_analysis_candidates.md](reports/replay_analysis_candidates.md)
-(hand-written; `tests/test_replay_candidates.py` fails if a figure it cites is
-no longer in the regenerated report).
+
+The report's Analysis section (fair vs fifo, the burst window, the idle
+timeout, what we would change) is written by hand in
+[reports/replay_analysis.md](reports/replay_analysis.md) and copied in on
+every run, so regenerating the report does not lose it. `--analysis` picks
+another file; with none (the default file absent, e.g. a test's temporary
+folder) the section lists only its headings, as placeholders. The file
+must hold the four `### ` headings in order, or the run stops. `tests/test_replay_analysis.py`
+fails if the analysis quotes a figure the regenerated tables no longer print
+(node prices and the fallback limit, which come from `broker/config.py`, are
+the only exceptions).
 
 How the replay works and the rules it follows:
 

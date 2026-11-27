@@ -4,8 +4,11 @@
         [--idle-minutes 10] [--sweep-idle 2,10,30] [--seeds 42,43,44,45,46]
         [--burst-window 2025-03-05T05:00Z,2025-03-05T08:00Z]
         [--keep-duplicates] [--check-invariants] [--out-dir reports]
+        [--analysis reports/replay_analysis.md]
 
-Writes data_quality.md, replay_results.md and replay_results.json.
+Writes data_quality.md, replay_results.md and replay_results.json. The
+markdown's Analysis section is copied from reports/replay_analysis.md (an
+authored file) when it exists, so a rerun never overwrites it.
 
 replay_scenario() drives the app with FastAPI's TestClient: the real routes,
 validation, idempotency and scheduling passes, in process, with no server
@@ -29,6 +32,7 @@ stuck, rather than reporting numbers for an unfinished week.
 
 import argparse
 import json
+import re
 import sqlite3
 import tempfile
 import time
@@ -59,6 +63,16 @@ from replay.metrics import (
 )
 
 DRAIN_STEP_MINUTES = 60
+# The Analysis section is authored, not generated: run_all copies this file
+# under "## Analysis" (tests/test_replay_analysis.py). Without it, the four
+# headings are printed as TODO placeholders.
+DEFAULT_ANALYSIS = Path("reports/replay_analysis.md")
+ANALYSIS_HEADINGS = (
+    "fair vs fifo",
+    "the burst window",
+    "idle timeout: cost vs wait",
+    "what we would change",
+)
 DRAIN_LIMIT_S = 14 * 24 * 3600
 
 
@@ -255,6 +269,29 @@ METHOD = {
 }
 
 
+def read_analysis(path, required: bool = True) -> str | None:
+    """The authored analysis, checked to hold the four headings in order.
+
+    None for no path, or for a missing file when not required (the CLI's
+    default path on a checkout without one).
+    """
+    if path is None:
+        return None
+    path = Path(path)
+    if not path.exists():
+        if required:
+            raise FileNotFoundError(f"analysis file not found: {path}")
+        return None
+    text = path.read_text(encoding="utf-8")
+    found = re.findall(r"^### (.+?)\s*$", text, flags=re.MULTILINE)
+    missing = [h for h in ANALYSIS_HEADINGS if h not in found]
+    if missing:
+        raise ValueError(f"{path}: missing analysis heading(s): {missing}")
+    if [h for h in found if h in ANALYSIS_HEADINGS] != list(ANALYSIS_HEADINGS):
+        raise ValueError(f"{path}: headings must be in this order: {ANALYSIS_HEADINGS}")
+    return text.rstrip("\n") + "\n"
+
+
 def scenarios(policies, idle_minutes: int, sweep) -> list[tuple[str, int]]:
     """Unique (policy, idle_minutes) pairs: each policy at idle_minutes, then
     the first policy at each sweep value. fair@10 appears once, not twice."""
@@ -270,8 +307,14 @@ def scenarios(policies, idle_minutes: int, sweep) -> list[tuple[str, int]]:
 def run_all(trace_path, *, policies=("fair", "fifo"), idle_minutes=10,
             sweep=(2, 10, 30), seeds=(42, 43, 44, 45, 46),
             burst_window=DEFAULT_BURST_WINDOW, keep_duplicates=False,
-            check_invariants=False, out_dir="reports") -> dict:  # fmt: skip
-    """Run every scenario once per seed; write the three reports; return the JSON."""
+            check_invariants=False, out_dir="reports",
+            analysis=None) -> dict:  # fmt: skip
+    """Run every scenario once per seed; write the three reports; return the JSON.
+
+    analysis: an authored analysis file (read_analysis), copied into the
+    markdown under "## Analysis"; None prints the TODO headings.
+    """
+    analysis_text = read_analysis(analysis)  # fail before a long run, not after
     rows, quality = load_trace(trace_path, keep_duplicates, burst_window)
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -314,7 +357,7 @@ def run_all(trace_path, *, policies=("fair", "fifo"), idle_minutes=10,
             })  # fmt: skip
     text = json.dumps(results, indent=2) + "\n"
     (out_dir / "replay_results.json").write_text(text, encoding="utf-8")
-    md = render_markdown(results, quality.summary())
+    md = render_markdown(results, quality.summary(), analysis_text)
     (out_dir / "replay_results.md").write_text(md, encoding="utf-8")
     return results
 
@@ -360,7 +403,9 @@ def _per_seed(a: dict, b: dict, path) -> str:
     return f"{lt} / {eq} / {gt}"
 
 
-def render_markdown(results: dict, quality_summary: str) -> str:
+def render_markdown(
+    results: dict, quality_summary: str, analysis: str | None = None
+) -> str:
     opts = results["options"]
     by_name = {s["name"]: s for s in results["scenarios"]}
     main = [
@@ -459,12 +504,10 @@ def render_markdown(results: dict, quality_summary: str) -> str:
                   f"{_cell(o['idle_share'], _pct)} | {_cell(o['wait_s_p90'], _min)} | "
                   f"{_cell(o['nodes_launched'], str)} |")  # fmt: skip
     md += [""] + _burst_section(results, main, fair, fifo)
-    md += ["## Analysis", "",
-           "- TODO: fair vs fifo",
-           "- TODO: the burst window",
-           "- TODO: idle timeout: cost vs wait",
-           "- TODO: what we would change", ""]  # fmt: skip
-    return "\n".join(md)
+    md += ["## Analysis", ""]
+    if analysis is None:
+        return "\n".join(md + [f"- TODO: {h}" for h in ANALYSIS_HEADINGS] + [""])
+    return "\n".join(md) + "\n" + analysis  # a blank line after the heading
 
 
 def _signed_min(seconds) -> str:
@@ -536,14 +579,20 @@ def main(argv=None) -> None:
     p.add_argument("--keep-duplicates", action="store_true")
     p.add_argument("--check-invariants", action="store_true")
     p.add_argument("--out-dir", default="reports")
+    p.add_argument("--analysis", type=Path, default=None,
+                   help=f"authored Analysis section (default: {DEFAULT_ANALYSIS} if it exists)")  # fmt: skip
     args = p.parse_args(argv)
     # perf_counter only measures this run for the console; it never reaches
     # the reports or the simulation, which run on the simulated clock.
     started = time.perf_counter()
+    analysis = args.analysis
+    if analysis is None and read_analysis(DEFAULT_ANALYSIS, required=False) is not None:
+        analysis = DEFAULT_ANALYSIS
     results = run_all(args.trace, policies=args.policies, idle_minutes=args.idle_minutes,
                       sweep=args.sweep_idle, seeds=args.seeds,
                       burst_window=args.burst_window, keep_duplicates=args.keep_duplicates,
-                      check_invariants=args.check_invariants, out_dir=args.out_dir)  # fmt: skip
+                      check_invariants=args.check_invariants, out_dir=args.out_dir,
+                      analysis=analysis)  # fmt: skip
     for s in results["scenarios"]:
         o = s["summary"]["overall"]
         print(f"{s['name']:>8}: grand total {_cell(o['grand_total'], _usd)}, "
