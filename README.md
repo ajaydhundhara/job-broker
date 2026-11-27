@@ -9,6 +9,19 @@ resolutions.
 and the Retrieval / AI track. Interruptible nodes, optional in the brief,
 are not used.
 
+## Contents
+
+- [Quick Start](#quick-start)
+- [Features and status](#feature-status)
+- [API](#api) (with a [first-run walkthrough](#first-run-walkthrough))
+- [Architecture](#architecture)
+- [Scheduling and simulation](#scheduling-and-simulation)
+- [Billing and cost model](#billing) (rules under [Decisions](#decisions))
+- [Retrieval](#retrieval)
+- [Testing](#testing)
+- [Reports and design decisions](#reports-and-design-decisions)
+- [Known limitations](#known-limitations) (retrieval: [Known limits and next steps](#known-limits-and-next-steps))
+
 ### Feature status
 
 Labels: **implemented** (works as the brief asks), **policy choice** (our
@@ -39,28 +52,101 @@ nothing real runs), **test-only** (exists only so tests can be exact),
 | MiniLM backend: optional; implemented, not evaluated in this environment | known limitation | *Retrieval* |
 | No auth; one process; interruptible nodes and preemption not built; guessable job ids | known limitation | *Known limitations* |
 
-## Run
+## Quick Start
+
+**Prerequisite: Python 3.12.** It is the tested development version (3.12.13
+on macOS); other versions have not been tested. `.python-version` pins
+`3.12` for pyenv and similar tools. No database server or other service is
+needed: SQLite comes with Python.
+
+**1. Clone.**
 
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/ajaydhundhara/job-broker.git
 ```
+
+```bash
+cd job-broker
+```
+
+**2. Create and activate a virtual environment.**
+
+macOS / Linux:
+
+```bash
+python3.12 -m venv .venv
+```
+
+```bash
+source .venv/bin/activate
+```
+
+Windows PowerShell:
+
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+**3. Install.** `requirements.txt` holds the runtime dependencies;
+`requirements-dev.txt` adds the test and lint tools (pytest, pyyaml, ruff)
+and includes `requirements.txt`, so one command installs everything.
+
+```bash
+python -m pip install --upgrade pip
+```
+
+```bash
+pip install -r requirements-dev.txt
+```
+
+To run the service only: `pip install -r requirements.txt`. The optional
+MiniLM backend needs `requirements-embeddings.txt` and a model already in
+the local cache (*Retrieval*, API); without it, retrieval uses tfidf.
+
+**4. Run the required checks** (details in [Testing](#testing)).
+
+```bash
+RETRIEVAL_BACKEND=tfidf pytest -q -rsx
+```
+
+```bash
+ruff check .
+```
+
+```bash
+ruff format --check .
+```
+
+In PowerShell, set the variable first: `$env:RETRIEVAL_BACKEND = "tfidf"`,
+then `pytest -q -rsx`.
+
+**5. Start the API.**
 
 ```bash
 uvicorn broker.api:app --reload
 ```
 
-The database file comes from the `BROKER_DB` environment variable (default
-`./broker.db`); it is created on first start. Other settings
-(`broker/config.py`, `Config.from_env`):
+It listens on `http://127.0.0.1:8000`; open `http://127.0.0.1:8000/docs`
+for the interactive API reference, then follow the
+[first-run walkthrough](#first-run-walkthrough). The database file comes
+from `BROKER_DB` (default `./broker.db`, ignored by git) and is created on
+first start. Delete it to start again from simulated time 0.
 
-| Variable | Default | Meaning |
-|---|---|---|
-| `BROKER_MAX_NODES` (old name `BROKER_MAX_LIVE_NODES`) | 10 | live-node cap |
-| `BROKER_IDLE_MINUTES` (old name `BROKER_IDLE_TIMEOUT_MINUTES`) | 10 | idle reaper timeout |
-| `BROKER_POLICY` | `fair` | queue policy, `fair` or `fifo` |
-| `BROKER_SEED` | 42 | fake provider seed |
+**Settings** (environment variables, read at startup):
 
-FastAPI's `/docs` page is the full API reference.
+| Variable | Default | Meaning | Read in |
+|---|---|---|---|
+| `BROKER_DB` | `./broker.db` | SQLite file | `broker/api.py` |
+| `BROKER_MAX_NODES` (old name `BROKER_MAX_LIVE_NODES`) | 10 | live-node cap | `broker/config.py`, `Config.from_env` |
+| `BROKER_IDLE_MINUTES` (old name `BROKER_IDLE_TIMEOUT_MINUTES`) | 10 | idle reaper timeout | `broker/config.py` |
+| `BROKER_POLICY` | `fair` | queue policy, `fair` or `fifo` | `broker/config.py` |
+| `BROKER_SEED` | 42 | fake provider seed | `broker/config.py` |
+| `RETRIEVAL_BACKEND` | `auto` | `auto`, `tfidf` or `minilm`; `auto` falls back to tfidf with one warning when MiniLM is not installed and cached | `retrieval/embed.py` |
+| `FAILURE_LOGS_PATH` | `01b_failure_logs.jsonl` | past-failure logs; a missing default file disables only `/failures` (503), a missing explicit path fails startup | `retrieval/index.py` |
+
+`BROKER_BASE_URL` is used only by the YAML tests (see
+[YAML test cases](#yaml-test-cases)).
 
 ## Submission notes
 
@@ -107,6 +193,108 @@ FastAPI's `/docs` page is the full API reference.
 
 Errors: 404 unknown job or failure id, 409 a conflict with the current state
 (below), 422 invalid input, 503 `/failures` when no logs file is configured.
+
+### First-run walkthrough
+
+Start the server on a fresh database (Quick Start, step 5) and run these
+from a second terminal. The outputs below were recorded on a new database
+with the default settings (`BROKER_SEED=42`), shortened with `…`.
+Request bodies are the models in `broker/models.py` and
+`retrieval/models.py`; unknown fields are rejected with 422. In Windows
+PowerShell use `curl.exe` (and escape the inner quotes) or the *Try it out*
+buttons on `/docs`.
+
+**Simulated clock.** Time never moves on its own: it starts at
+`now_ts = 0` (`1970-01-01T00:00:00Z`) on a new database and moves only on
+`POST /sim/advance`. The cost report's default window is
+`[from_ts = 0, to_ts = now)`, so on a new server it is empty and answers
+422 until the clock has moved or you pass `to_ts`.
+
+1. Health and the clock:
+
+   ```bash
+   curl -s http://127.0.0.1:8000/health
+   ```
+
+   ```bash
+   curl -s http://127.0.0.1:8000/sim/now
+   ```
+
+   `{"status":"ok"}` and `{"now_ts":0,"now_iso":"1970-01-01T00:00:00Z"}`.
+
+2. Submit a job. Required: `team`, `gpus` (1, 2, 4 or 8),
+   `estimated_minutes` (1–10080); optional: `priority` (`low`, `normal`
+   (default) or `high`) and `idempotency_key`.
+
+   ```bash
+   curl -s -X POST http://127.0.0.1:8000/jobs -H 'Content-Type: application/json' -d '{"team": "vision", "gpus": 4, "estimated_minutes": 60, "idempotency_key": "first-run-1"}'
+   ```
+
+   201 with `{"id":"job-000000000001","team":"vision",…,"status":"queued","node_id":null,"submitted_at":0,…}`.
+   No node has free GPUs, so a gpu-m node (4 GPUs) is launched for the job.
+   Sending the same request again returns 200 and the same job; the same
+   key with a different body is 409.
+
+3. Get the job, the queue and the nodes:
+
+   ```bash
+   curl -s http://127.0.0.1:8000/jobs/job-000000000001
+   ```
+
+   ```bash
+   curl -s http://127.0.0.1:8000/queue
+   ```
+
+   ```bash
+   curl -s http://127.0.0.1:8000/nodes
+   ```
+
+   The queue holds the job at `"position":1`; `/nodes` shows
+   `node-00001`, `"type":"gpu-m"`, `"state":"launching"`, `"ready_at":null`.
+
+4. Advance the simulated clock. The body takes exactly one of `minutes`
+   (0 or more) or `to_ts` (an absolute time in seconds, not earlier than
+   now); both or neither is 422.
+
+   ```bash
+   curl -s -X POST http://127.0.0.1:8000/sim/advance -H 'Content-Type: application/json' -d '{"minutes": 10}'
+   ```
+
+   `{"now_ts":600,"now_iso":"1970-01-01T00:10:00Z"}`. Nodes boot in 4–8
+   simulated minutes; here the node was ready at 374 s and the job started
+   then: `GET /jobs/job-000000000001` shows `"status":"running"`,
+   `"started_at":374`, `"wait_seconds":374`, the queue is `[]`, and
+   `/nodes` shows `"state":"ready"`, `"gpus_used":4`, `"cost_so_far":0.75`.
+
+5. Cost report for a non-empty window `[from_ts, to_ts)` in seconds:
+
+   ```bash
+   curl -s "http://127.0.0.1:8000/reports/cost?from_ts=0&to_ts=600"
+   ```
+
+   `{"from_ts":0,"to_ts":600,"teams":[{"team":"vision","gpu_hours":0.251,"busy_cost":0.28,"idle_cost":0.47,"total_cost":0.75}],"provider_overhead":0.0,"grand_total":0.75}`.
+   Idle is the boot time before the job started (*Cost attribution*).
+   Before step 4 the same request without parameters answers 422,
+   `from_ts (0) must be before to_ts (0)`.
+
+6. Search past failures (`text` 1–20000 characters, `k` 1–20, default 5):
+
+   ```bash
+   curl -s -X POST http://127.0.0.1:8000/failures/search -H 'Content-Type: application/json' -d '{"text": "CUDA out of memory while training with a large batch", "k": 3}'
+   ```
+
+   `"input_type":"question","backend":"tfidf","no_match":false`, and three
+   hits from the out-of-memory group `g07`: `F910` (`"resolution":null`,
+   `"resolution_status":"none"`, an empty resolution that is not inferred
+   because several groups qualify), then `F002` and `F005` with their
+   recorded fix "Reduce batch size or request a larger GPU class; enable
+   gradient checkpointing.", all at score 0.678765. An unrelated question
+   such as "how do I book a meeting room" returns `"no_match":true` and
+   "No similar past failure found". `GET /failures/F002` returns one
+   record.
+
+7. Explore the rest at `http://127.0.0.1:8000/docs` (Swagger UI) or
+   `/openapi.json`. Cancelling is `POST /jobs/{job_id}/cancel`.
 
 ### Decisions
 
@@ -850,21 +1038,85 @@ Rules:
 - **No floats for money.** Prices are integer micro-dollars (1 USD = 1,000,000).
 - Any change that touches more than one row runs inside one `transaction()` (`BEGIN IMMEDIATE … COMMIT`, rolled back on error).
 
-### How to run the tests
+## Testing
 
-From the repo root (`pyproject.toml` puts the root on the path):
+### Required checks
+
+Run from the repository root with the dev requirements installed
+(`pyproject.toml` puts the root on the import path, so plain `pytest`
+works):
 
 ```bash
-pytest -q
+RETRIEVAL_BACKEND=tfidf pytest -q -rsx
 ```
 
 ```bash
-ruff check . && ruff format --check .
+ruff check .
 ```
+
+```bash
+ruff format --check .
+```
+
+`RETRIEVAL_BACKEND=tfidf` makes the retrieval tests use the backend every
+committed number was measured on, with no model lookup. In PowerShell:
+`$env:RETRIEVAL_BACKEND = "tfidf"`, then `pytest -q -rsx`.
+
+**Expected result** (`reports/final_validation_report.md`, section 0, and
+re-run on the committed code): 815 passed, 1 skipped, 7 xfailed, about
+65 s, plus one third-party deprecation warning from Starlette's test
+client.
+
+- **1 skipped:** `test_minilm_backend_when_cached`
+  (`tests/test_retrieval_search.py`), because MiniLM is not installed and
+  cached. With MiniLM available it runs instead.
+- **7 xfailed:** strict expected failures that pin known retrieval
+  limitations (a strict xfail that starts passing fails the run, so a
+  change can't fix or break them silently):
+  - `tests/test_final_validation_retrieval.py`: a log that shares words
+    with only one wrong group is still given that group's fix (case 4);
+  - `tests/test_retrieval_false_positives.py`: three how-to questions that
+    only share a fix's wording pass TAU, an absent license-server failure
+    passes TAU, and two paraphrases with no shared words are rejected.
+
+  Why each one fails is in its `reason=` and in *Known limits and next
+  steps*.
 
 The full-trace smoke test (`tests/test_replay.py::test_full_trace_smoke`,
 about 5 s) and the repeated stress rounds in `tests/test_concurrency.py` carry
 the marker `slow`; plain `pytest` runs them, `pytest -m "not slow"` skips them.
+
+### Optional analysis commands
+
+Not needed to verify the code. Each regenerates committed files, so the
+commands below write to a scratch folder; drop the output options to
+overwrite the committed versions on purpose.
+
+- **YAML cases only:** `python -m pytest tests/test_yaml_cases.py -v`
+  (they are also part of the full run); against a live server, see
+  [YAML test cases](#yaml-test-cases).
+- **Trace replay and fair vs fifo** (about 100 s): results in
+  [reports/replay_results.md](reports/replay_results.md), analysis in
+  [reports/replay_analysis.md](reports/replay_analysis.md); options in
+  [Running the replay](#running-the-replay).
+
+  ```bash
+  python -m replay.run_replay --trace 01a_trace.csv --out-dir /tmp/job-broker-replay
+  ```
+
+- **Retrieval evaluation** (about 3 s; it also saves the chosen parameters,
+  so point `--params-out` away from `retrieval/params.json`): results in
+  [reports/retrieval_eval.md](reports/retrieval_eval.md); the independent
+  validation, holdout audit and known gaps in
+  [reports/final_validation_report.md](reports/final_validation_report.md).
+
+  ```bash
+  RETRIEVAL_BACKEND=tfidf python -m retrieval.evaluate --queries 01c_retrieval_queries.jsonl --out-dir /tmp/job-broker-eval --params-out /tmp/job-broker-eval/params.json
+  ```
+
+- **Data-quality reports:**
+  `python -m retrieval.quality --out /tmp/retrieval_data_quality.md` and
+  `python -m broker.trace 01a_trace.csv --out /tmp/data_quality.md`.
 
 ### Test configuration
 
@@ -926,3 +1178,17 @@ tables first; restart cases are skipped):
 ```bash
 BROKER_BASE_URL=http://127.0.0.1:8765 BROKER_DB=./broker.db python -m pytest tests/test_yaml_cases.py -v
 ```
+
+## Reports and design decisions
+
+| File | What it holds |
+|---|---|
+| [SPEC_DECISIONS.md](SPEC_DECISIONS.md) | every design decision, marked [brief], [policy] or [test], with the reasoning |
+| [docs/state_machine.md](docs/state_machine.md) | job, node and provider-node states and transitions |
+| [reports/replay_results.md](reports/replay_results.md) | trace replay: waits, cost, fair vs fifo, idle-timeout sweep (`.json` alongside) |
+| [reports/replay_analysis.md](reports/replay_analysis.md) | the written analysis of the replay |
+| [reports/data_quality.md](reports/data_quality.md) | the trace's data quality |
+| [reports/retrieval_eval.md](reports/retrieval_eval.md) | retrieval evaluation on the public queries (`.json` alongside) |
+| [reports/retrieval_data_quality.md](reports/retrieval_data_quality.md) | the failure logs' data quality, cause groups, inferred resolutions |
+| [reports/final_validation_report.md](reports/final_validation_report.md) | independent validation: cost cases, holdout retrieval audit, inference, grouping, classification, verification runs |
+| [tests/TEST_MIGRATION_MAP.md](tests/TEST_MIGRATION_MAP.md) | how and why tests changed |

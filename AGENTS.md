@@ -19,7 +19,8 @@
   (NumPy matrices; see README "Retrieval").
 - Retrieval: `RETRIEVAL_BACKEND` (auto|minilm|tfidf), `FAILURE_LOGS_PATH`
   (default `01b_failure_logs.jsonl`); tests run offline with `RETRIEVAL_BACKEND=tfidf`.
-- Install: `pip install -r requirements.txt ruff` (ruff is not in requirements.txt)
+- Install: `pip install -r requirements-dev.txt` (runtime `requirements.txt` plus
+  pytest, pyyaml and ruff); Python 3.12 (`.python-version`)
 - Run server: `uvicorn broker.api:app --reload` (DB file: `BROKER_DB`, default `./broker.db`)
 - Test: `pytest` from the repo root (`pyproject.toml` puts the root on the path)
 - YAML cases vs a live server: `BROKER_BASE_URL=http://127.0.0.1:8765 BROKER_DB=<its db> python -m pytest tests/test_yaml_cases.py`
