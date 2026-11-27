@@ -1,0 +1,18 @@
+{
+  "minilm": {
+    "assign_min": 0.3,
+    "g_member": 0.7,
+    "lex_k": 5.0,
+    "noise_df": 0.15,
+    "tau": 0.2,
+    "w_dense": 0.5
+  },
+  "tfidf": {
+    "assign_min": 0.3,
+    "g_member": 0.7,
+    "lex_k": 2.0,
+    "noise_df": 0.15,
+    "tau": 0.419598,
+    "w_dense": 0.5
+  }
+}

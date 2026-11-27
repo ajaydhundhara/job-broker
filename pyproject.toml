@@ -1,0 +1,9 @@
+# Test settings only. Dependencies stay in requirements.txt.
+
+[tool.pytest.ini_options]
+# Put the repo root on sys.path so `import broker` works with plain `pytest`,
+# not only with `python -m pytest` (which adds the current directory).
+pythonpath = ["."]
+testpaths = ["tests"]
+# The full-trace replay smoke test; skip it with `pytest -m "not slow"`.
+markers = ["slow: replays the whole week's trace (several seconds)"]

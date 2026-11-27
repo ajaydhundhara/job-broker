@@ -1,0 +1,1024 @@
+{
+  "ablations": [
+    {
+      "backend": "tfidf",
+      "cv": {
+        "p3": 0.675,
+        "p5": 0.575,
+        "rejection_accuracy": 0.5
+      },
+      "full_set": {
+        "p3": 0.814815,
+        "p5": 0.744444,
+        "rejection_accuracy": 0.666667
+      },
+      "name": "BM25 only",
+      "status": "evaluated"
+    },
+    {
+      "backend": "tfidf",
+      "cv": {
+        "p3": 0.783333,
+        "p5": 0.715,
+        "rejection_accuracy": 0.75
+      },
+      "full_set": {
+        "p3": 0.703704,
+        "p5": 0.611111,
+        "rejection_accuracy": 1.0
+      },
+      "name": "dense only",
+      "status": "evaluated"
+    },
+    {
+      "backend": "tfidf",
+      "cv": {
+        "p3": 0.716666,
+        "p5": 0.645,
+        "rejection_accuracy": 0.75
+      },
+      "full_set": {
+        "p3": 0.666667,
+        "p5": 0.577778,
+        "rejection_accuracy": 1.0
+      },
+      "name": "hybrid",
+      "status": "evaluated"
+    },
+    {
+      "backend": "tfidf",
+      "cv": {
+        "p3": 0.8875,
+        "p5": 0.8875,
+        "rejection_accuracy": 0.75
+      },
+      "full_set": {
+        "p3": 0.944444,
+        "p5": 0.944444,
+        "rejection_accuracy": 1.0
+      },
+      "name": "hybrid + groups",
+      "status": "evaluated"
+    },
+    {
+      "backend": "tfidf",
+      "cv": {
+        "p3": 0.9375,
+        "p5": 0.9375,
+        "rejection_accuracy": 1.0
+      },
+      "full_set": {
+        "p3": 0.944444,
+        "p5": 0.944444,
+        "rejection_accuracy": 1.0
+      },
+      "name": "+ glossary (full system)",
+      "status": "evaluated"
+    },
+    {
+      "backend": "tfidf",
+      "cv": {
+        "p3": 0.9375,
+        "p5": 0.9375,
+        "rejection_accuracy": 1.0
+      },
+      "full_set": {
+        "p3": 1.0,
+        "p5": 1.0,
+        "rejection_accuracy": 1.0
+      },
+      "name": "without noise filter",
+      "status": "evaluated"
+    },
+    {
+      "backend": "minilm",
+      "name": "full system, minilm",
+      "status": "not available (MiniLM not installed or not cached)"
+    }
+  ],
+  "consistency_check": "ok",
+  "cross_validation": {
+    "folds": [
+      {
+        "fold": 0,
+        "params": {
+          "g_member": 0.5,
+          "lex_k": 2.0,
+          "tau": 0.528695,
+          "w_dense": 0.3
+        },
+        "test": {
+          "answerable": 5,
+          "false_rejections": 0,
+          "mrr": 1.0,
+          "p3": 1.0,
+          "p5": 1.0,
+          "recall5": 0.777778,
+          "rejection_accuracy": 1.0,
+          "unanswerable": 1
+        },
+        "test_qids": [
+          "Q01",
+          "Q04",
+          "Q07",
+          "Q14",
+          "Q16",
+          "Q19"
+        ]
+      },
+      {
+        "fold": 1,
+        "params": {
+          "g_member": 0.5,
+          "lex_k": 2.0,
+          "tau": 0.527922,
+          "w_dense": 0.3
+        },
+        "test": {
+          "answerable": 5,
+          "false_rejections": 0,
+          "mrr": 1.0,
+          "p3": 1.0,
+          "p5": 1.0,
+          "recall5": 0.777778,
+          "rejection_accuracy": 1.0,
+          "unanswerable": 1
+        },
+        "test_qids": [
+          "Q03",
+          "Q05",
+          "Q09",
+          "Q18",
+          "Q20",
+          "Q21"
+        ]
+      },
+      {
+        "fold": 2,
+        "params": {
+          "g_member": 0.5,
+          "lex_k": 2.0,
+          "tau": 0.536068,
+          "w_dense": 0.3
+        },
+        "test": {
+          "answerable": 4,
+          "false_rejections": 1,
+          "mrr": 0.75,
+          "p3": 0.75,
+          "p5": 0.75,
+          "recall5": 0.625,
+          "rejection_accuracy": 1.0,
+          "unanswerable": 2
+        },
+        "test_qids": [
+          "Q02",
+          "Q06",
+          "Q17",
+          "Q22",
+          "Q23",
+          "Q24"
+        ]
+      },
+      {
+        "fold": 3,
+        "params": {
+          "g_member": 0.5,
+          "lex_k": 2.0,
+          "tau": 0.528098,
+          "w_dense": 0.3
+        },
+        "test": {
+          "answerable": 4,
+          "false_rejections": 0,
+          "mrr": 1.0,
+          "p3": 1.0,
+          "p5": 1.0,
+          "recall5": 0.833333,
+          "rejection_accuracy": 1.0,
+          "unanswerable": 2
+        },
+        "test_qids": [
+          "Q08",
+          "Q10",
+          "Q11",
+          "Q12",
+          "Q13",
+          "Q15"
+        ]
+      }
+    ],
+    "summary": {
+      "false_rejections": {
+        "max": 1.0,
+        "mean": 0.25,
+        "min": 0.0
+      },
+      "mrr": {
+        "max": 1.0,
+        "mean": 0.9375,
+        "min": 0.75
+      },
+      "p3": {
+        "max": 1.0,
+        "mean": 0.9375,
+        "min": 0.75
+      },
+      "p5": {
+        "max": 1.0,
+        "mean": 0.9375,
+        "min": 0.75
+      },
+      "recall5": {
+        "max": 0.833333,
+        "mean": 0.753472,
+        "min": 0.625
+      },
+      "rejection_accuracy": {
+        "max": 1.0,
+        "mean": 1.0,
+        "min": 1.0
+      }
+    }
+  },
+  "extra": null,
+  "full_set": {
+    "metrics": {
+      "answerable": 18,
+      "false_rejections": 0,
+      "mrr": 0.944444,
+      "p3": 0.944444,
+      "p5": 0.944444,
+      "recall5": 0.756173,
+      "rejection_accuracy": 1.0,
+      "unanswerable": 6
+    },
+    "params": {
+      "assign_min": 0.3,
+      "g_member": 0.7,
+      "lex_k": 2.0,
+      "noise_df": 0.15,
+      "tau": 0.419598,
+      "w_dense": 0.5
+    }
+  },
+  "method": {
+    "backend": "tfidf",
+    "fixed": {
+      "assign_min": 0.3,
+      "noise_df": 0.15
+    },
+    "folds": 4,
+    "grid": {
+      "g_member": [
+        0.5,
+        0.7,
+        1.0
+      ],
+      "lex_k": [
+        2.0,
+        5.0,
+        10.0
+      ],
+      "w_dense": [
+        0.3,
+        0.5,
+        0.7
+      ]
+    },
+    "k": 5,
+    "logs": "01b_failure_logs.jsonl",
+    "objective": "mean P@5 (answerable) + rejection accuracy (unanswerable)",
+    "queries": "01c_retrieval_queries.jsonl",
+    "seed": 42,
+    "tau_candidates": "quantiles [0.05, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95] of the TRAINING queries' best scores"
+  },
+  "per_query": [
+    {
+      "expected": [
+        "F025",
+        "F026",
+        "F027",
+        "F028",
+        "F029",
+        "F030"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q01",
+      "query": "rank aborted communicator error",
+      "rejected": false,
+      "top5": [
+        [
+          "F030",
+          true
+        ],
+        [
+          "F028",
+          true
+        ],
+        [
+          "F029",
+          true
+        ],
+        [
+          "F025",
+          true
+        ],
+        [
+          "F026",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F019",
+        "F020",
+        "F021",
+        "F022",
+        "F023",
+        "F024"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q02",
+      "query": "loss turned to NaN after a few epochs",
+      "rejected": false,
+      "top5": [
+        [
+          "F024",
+          true
+        ],
+        [
+          "F022",
+          true
+        ],
+        [
+          "F021",
+          true
+        ],
+        [
+          "F020",
+          true
+        ],
+        [
+          "F019",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [],
+      "p3": null,
+      "p5": null,
+      "qid": "Q03",
+      "query": "can I run two jobs on one GPU",
+      "rejected": true,
+      "top5": []
+    },
+    {
+      "expected": [
+        "F031",
+        "F032",
+        "F033",
+        "F034",
+        "F035",
+        "F036"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q04",
+      "query": "job crashed saving a checkpoint, disk is full",
+      "rejected": false,
+      "top5": [
+        [
+          "F032",
+          true
+        ],
+        [
+          "F031",
+          true
+        ],
+        [
+          "F035",
+          true
+        ],
+        [
+          "F036",
+          true
+        ],
+        [
+          "F033",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F910",
+        "F911",
+        "F912"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q05",
+      "query": "my training job died, GPU memory exhausted",
+      "rejected": false,
+      "top5": [
+        [
+          "F004",
+          true
+        ],
+        [
+          "F910",
+          true
+        ],
+        [
+          "F002",
+          true
+        ],
+        [
+          "F005",
+          true
+        ],
+        [
+          "F001",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F007",
+        "F008",
+        "F009",
+        "F010",
+        "F011",
+        "F012"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q06",
+      "query": "job cannot download its container image, access denied",
+      "rejected": false,
+      "top5": [
+        [
+          "F007",
+          true
+        ],
+        [
+          "F008",
+          true
+        ],
+        [
+          "F009",
+          true
+        ],
+        [
+          "F010",
+          true
+        ],
+        [
+          "F011",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F013",
+        "F014",
+        "F015",
+        "F016",
+        "F017",
+        "F018"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q07",
+      "query": "cannot read the training data, permission problem",
+      "rejected": false,
+      "top5": [
+        [
+          "F018",
+          true
+        ],
+        [
+          "F014",
+          true
+        ],
+        [
+          "F016",
+          true
+        ],
+        [
+          "F013",
+          true
+        ],
+        [
+          "F015",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F037",
+        "F038",
+        "F039",
+        "F040",
+        "F041",
+        "F042"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q08",
+      "query": "interruptible node was taken back and killed the job",
+      "rejected": false,
+      "top5": [
+        [
+          "F037",
+          true
+        ],
+        [
+          "F041",
+          true
+        ],
+        [
+          "F040",
+          true
+        ],
+        [
+          "F042",
+          true
+        ],
+        [
+          "F039",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F025",
+        "F026",
+        "F027",
+        "F028",
+        "F029",
+        "F030"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q09",
+      "query": "multi-GPU run hangs then times out in all-reduce",
+      "rejected": false,
+      "top5": [
+        [
+          "F027",
+          true
+        ],
+        [
+          "F030",
+          true
+        ],
+        [
+          "F028",
+          true
+        ],
+        [
+          "F029",
+          true
+        ],
+        [
+          "F025",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F031",
+        "F032",
+        "F033",
+        "F034",
+        "F035",
+        "F036"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q10",
+      "query": "no space left on device in scratch",
+      "rejected": false,
+      "top5": [
+        [
+          "F031",
+          true
+        ],
+        [
+          "F035",
+          true
+        ],
+        [
+          "F036",
+          true
+        ],
+        [
+          "F033",
+          true
+        ],
+        [
+          "F034",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [],
+      "p3": null,
+      "p5": null,
+      "qid": "Q11",
+      "query": "how do I reset my account password",
+      "rejected": true,
+      "top5": []
+    },
+    {
+      "expected": [],
+      "p3": null,
+      "p5": null,
+      "qid": "Q12",
+      "query": "where can I find the quarterly report",
+      "rejected": true,
+      "top5": []
+    },
+    {
+      "expected": [
+        "F013",
+        "F014",
+        "F015",
+        "F016",
+        "F017",
+        "F018"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q13",
+      "query": "dataset file missing at startup",
+      "rejected": false,
+      "top5": [
+        [
+          "F014",
+          true
+        ],
+        [
+          "F018",
+          true
+        ],
+        [
+          "F016",
+          true
+        ],
+        [
+          "F013",
+          true
+        ],
+        [
+          "F015",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F037",
+        "F038",
+        "F039",
+        "F040",
+        "F041",
+        "F042"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q14",
+      "query": "node vanished mid run, termination notice",
+      "rejected": false,
+      "top5": [
+        [
+          "F039",
+          true
+        ],
+        [
+          "F038",
+          true
+        ],
+        [
+          "F037",
+          true
+        ],
+        [
+          "F041",
+          true
+        ],
+        [
+          "F040",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F043",
+        "F044",
+        "F045",
+        "F046",
+        "F047",
+        "F048"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q15",
+      "query": "access denied, the token has expired",
+      "rejected": false,
+      "top5": [
+        [
+          "F043",
+          true
+        ],
+        [
+          "F044",
+          true
+        ],
+        [
+          "F048",
+          true
+        ],
+        [
+          "F046",
+          true
+        ],
+        [
+          "F045",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [],
+      "p3": null,
+      "p5": null,
+      "qid": "Q16",
+      "query": "what is the maintenance window for the cluster",
+      "rejected": true,
+      "top5": []
+    },
+    {
+      "expected": [],
+      "p3": null,
+      "p5": null,
+      "qid": "Q17",
+      "query": "how do I rename my team",
+      "rejected": true,
+      "top5": []
+    },
+    {
+      "expected": [
+        "F007",
+        "F008",
+        "F009",
+        "F010",
+        "F011",
+        "F012"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q18",
+      "query": "image pull keeps backing off with 401",
+      "rejected": false,
+      "top5": [
+        [
+          "F007",
+          true
+        ],
+        [
+          "F008",
+          true
+        ],
+        [
+          "F012",
+          true
+        ],
+        [
+          "F009",
+          true
+        ],
+        [
+          "F010",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F910",
+        "F911",
+        "F912"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q19",
+      "query": "container killed with exit code 137",
+      "rejected": false,
+      "top5": [
+        [
+          "F911",
+          true
+        ],
+        [
+          "F912",
+          true
+        ],
+        [
+          "F006",
+          true
+        ],
+        [
+          "F004",
+          true
+        ],
+        [
+          "F002",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F049",
+        "F050",
+        "F051",
+        "F052",
+        "F053",
+        "F054"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q20",
+      "query": "torch complains driver too old for CUDA",
+      "rejected": false,
+      "top5": [
+        [
+          "F054",
+          true
+        ],
+        [
+          "F051",
+          true
+        ],
+        [
+          "F050",
+          true
+        ],
+        [
+          "F053",
+          true
+        ],
+        [
+          "F049",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F019",
+        "F020",
+        "F021",
+        "F022",
+        "F023",
+        "F024"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q21",
+      "query": "training blew up, gradients infinite",
+      "rejected": false,
+      "top5": [
+        [
+          "F024",
+          true
+        ],
+        [
+          "F021",
+          true
+        ],
+        [
+          "F020",
+          true
+        ],
+        [
+          "F019",
+          true
+        ],
+        [
+          "F022",
+          true
+        ]
+      ]
+    },
+    {
+      "expected": [
+        "F049",
+        "F050",
+        "F051",
+        "F052",
+        "F053",
+        "F054"
+      ],
+      "p3": 0.0,
+      "p5": 0.0,
+      "qid": "Q22",
+      "query": "libcudnn missing when starting the job",
+      "rejected": false,
+      "top5": [
+        [
+          "F004",
+          false
+        ],
+        [
+          "F002",
+          false
+        ],
+        [
+          "F005",
+          false
+        ],
+        [
+          "F001",
+          false
+        ],
+        [
+          "F003",
+          false
+        ]
+      ]
+    },
+    {
+      "expected": [],
+      "p3": null,
+      "p5": null,
+      "qid": "Q23",
+      "query": "how do I add a teammate to my group",
+      "rejected": true,
+      "top5": []
+    },
+    {
+      "expected": [
+        "F043",
+        "F044",
+        "F045",
+        "F046",
+        "F047",
+        "F048"
+      ],
+      "p3": 1.0,
+      "p5": 1.0,
+      "qid": "Q24",
+      "query": "token rejected, says expired",
+      "rejected": false,
+      "top5": [
+        [
+          "F045",
+          true
+        ],
+        [
+          "F047",
+          true
+        ],
+        [
+          "F043",
+          true
+        ],
+        [
+          "F044",
+          true
+        ],
+        [
+          "F048",
+          true
+        ]
+      ]
+    }
+  ]
+}

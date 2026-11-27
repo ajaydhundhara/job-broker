@@ -1,0 +1,4938 @@
+{
+  "method": {
+    "percentile": "nearest-rank: sort the n values, take the value at rank ceil(p/100 * n) (1-based); no interpolation, so every percentile is an observed wait",
+    "wait": "started_at - submitted_at, in seconds",
+    "money": "integer micro-dollars (1 USD = 1_000_000); dollars only in the markdown",
+    "idle_share": "team: idle / team total; overall: teams' idle / grand total (provider overhead, i.e. never-ready nodes, is reported separately)",
+    "across_seeds": "median = lower median (an observed value), with min and max",
+    "seeds": "boot times and failure draws are keyed by node launch number, which differs between policies; a policy difference counts only if it holds in every seed",
+    "replay_rule": "every job runs actual_minutes after it starts, then ends with the row's outcome; a cancel means cancelled after actual_minutes of runtime"
+  },
+  "trace": {
+    "file": "01a_trace.csv",
+    "total_rows": 494,
+    "accepted": 492,
+    "duplicate_rows": 14,
+    "rejected": [
+      [
+        88,
+        "gpus not in 1, 2, 4, 8"
+      ],
+      [
+        393,
+        "gpus not in 1, 2, 4, 8"
+      ]
+    ]
+  },
+  "options": {
+    "policies": [
+      "fair",
+      "fifo"
+    ],
+    "idle_minutes": 10,
+    "sweep_idle": [
+      2,
+      10,
+      30
+    ],
+    "seeds": [
+      42,
+      43,
+      44,
+      45,
+      46
+    ],
+    "burst_window": [
+      "2025-03-05T05:00:00Z",
+      "2025-03-05T08:00:00Z"
+    ],
+    "keep_duplicates": false,
+    "check_invariants": false,
+    "config": {
+      "max_nodes": 10,
+      "min_node_lifetime_s": 600,
+      "max_fallback_price_ratio": 2.0,
+      "evict_at_cap": true,
+      "capacity_backoff_base_s": 60,
+      "capacity_backoff_max_s": 900,
+      "never_ready_backoff_base_s": 60,
+      "never_ready_backoff_max_s": 480,
+      "scheduler_enabled": true,
+      "reaper_enabled": true,
+      "boot_min_s": 240,
+      "boot_max_s": 480,
+      "never_ready_prob": 0.03,
+      "never_ready_after_s": 900,
+      "outage_bucket_s": 600,
+      "outage_start_prob": 0.02,
+      "outage_len_buckets": [
+        2,
+        6
+      ],
+      "unavailable_windows": [],
+      "never_ready_launches": []
+    }
+  },
+  "scenarios": [
+    {
+      "name": "fair@10",
+      "policy": "fair",
+      "idle_minutes": 10,
+      "runs": {
+        "42": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 424,
+            "wait_s_p90": 7359,
+            "wait_s_p99": 9438,
+            "wait_s_max": 9857,
+            "started_within_10_min": 0.587866,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8931,
+            "nodes_launched": 194,
+            "never_ready_nodes": 12,
+            "capacity_unavailable": 38,
+            "peak_queue": 151,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2261492679,
+            "idle": 892048940,
+            "total": 3153541619,
+            "provider_overhead": 14125000,
+            "grand_total": 3167666619,
+            "idle_share": 0.281611,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 248,
+              "wait_s_p90": 784,
+              "wait_s_p99": 1324,
+              "wait_s_max": 1324,
+              "started_within_10_min": 0.873016,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 36,
+              "never_ready_nodes": 4,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 178152079,
+              "idle": 109287077,
+              "total": 287439156,
+              "idle_share": 0.380209
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 347,
+              "wait_s_p90": 1145,
+              "wait_s_p99": 6379,
+              "wait_s_max": 6379,
+              "started_within_10_min": 0.85,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 50,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 10,
+              "peak_queue": 5,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 1316340,
+              "busy": 396878116,
+              "idle": 222296593,
+              "total": 619174709,
+              "idle_share": 0.359021
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 478,
+              "wait_s_p99": 730,
+              "wait_s_max": 730,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 730,
+              "nodes_launched": 10,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 180740139,
+              "total": 397473471,
+              "idle_share": 0.454723
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 347,
+              "wait_s_p90": 2153,
+              "wait_s_p99": 7011,
+              "wait_s_max": 7011,
+              "started_within_10_min": 0.785714,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7011,
+              "nodes_launched": 45,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 18,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049887492,
+              "idle": 109937773,
+              "total": 1159825265,
+              "idle_share": 0.094788
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3137,
+              "wait_s_p90": 8586,
+              "wait_s_p99": 9491,
+              "wait_s_max": 9857,
+              "started_within_10_min": 0.360784,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8931,
+              "nodes_launched": 53,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 9,
+              "peak_queue": 151,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 419841660,
+              "idle": 269787358,
+              "total": 689629018,
+              "idle_share": 0.391207
+            }
+          }
+        },
+        "43": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 414,
+            "wait_s_p90": 9394,
+            "wait_s_p99": 11677,
+            "wait_s_max": 15263,
+            "started_within_10_min": 0.60251,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 11225,
+            "nodes_launched": 179,
+            "never_ready_nodes": 1,
+            "capacity_unavailable": 34,
+            "peak_queue": 157,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2272166640,
+            "idle": 793555537,
+            "total": 3065722177,
+            "provider_overhead": 2125000,
+            "grand_total": 3067847177,
+            "idle_share": 0.258669,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 478,
+              "wait_s_p99": 1350,
+              "wait_s_max": 1350,
+              "started_within_10_min": 0.904762,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 25,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 7,
+              "peak_queue": 2,
+              "peak_alive_nodes": 4,
+              "gpu_seconds": 600660,
+              "busy": 180678121,
+              "idle": 134410343,
+              "total": 315088464,
+              "idle_share": 0.42658
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 325,
+              "wait_s_p90": 520,
+              "wait_s_p99": 2236,
+              "wait_s_max": 2236,
+              "started_within_10_min": 0.9,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 53,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 22,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 401410409,
+              "idle": 159172635,
+              "total": 560583044,
+              "idle_share": 0.283941
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 4974,
+              "wait_s_p99": 6594,
+              "wait_s_max": 6594,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6594,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 181007638,
+              "total": 397740970,
+              "idle_share": 0.455089
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 333,
+              "wait_s_p90": 738,
+              "wait_s_p99": 2195,
+              "wait_s_max": 2195,
+              "started_within_10_min": 0.892857,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 1761,
+              "nodes_launched": 39,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049579158,
+              "idle": 117038745,
+              "total": 1166617903,
+              "idle_share": 0.100323
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3946,
+              "wait_s_p90": 10572,
+              "wait_s_p99": 12028,
+              "wait_s_max": 15263,
+              "started_within_10_min": 0.345098,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 11225,
+              "nodes_launched": 52,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 156,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 423765620,
+              "idle": 201926176,
+              "total": 625691796,
+              "idle_share": 0.322725
+            }
+          }
+        },
+        "44": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 405,
+            "wait_s_p90": 5506,
+            "wait_s_p99": 7344,
+            "wait_s_max": 7477,
+            "started_within_10_min": 0.619247,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 6969,
+            "nodes_launched": 177,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 51,
+            "peak_queue": 149,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2262306220,
+            "idle": 902603039,
+            "total": 3164909259,
+            "provider_overhead": 3500000,
+            "grand_total": 3168409259,
+            "idle_share": 0.284876,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 275,
+              "wait_s_p90": 927,
+              "wait_s_p99": 2212,
+              "wait_s_max": 2212,
+              "started_within_10_min": 0.809524,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 33,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 20,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 600660,
+              "busy": 178614577,
+              "idle": 80320553,
+              "total": 258935130,
+              "idle_share": 0.310196
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 310,
+              "wait_s_p90": 474,
+              "wait_s_p99": 2973,
+              "wait_s_max": 2973,
+              "started_within_10_min": 0.9125,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 43,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 9,
+              "peak_queue": 2,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 398717703,
+              "idle": 227402981,
+              "total": 626120684,
+              "idle_share": 0.363194
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 464,
+              "wait_s_p99": 929,
+              "wait_s_max": 929,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 929,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216191665,
+              "idle": 203137777,
+              "total": 419329442,
+              "idle_share": 0.484435
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 368,
+              "wait_s_p90": 1476,
+              "wait_s_p99": 3804,
+              "wait_s_max": 3804,
+              "started_within_10_min": 0.821429,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 3804,
+              "nodes_launched": 40,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 15,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1048933323,
+              "idle": 119504718,
+              "total": 1168438041,
+              "idle_share": 0.102277
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 1981,
+              "wait_s_p90": 6338,
+              "wait_s_p99": 7422,
+              "wait_s_max": 7477,
+              "started_within_10_min": 0.407843,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 6969,
+              "nodes_launched": 51,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 6,
+              "peak_queue": 149,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 419848952,
+              "idle": 272237010,
+              "total": 692085962,
+              "idle_share": 0.393357
+            }
+          }
+        },
+        "45": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 394,
+            "wait_s_p90": 7006,
+            "wait_s_p99": 9061,
+            "wait_s_max": 9261,
+            "started_within_10_min": 0.615063,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8553,
+            "nodes_launched": 182,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 22,
+            "peak_queue": 150,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2267453097,
+            "idle": 791819075,
+            "total": 3059272172,
+            "provider_overhead": 3375000,
+            "grand_total": 3062647172,
+            "idle_share": 0.258541,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 602,
+              "wait_s_p99": 2080,
+              "wait_s_max": 2080,
+              "started_within_10_min": 0.888889,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 27,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 4,
+              "gpu_seconds": 600660,
+              "busy": 182004164,
+              "idle": 108521384,
+              "total": 290525548,
+              "idle_share": 0.373535
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 323,
+              "wait_s_p90": 523,
+              "wait_s_p99": 1763,
+              "wait_s_max": 1763,
+              "started_within_10_min": 0.9,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 54,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 6,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 400672908,
+              "idle": 155407635,
+              "total": 556080543,
+              "idle_share": 0.27947
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 926,
+              "wait_s_p99": 2223,
+              "wait_s_max": 2223,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 986,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 180654027,
+              "total": 397387359,
+              "idle_share": 0.454604
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 319,
+              "wait_s_p90": 785,
+              "wait_s_p99": 6194,
+              "wait_s_max": 6194,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6194,
+              "nodes_launched": 43,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 7,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049683324,
+              "idle": 119473465,
+              "total": 1169156789,
+              "idle_share": 0.102188
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2699,
+              "wait_s_p90": 8227,
+              "wait_s_p99": 9135,
+              "wait_s_max": 9261,
+              "started_within_10_min": 0.376471,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8553,
+              "nodes_launched": 48,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 3,
+              "peak_queue": 150,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 418359369,
+              "idle": 227762564,
+              "total": 646121933,
+              "idle_share": 0.352507
+            }
+          }
+        },
+        "46": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 389,
+            "wait_s_p90": 7959,
+            "wait_s_p99": 10621,
+            "wait_s_max": 10854,
+            "started_within_10_min": 0.608787,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 9790,
+            "nodes_launched": 178,
+            "never_ready_nodes": 7,
+            "capacity_unavailable": 39,
+            "peak_queue": 155,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2263778092,
+            "idle": 912554780,
+            "total": 3176332872,
+            "provider_overhead": 9125000,
+            "grand_total": 3185457872,
+            "idle_share": 0.286475,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 180,
+              "wait_s_p90": 489,
+              "wait_s_p99": 1333,
+              "wait_s_max": 1333,
+              "started_within_10_min": 0.920635,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 30,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 182039579,
+              "idle": 100099581,
+              "total": 282139160,
+              "idle_share": 0.354788
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 273,
+              "wait_s_p90": 660,
+              "wait_s_p99": 3035,
+              "wait_s_max": 3035,
+              "started_within_10_min": 0.8875,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 44,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 23,
+              "peak_queue": 2,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 398906242,
+              "idle": 205806107,
+              "total": 604712349,
+              "idle_share": 0.340337
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 424,
+              "wait_s_p99": 1766,
+              "wait_s_max": 1766,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 1766,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 180744444,
+              "total": 397477776,
+              "idle_share": 0.454728
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 330,
+              "wait_s_p90": 768,
+              "wait_s_p99": 7487,
+              "wait_s_max": 7487,
+              "started_within_10_min": 0.892857,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7487,
+              "nodes_launched": 45,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 8,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1048741656,
+              "idle": 122799300,
+              "total": 1171540956,
+              "idle_share": 0.104819
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3432,
+              "wait_s_p90": 9468,
+              "wait_s_p99": 10654,
+              "wait_s_max": 10854,
+              "started_within_10_min": 0.352941,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 9790,
+              "nodes_launched": 49,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 8,
+              "peak_queue": 154,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 417357283,
+              "idle": 303105348,
+              "total": 720462631,
+              "idle_share": 0.420709
+            }
+          }
+        }
+      },
+      "summary": {
+        "overall": {
+          "jobs": {
+            "median": 478,
+            "min": 478,
+            "max": 478
+          },
+          "wait_s_p50": {
+            "median": 405,
+            "min": 389,
+            "max": 424
+          },
+          "wait_s_p90": {
+            "median": 7359,
+            "min": 5506,
+            "max": 9394
+          },
+          "wait_s_p99": {
+            "median": 9438,
+            "min": 7344,
+            "max": 11677
+          },
+          "wait_s_max": {
+            "median": 9857,
+            "min": 7477,
+            "max": 15263
+          },
+          "started_within_10_min": {
+            "median": 0.608787,
+            "min": 0.587866,
+            "max": 0.619247
+          },
+          "burst_jobs": {
+            "median": 176,
+            "min": 176,
+            "max": 176
+          },
+          "burst_wait_s_p90": {
+            "median": 8931,
+            "min": 6969,
+            "max": 11225
+          },
+          "nodes_launched": {
+            "median": 179,
+            "min": 177,
+            "max": 194
+          },
+          "never_ready_nodes": {
+            "median": 3,
+            "min": 1,
+            "max": 12
+          },
+          "capacity_unavailable": {
+            "median": 38,
+            "min": 22,
+            "max": 51
+          },
+          "peak_queue": {
+            "median": 151,
+            "min": 149,
+            "max": 157
+          },
+          "peak_alive_nodes": {
+            "median": 10,
+            "min": 10,
+            "max": 10
+          },
+          "gpu_seconds": {
+            "median": 7532520,
+            "min": 7532520,
+            "max": 7532520
+          },
+          "busy": {
+            "median": 2263778092,
+            "min": 2261492679,
+            "max": 2272166640
+          },
+          "idle": {
+            "median": 892048940,
+            "min": 791819075,
+            "max": 912554780
+          },
+          "total": {
+            "median": 3153541619,
+            "min": 3059272172,
+            "max": 3176332872
+          },
+          "provider_overhead": {
+            "median": 3500000,
+            "min": 2125000,
+            "max": 14125000
+          },
+          "grand_total": {
+            "median": 3167666619,
+            "min": 3062647172,
+            "max": 3185457872
+          },
+          "idle_share": {
+            "median": 0.281611,
+            "min": 0.258541,
+            "max": 0.286475
+          },
+          "duplicates": {
+            "median": 14,
+            "min": 14,
+            "max": 14
+          },
+          "drained_at": {
+            "median": 1741548780,
+            "min": 1741548780,
+            "max": 1741548780
+          }
+        },
+        "teams": {
+          "forecast": {
+            "jobs": {
+              "median": 63,
+              "min": 63,
+              "max": 63
+            },
+            "wait_s_p50": {
+              "median": 180,
+              "min": 0,
+              "max": 275
+            },
+            "wait_s_p90": {
+              "median": 602,
+              "min": 478,
+              "max": 927
+            },
+            "wait_s_p99": {
+              "median": 1350,
+              "min": 1324,
+              "max": 2212
+            },
+            "wait_s_max": {
+              "median": 1350,
+              "min": 1324,
+              "max": 2212
+            },
+            "started_within_10_min": {
+              "median": 0.888889,
+              "min": 0.809524,
+              "max": 0.920635
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 30,
+              "min": 25,
+              "max": 36
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 4
+            },
+            "capacity_unavailable": {
+              "median": 1,
+              "min": 0,
+              "max": 20
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 5,
+              "min": 4,
+              "max": 6
+            },
+            "gpu_seconds": {
+              "median": 600660,
+              "min": 600660,
+              "max": 600660
+            },
+            "busy": {
+              "median": 180678121,
+              "min": 178152079,
+              "max": 182039579
+            },
+            "idle": {
+              "median": 108521384,
+              "min": 80320553,
+              "max": 134410343
+            },
+            "total": {
+              "median": 287439156,
+              "min": 258935130,
+              "max": 315088464
+            },
+            "idle_share": {
+              "median": 0.373535,
+              "min": 0.310196,
+              "max": 0.42658
+            }
+          },
+          "nlp": {
+            "jobs": {
+              "median": 80,
+              "min": 80,
+              "max": 80
+            },
+            "wait_s_p50": {
+              "median": 323,
+              "min": 273,
+              "max": 347
+            },
+            "wait_s_p90": {
+              "median": 523,
+              "min": 474,
+              "max": 1145
+            },
+            "wait_s_p99": {
+              "median": 2973,
+              "min": 1763,
+              "max": 6379
+            },
+            "wait_s_max": {
+              "median": 2973,
+              "min": 1763,
+              "max": 6379
+            },
+            "started_within_10_min": {
+              "median": 0.9,
+              "min": 0.85,
+              "max": 0.9125
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 50,
+              "min": 43,
+              "max": 54
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 2
+            },
+            "capacity_unavailable": {
+              "median": 10,
+              "min": 6,
+              "max": 23
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 2,
+              "max": 5
+            },
+            "peak_alive_nodes": {
+              "median": 7,
+              "min": 6,
+              "max": 7
+            },
+            "gpu_seconds": {
+              "median": 1316340,
+              "min": 1316340,
+              "max": 1316340
+            },
+            "busy": {
+              "median": 398906242,
+              "min": 396878116,
+              "max": 401410409
+            },
+            "idle": {
+              "median": 205806107,
+              "min": 155407635,
+              "max": 227402981
+            },
+            "total": {
+              "median": 604712349,
+              "min": 556080543,
+              "max": 626120684
+            },
+            "idle_share": {
+              "median": 0.340337,
+              "min": 0.27947,
+              "max": 0.363194
+            }
+          },
+          "platform": {
+            "jobs": {
+              "median": 24,
+              "min": 24,
+              "max": 24
+            },
+            "wait_s_p50": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "wait_s_p90": {
+              "median": 478,
+              "min": 424,
+              "max": 4974
+            },
+            "wait_s_p99": {
+              "median": 1766,
+              "min": 730,
+              "max": 6594
+            },
+            "wait_s_max": {
+              "median": 1766,
+              "min": 730,
+              "max": 6594
+            },
+            "started_within_10_min": {
+              "median": 0.916667,
+              "min": 0.875,
+              "max": 0.916667
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 986,
+              "min": 730,
+              "max": 6594
+            },
+            "nodes_launched": {
+              "median": 10,
+              "min": 10,
+              "max": 10
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            "capacity_unavailable": {
+              "median": 0,
+              "min": 0,
+              "max": 5
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 2,
+              "min": 2,
+              "max": 2
+            },
+            "gpu_seconds": {
+              "median": 694260,
+              "min": 694260,
+              "max": 694260
+            },
+            "busy": {
+              "median": 216733332,
+              "min": 216191665,
+              "max": 216733332
+            },
+            "idle": {
+              "median": 180744444,
+              "min": 180654027,
+              "max": 203137777
+            },
+            "total": {
+              "median": 397477776,
+              "min": 397387359,
+              "max": 419329442
+            },
+            "idle_share": {
+              "median": 0.454728,
+              "min": 0.454604,
+              "max": 0.484435
+            }
+          },
+          "speech": {
+            "jobs": {
+              "median": 56,
+              "min": 56,
+              "max": 56
+            },
+            "wait_s_p50": {
+              "median": 333,
+              "min": 319,
+              "max": 368
+            },
+            "wait_s_p90": {
+              "median": 785,
+              "min": 738,
+              "max": 2153
+            },
+            "wait_s_p99": {
+              "median": 6194,
+              "min": 2195,
+              "max": 7487
+            },
+            "wait_s_max": {
+              "median": 6194,
+              "min": 2195,
+              "max": 7487
+            },
+            "started_within_10_min": {
+              "median": 0.875,
+              "min": 0.785714,
+              "max": 0.892857
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 6194,
+              "min": 1761,
+              "max": 7487
+            },
+            "nodes_launched": {
+              "median": 43,
+              "min": 39,
+              "max": 45
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 3
+            },
+            "capacity_unavailable": {
+              "median": 8,
+              "min": 5,
+              "max": 18
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "gpu_seconds": {
+              "median": 3548160,
+              "min": 3548160,
+              "max": 3548160
+            },
+            "busy": {
+              "median": 1049579158,
+              "min": 1048741656,
+              "max": 1049887492
+            },
+            "idle": {
+              "median": 119473465,
+              "min": 109937773,
+              "max": 122799300
+            },
+            "total": {
+              "median": 1168438041,
+              "min": 1159825265,
+              "max": 1171540956
+            },
+            "idle_share": {
+              "median": 0.102188,
+              "min": 0.094788,
+              "max": 0.104819
+            }
+          },
+          "vision": {
+            "jobs": {
+              "median": 255,
+              "min": 255,
+              "max": 255
+            },
+            "wait_s_p50": {
+              "median": 3137,
+              "min": 1981,
+              "max": 3946
+            },
+            "wait_s_p90": {
+              "median": 8586,
+              "min": 6338,
+              "max": 10572
+            },
+            "wait_s_p99": {
+              "median": 9491,
+              "min": 7422,
+              "max": 12028
+            },
+            "wait_s_max": {
+              "median": 9857,
+              "min": 7477,
+              "max": 15263
+            },
+            "started_within_10_min": {
+              "median": 0.360784,
+              "min": 0.345098,
+              "max": 0.407843
+            },
+            "burst_jobs": {
+              "median": 170,
+              "min": 170,
+              "max": 170
+            },
+            "burst_wait_s_p90": {
+              "median": 8931,
+              "min": 6969,
+              "max": 11225
+            },
+            "nodes_launched": {
+              "median": 51,
+              "min": 48,
+              "max": 53
+            },
+            "never_ready_nodes": {
+              "median": 2,
+              "min": 0,
+              "max": 2
+            },
+            "capacity_unavailable": {
+              "median": 6,
+              "min": 0,
+              "max": 9
+            },
+            "peak_queue": {
+              "median": 151,
+              "min": 149,
+              "max": 156
+            },
+            "peak_alive_nodes": {
+              "median": 9,
+              "min": 9,
+              "max": 9
+            },
+            "gpu_seconds": {
+              "median": 1373100,
+              "min": 1373100,
+              "max": 1373100
+            },
+            "busy": {
+              "median": 419841660,
+              "min": 417357283,
+              "max": 423765620
+            },
+            "idle": {
+              "median": 269787358,
+              "min": 201926176,
+              "max": 303105348
+            },
+            "total": {
+              "median": 689629018,
+              "min": 625691796,
+              "max": 720462631
+            },
+            "idle_share": {
+              "median": 0.391207,
+              "min": 0.322725,
+              "max": 0.420709
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "fifo@10",
+      "policy": "fifo",
+      "idle_minutes": 10,
+      "runs": {
+        "42": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 413,
+            "wait_s_p90": 6292,
+            "wait_s_p99": 7956,
+            "wait_s_max": 8121,
+            "started_within_10_min": 0.60251,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 7601,
+            "nodes_launched": 193,
+            "never_ready_nodes": 12,
+            "capacity_unavailable": 39,
+            "peak_queue": 151,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2264407263,
+            "idle": 852713663,
+            "total": 3117120926,
+            "provider_overhead": 13250000,
+            "grand_total": 3130370926,
+            "idle_share": 0.2724,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 249,
+              "wait_s_p90": 473,
+              "wait_s_p99": 1296,
+              "wait_s_max": 1296,
+              "started_within_10_min": 0.920635,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 33,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 177770828,
+              "idle": 93445551,
+              "total": 271216379,
+              "idle_share": 0.344542
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 333,
+              "wait_s_p90": 604,
+              "wait_s_p99": 2092,
+              "wait_s_max": 2092,
+              "started_within_10_min": 0.8875,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 52,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 11,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 399578117,
+              "idle": 218157289,
+              "total": 617735406,
+              "idle_share": 0.353157
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 5440,
+              "wait_s_p99": 7060,
+              "wait_s_max": 7060,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7060,
+              "nodes_launched": 10,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 180685972,
+              "total": 397419304,
+              "idle_share": 0.454648
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 377,
+              "wait_s_p90": 2153,
+              "wait_s_p99": 5698,
+              "wait_s_max": 5698,
+              "started_within_10_min": 0.803571,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 5698,
+              "nodes_launched": 43,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 18,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1050091659,
+              "idle": 104148746,
+              "total": 1154240405,
+              "idle_share": 0.090231
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2665,
+              "wait_s_p90": 7088,
+              "wait_s_p99": 8072,
+              "wait_s_max": 8121,
+              "started_within_10_min": 0.364706,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 7601,
+              "nodes_launched": 55,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 9,
+              "peak_queue": 151,
+              "peak_alive_nodes": 10,
+              "gpu_seconds": 1373100,
+              "busy": 420233327,
+              "idle": 256276105,
+              "total": 676509432,
+              "idle_share": 0.378821
+            }
+          }
+        },
+        "43": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 418,
+            "wait_s_p90": 9139,
+            "wait_s_p99": 11007,
+            "wait_s_max": 14434,
+            "started_within_10_min": 0.60251,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 10525,
+            "nodes_launched": 181,
+            "never_ready_nodes": 1,
+            "capacity_unavailable": 34,
+            "peak_queue": 157,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2271605181,
+            "idle": 817431577,
+            "total": 3089036758,
+            "provider_overhead": 2125000,
+            "grand_total": 3091161758,
+            "idle_share": 0.264442,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 478,
+              "wait_s_p99": 1399,
+              "wait_s_max": 1399,
+              "started_within_10_min": 0.904762,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 25,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 7,
+              "peak_queue": 2,
+              "peak_alive_nodes": 4,
+              "gpu_seconds": 600660,
+              "busy": 180678121,
+              "idle": 134535204,
+              "total": 315213325,
+              "idle_share": 0.426807
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 346,
+              "wait_s_p90": 574,
+              "wait_s_p99": 2196,
+              "wait_s_max": 2196,
+              "started_within_10_min": 0.9,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 53,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 22,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 401399992,
+              "idle": 159632775,
+              "total": 561032767,
+              "idle_share": 0.284534
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 236,
+              "wait_s_p90": 7978,
+              "wait_s_p99": 9598,
+              "wait_s_max": 9598,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 9598,
+              "nodes_launched": 11,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 183875694,
+              "total": 400609026,
+              "idle_share": 0.45899
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 323,
+              "wait_s_p90": 507,
+              "wait_s_p99": 2137,
+              "wait_s_max": 2137,
+              "started_within_10_min": 0.910714,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 1761,
+              "nodes_launched": 39,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049374991,
+              "idle": 118682077,
+              "total": 1168057068,
+              "idle_share": 0.101606
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3688,
+              "wait_s_p90": 10132,
+              "wait_s_p99": 11037,
+              "wait_s_max": 14434,
+              "started_within_10_min": 0.341176,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 10525,
+              "nodes_launched": 53,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 156,
+              "peak_alive_nodes": 10,
+              "gpu_seconds": 1373100,
+              "busy": 423418745,
+              "idle": 220705827,
+              "total": 644124572,
+              "idle_share": 0.342645
+            }
+          }
+        },
+        "44": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 391,
+            "wait_s_p90": 5918,
+            "wait_s_p99": 7723,
+            "wait_s_max": 7793,
+            "started_within_10_min": 0.617155,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 7383,
+            "nodes_launched": 172,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 40,
+            "peak_queue": 150,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2266187473,
+            "idle": 914917208,
+            "total": 3181104681,
+            "provider_overhead": 2500000,
+            "grand_total": 3183604681,
+            "idle_share": 0.287384,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 180,
+              "wait_s_p90": 511,
+              "wait_s_p99": 2011,
+              "wait_s_max": 2011,
+              "started_within_10_min": 0.904762,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 27,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 10,
+              "peak_queue": 3,
+              "peak_alive_nodes": 4,
+              "gpu_seconds": 600660,
+              "busy": 182108330,
+              "idle": 104284024,
+              "total": 286392354,
+              "idle_share": 0.36413
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 297,
+              "wait_s_p90": 474,
+              "wait_s_p99": 2973,
+              "wait_s_max": 2973,
+              "started_within_10_min": 0.9125,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 44,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 9,
+              "peak_queue": 2,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 399444786,
+              "idle": 228485621,
+              "total": 627930407,
+              "idle_share": 0.363871
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 5064,
+              "wait_s_p99": 6684,
+              "wait_s_max": 6684,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6684,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 1,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216191665,
+              "idle": 202992221,
+              "total": 419183886,
+              "idle_share": 0.484256
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 343,
+              "wait_s_p90": 1157,
+              "wait_s_p99": 5388,
+              "wait_s_max": 5388,
+              "started_within_10_min": 0.857143,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 5388,
+              "nodes_launched": 39,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 14,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 3548160,
+              "busy": 1048749990,
+              "idle": 116942080,
+              "total": 1165692070,
+              "idle_share": 0.10032
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2421,
+              "wait_s_p90": 6920,
+              "wait_s_p99": 7773,
+              "wait_s_max": 7793,
+              "started_within_10_min": 0.376471,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 7383,
+              "nodes_launched": 52,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 6,
+              "peak_queue": 150,
+              "peak_alive_nodes": 10,
+              "gpu_seconds": 1373100,
+              "busy": 419692702,
+              "idle": 262213262,
+              "total": 681905964,
+              "idle_share": 0.38453
+            }
+          }
+        },
+        "45": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 386,
+            "wait_s_p90": 7006,
+            "wait_s_p99": 9034,
+            "wait_s_max": 9261,
+            "started_within_10_min": 0.615063,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8553,
+            "nodes_launched": 182,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 23,
+            "peak_queue": 150,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2267592680,
+            "idle": 795434910,
+            "total": 3063027590,
+            "provider_overhead": 3375000,
+            "grand_total": 3066402590,
+            "idle_share": 0.259403,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 602,
+              "wait_s_p99": 2080,
+              "wait_s_max": 2080,
+              "started_within_10_min": 0.888889,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 27,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 4,
+              "gpu_seconds": 600660,
+              "busy": 182004164,
+              "idle": 108603885,
+              "total": 290608049,
+              "idle_share": 0.373713
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 305,
+              "wait_s_p90": 523,
+              "wait_s_p99": 1692,
+              "wait_s_max": 1692,
+              "started_within_10_min": 0.9,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 53,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 6,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 400608324,
+              "idle": 161140691,
+              "total": 561749015,
+              "idle_share": 0.286855
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 926,
+              "wait_s_p99": 2223,
+              "wait_s_max": 2223,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 986,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 180657916,
+              "total": 397391248,
+              "idle_share": 0.45461
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 350,
+              "wait_s_p90": 785,
+              "wait_s_p99": 6194,
+              "wait_s_max": 6194,
+              "started_within_10_min": 0.892857,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6194,
+              "nodes_launched": 43,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 7,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049887491,
+              "idle": 117148743,
+              "total": 1167036234,
+              "idle_share": 0.100381
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2672,
+              "wait_s_p90": 8227,
+              "wait_s_p99": 9135,
+              "wait_s_max": 9261,
+              "started_within_10_min": 0.372549,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8553,
+              "nodes_launched": 49,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 4,
+              "peak_queue": 150,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 418359369,
+              "idle": 227883675,
+              "total": 646243044,
+              "idle_share": 0.352628
+            }
+          }
+        },
+        "46": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 387,
+            "wait_s_p90": 7307,
+            "wait_s_p99": 9068,
+            "wait_s_max": 9208,
+            "started_within_10_min": 0.612971,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8350,
+            "nodes_launched": 178,
+            "never_ready_nodes": 7,
+            "capacity_unavailable": 39,
+            "peak_queue": 155,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2263229136,
+            "idle": 867648876,
+            "total": 3130878012,
+            "provider_overhead": 7250000,
+            "grand_total": 3138128012,
+            "idle_share": 0.276486,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 36,
+              "wait_s_p90": 461,
+              "wait_s_p99": 1333,
+              "wait_s_max": 1333,
+              "started_within_10_min": 0.952381,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 29,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 182039579,
+              "idle": 101444165,
+              "total": 283483744,
+              "idle_share": 0.357848
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 268,
+              "wait_s_p90": 660,
+              "wait_s_p99": 3035,
+              "wait_s_max": 3035,
+              "started_within_10_min": 0.8875,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 45,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 23,
+              "peak_queue": 2,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 398906242,
+              "idle": 205920692,
+              "total": 604826934,
+              "idle_share": 0.340462
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 166,
+              "wait_s_p90": 5747,
+              "wait_s_p99": 7367,
+              "wait_s_max": 7367,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7367,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 215683332,
+              "idle": 149082361,
+              "total": 364765693,
+              "idle_share": 0.408707
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 325,
+              "wait_s_p90": 599,
+              "wait_s_p99": 6743,
+              "wait_s_max": 6743,
+              "started_within_10_min": 0.910714,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6743,
+              "nodes_launched": 43,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 8,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1048537490,
+              "idle": 125415547,
+              "total": 1173953037,
+              "idle_share": 0.106832
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3365,
+              "wait_s_p90": 8177,
+              "wait_s_p99": 9116,
+              "wait_s_max": 9208,
+              "started_within_10_min": 0.352941,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8350,
+              "nodes_launched": 51,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 8,
+              "peak_queue": 154,
+              "peak_alive_nodes": 10,
+              "gpu_seconds": 1373100,
+              "busy": 418062493,
+              "idle": 285786111,
+              "total": 703848604,
+              "idle_share": 0.406033
+            }
+          }
+        }
+      },
+      "summary": {
+        "overall": {
+          "jobs": {
+            "median": 478,
+            "min": 478,
+            "max": 478
+          },
+          "wait_s_p50": {
+            "median": 391,
+            "min": 386,
+            "max": 418
+          },
+          "wait_s_p90": {
+            "median": 7006,
+            "min": 5918,
+            "max": 9139
+          },
+          "wait_s_p99": {
+            "median": 9034,
+            "min": 7723,
+            "max": 11007
+          },
+          "wait_s_max": {
+            "median": 9208,
+            "min": 7793,
+            "max": 14434
+          },
+          "started_within_10_min": {
+            "median": 0.612971,
+            "min": 0.60251,
+            "max": 0.617155
+          },
+          "burst_jobs": {
+            "median": 176,
+            "min": 176,
+            "max": 176
+          },
+          "burst_wait_s_p90": {
+            "median": 8350,
+            "min": 7383,
+            "max": 10525
+          },
+          "nodes_launched": {
+            "median": 181,
+            "min": 172,
+            "max": 193
+          },
+          "never_ready_nodes": {
+            "median": 3,
+            "min": 1,
+            "max": 12
+          },
+          "capacity_unavailable": {
+            "median": 39,
+            "min": 23,
+            "max": 40
+          },
+          "peak_queue": {
+            "median": 151,
+            "min": 150,
+            "max": 157
+          },
+          "peak_alive_nodes": {
+            "median": 10,
+            "min": 10,
+            "max": 10
+          },
+          "gpu_seconds": {
+            "median": 7532520,
+            "min": 7532520,
+            "max": 7532520
+          },
+          "busy": {
+            "median": 2266187473,
+            "min": 2263229136,
+            "max": 2271605181
+          },
+          "idle": {
+            "median": 852713663,
+            "min": 795434910,
+            "max": 914917208
+          },
+          "total": {
+            "median": 3117120926,
+            "min": 3063027590,
+            "max": 3181104681
+          },
+          "provider_overhead": {
+            "median": 3375000,
+            "min": 2125000,
+            "max": 13250000
+          },
+          "grand_total": {
+            "median": 3130370926,
+            "min": 3066402590,
+            "max": 3183604681
+          },
+          "idle_share": {
+            "median": 0.2724,
+            "min": 0.259403,
+            "max": 0.287384
+          },
+          "duplicates": {
+            "median": 14,
+            "min": 14,
+            "max": 14
+          },
+          "drained_at": {
+            "median": 1741548780,
+            "min": 1741548780,
+            "max": 1741548780
+          }
+        },
+        "teams": {
+          "forecast": {
+            "jobs": {
+              "median": 63,
+              "min": 63,
+              "max": 63
+            },
+            "wait_s_p50": {
+              "median": 36,
+              "min": 0,
+              "max": 249
+            },
+            "wait_s_p90": {
+              "median": 478,
+              "min": 461,
+              "max": 602
+            },
+            "wait_s_p99": {
+              "median": 1399,
+              "min": 1296,
+              "max": 2080
+            },
+            "wait_s_max": {
+              "median": 1399,
+              "min": 1296,
+              "max": 2080
+            },
+            "started_within_10_min": {
+              "median": 0.904762,
+              "min": 0.888889,
+              "max": 0.952381
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 27,
+              "min": 25,
+              "max": 33
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 3
+            },
+            "capacity_unavailable": {
+              "median": 1,
+              "min": 0,
+              "max": 10
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 4,
+              "min": 4,
+              "max": 5
+            },
+            "gpu_seconds": {
+              "median": 600660,
+              "min": 600660,
+              "max": 600660
+            },
+            "busy": {
+              "median": 182004164,
+              "min": 177770828,
+              "max": 182108330
+            },
+            "idle": {
+              "median": 104284024,
+              "min": 93445551,
+              "max": 134535204
+            },
+            "total": {
+              "median": 286392354,
+              "min": 271216379,
+              "max": 315213325
+            },
+            "idle_share": {
+              "median": 0.36413,
+              "min": 0.344542,
+              "max": 0.426807
+            }
+          },
+          "nlp": {
+            "jobs": {
+              "median": 80,
+              "min": 80,
+              "max": 80
+            },
+            "wait_s_p50": {
+              "median": 305,
+              "min": 268,
+              "max": 346
+            },
+            "wait_s_p90": {
+              "median": 574,
+              "min": 474,
+              "max": 660
+            },
+            "wait_s_p99": {
+              "median": 2196,
+              "min": 1692,
+              "max": 3035
+            },
+            "wait_s_max": {
+              "median": 2196,
+              "min": 1692,
+              "max": 3035
+            },
+            "started_within_10_min": {
+              "median": 0.9,
+              "min": 0.8875,
+              "max": 0.9125
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 52,
+              "min": 44,
+              "max": 53
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 3
+            },
+            "capacity_unavailable": {
+              "median": 11,
+              "min": 6,
+              "max": 23
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "gpu_seconds": {
+              "median": 1316340,
+              "min": 1316340,
+              "max": 1316340
+            },
+            "busy": {
+              "median": 399578117,
+              "min": 398906242,
+              "max": 401399992
+            },
+            "idle": {
+              "median": 205920692,
+              "min": 159632775,
+              "max": 228485621
+            },
+            "total": {
+              "median": 604826934,
+              "min": 561032767,
+              "max": 627930407
+            },
+            "idle_share": {
+              "median": 0.340462,
+              "min": 0.284534,
+              "max": 0.363871
+            }
+          },
+          "platform": {
+            "jobs": {
+              "median": 24,
+              "min": 24,
+              "max": 24
+            },
+            "wait_s_p50": {
+              "median": 0,
+              "min": 0,
+              "max": 236
+            },
+            "wait_s_p90": {
+              "median": 5440,
+              "min": 926,
+              "max": 7978
+            },
+            "wait_s_p99": {
+              "median": 7060,
+              "min": 2223,
+              "max": 9598
+            },
+            "wait_s_max": {
+              "median": 7060,
+              "min": 2223,
+              "max": 9598
+            },
+            "started_within_10_min": {
+              "median": 0.875,
+              "min": 0.875,
+              "max": 0.875
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 7060,
+              "min": 986,
+              "max": 9598
+            },
+            "nodes_launched": {
+              "median": 10,
+              "min": 10,
+              "max": 11
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            "capacity_unavailable": {
+              "median": 0,
+              "min": 0,
+              "max": 5
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 2,
+              "min": 2,
+              "max": 2
+            },
+            "gpu_seconds": {
+              "median": 694260,
+              "min": 694260,
+              "max": 694260
+            },
+            "busy": {
+              "median": 216733332,
+              "min": 215683332,
+              "max": 216733332
+            },
+            "idle": {
+              "median": 180685972,
+              "min": 149082361,
+              "max": 202992221
+            },
+            "total": {
+              "median": 397419304,
+              "min": 364765693,
+              "max": 419183886
+            },
+            "idle_share": {
+              "median": 0.454648,
+              "min": 0.408707,
+              "max": 0.484256
+            }
+          },
+          "speech": {
+            "jobs": {
+              "median": 56,
+              "min": 56,
+              "max": 56
+            },
+            "wait_s_p50": {
+              "median": 343,
+              "min": 323,
+              "max": 377
+            },
+            "wait_s_p90": {
+              "median": 785,
+              "min": 507,
+              "max": 2153
+            },
+            "wait_s_p99": {
+              "median": 5698,
+              "min": 2137,
+              "max": 6743
+            },
+            "wait_s_max": {
+              "median": 5698,
+              "min": 2137,
+              "max": 6743
+            },
+            "started_within_10_min": {
+              "median": 0.892857,
+              "min": 0.803571,
+              "max": 0.910714
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 5698,
+              "min": 1761,
+              "max": 6743
+            },
+            "nodes_launched": {
+              "median": 43,
+              "min": 39,
+              "max": 43
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 3
+            },
+            "capacity_unavailable": {
+              "median": 8,
+              "min": 5,
+              "max": 18
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 7,
+              "min": 6,
+              "max": 7
+            },
+            "gpu_seconds": {
+              "median": 3548160,
+              "min": 3548160,
+              "max": 3548160
+            },
+            "busy": {
+              "median": 1049374991,
+              "min": 1048537490,
+              "max": 1050091659
+            },
+            "idle": {
+              "median": 117148743,
+              "min": 104148746,
+              "max": 125415547
+            },
+            "total": {
+              "median": 1167036234,
+              "min": 1154240405,
+              "max": 1173953037
+            },
+            "idle_share": {
+              "median": 0.100381,
+              "min": 0.090231,
+              "max": 0.106832
+            }
+          },
+          "vision": {
+            "jobs": {
+              "median": 255,
+              "min": 255,
+              "max": 255
+            },
+            "wait_s_p50": {
+              "median": 2672,
+              "min": 2421,
+              "max": 3688
+            },
+            "wait_s_p90": {
+              "median": 8177,
+              "min": 6920,
+              "max": 10132
+            },
+            "wait_s_p99": {
+              "median": 9116,
+              "min": 7773,
+              "max": 11037
+            },
+            "wait_s_max": {
+              "median": 9208,
+              "min": 7793,
+              "max": 14434
+            },
+            "started_within_10_min": {
+              "median": 0.364706,
+              "min": 0.341176,
+              "max": 0.376471
+            },
+            "burst_jobs": {
+              "median": 170,
+              "min": 170,
+              "max": 170
+            },
+            "burst_wait_s_p90": {
+              "median": 8350,
+              "min": 7383,
+              "max": 10525
+            },
+            "nodes_launched": {
+              "median": 52,
+              "min": 49,
+              "max": 55
+            },
+            "never_ready_nodes": {
+              "median": 2,
+              "min": 0,
+              "max": 2
+            },
+            "capacity_unavailable": {
+              "median": 6,
+              "min": 0,
+              "max": 9
+            },
+            "peak_queue": {
+              "median": 151,
+              "min": 150,
+              "max": 156
+            },
+            "peak_alive_nodes": {
+              "median": 10,
+              "min": 9,
+              "max": 10
+            },
+            "gpu_seconds": {
+              "median": 1373100,
+              "min": 1373100,
+              "max": 1373100
+            },
+            "busy": {
+              "median": 419692702,
+              "min": 418062493,
+              "max": 423418745
+            },
+            "idle": {
+              "median": 256276105,
+              "min": 220705827,
+              "max": 285786111
+            },
+            "total": {
+              "median": 676509432,
+              "min": 644124572,
+              "max": 703848604
+            },
+            "idle_share": {
+              "median": 0.378821,
+              "min": 0.342645,
+              "max": 0.406033
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "fair@2",
+      "policy": "fair",
+      "idle_minutes": 2,
+      "runs": {
+        "42": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 420,
+            "wait_s_p90": 8754,
+            "wait_s_p99": 11472,
+            "wait_s_max": 11708,
+            "started_within_10_min": 0.587866,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 10661,
+            "nodes_launched": 212,
+            "never_ready_nodes": 13,
+            "capacity_unavailable": 38,
+            "peak_queue": 151,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2262487469,
+            "idle": 690258722,
+            "total": 2952746191,
+            "provider_overhead": 12250000,
+            "grand_total": 2964996191,
+            "idle_share": 0.232803,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 261,
+              "wait_s_p90": 488,
+              "wait_s_p99": 1467,
+              "wait_s_max": 1467,
+              "started_within_10_min": 0.920635,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 36,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 178664577,
+              "idle": 94539439,
+              "total": 273204016,
+              "idle_share": 0.34604
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 330,
+              "wait_s_p90": 838,
+              "wait_s_p99": 2135,
+              "wait_s_max": 2135,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 56,
+              "never_ready_nodes": 4,
+              "capacity_unavailable": 10,
+              "peak_queue": 3,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 400346867,
+              "idle": 150255204,
+              "total": 550602071,
+              "idle_share": 0.272893
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 1248,
+              "wait_s_p99": 1946,
+              "wait_s_max": 1946,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 1946,
+              "nodes_launched": 11,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 3,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 176774860,
+              "total": 393508192,
+              "idle_share": 0.449228
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 390,
+              "wait_s_p90": 1934,
+              "wait_s_p99": 8644,
+              "wait_s_max": 8644,
+              "started_within_10_min": 0.803571,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 8644,
+              "nodes_launched": 49,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 18,
+              "peak_queue": 4,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1050208326,
+              "idle": 70732351,
+              "total": 1120940677,
+              "idle_share": 0.063101
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3189,
+              "wait_s_p90": 10141,
+              "wait_s_p99": 11500,
+              "wait_s_max": 11708,
+              "started_within_10_min": 0.341176,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 10661,
+              "nodes_launched": 60,
+              "never_ready_nodes": 4,
+              "capacity_unavailable": 9,
+              "peak_queue": 150,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 416534367,
+              "idle": 197956868,
+              "total": 614491235,
+              "idle_share": 0.322148
+            }
+          }
+        },
+        "43": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 415,
+            "wait_s_p90": 7357,
+            "wait_s_p99": 9471,
+            "wait_s_max": 9814,
+            "started_within_10_min": 0.606695,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8842,
+            "nodes_launched": 208,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 35,
+            "peak_queue": 153,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2271729136,
+            "idle": 593689424,
+            "total": 2865418560,
+            "provider_overhead": 2500000,
+            "grand_total": 2867918560,
+            "idle_share": 0.207011,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 180,
+              "wait_s_p90": 477,
+              "wait_s_p99": 1500,
+              "wait_s_max": 1500,
+              "started_within_10_min": 0.936508,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 32,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 7,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 182681244,
+              "idle": 109718745,
+              "total": 292399989,
+              "idle_share": 0.375235
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 291,
+              "wait_s_p90": 633,
+              "wait_s_p99": 2233,
+              "wait_s_max": 2233,
+              "started_within_10_min": 0.8875,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 56,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 23,
+              "peak_queue": 3,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 399695825,
+              "idle": 89188745,
+              "total": 488884570,
+              "idle_share": 0.182433
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 855,
+              "wait_s_p99": 1372,
+              "wait_s_max": 1372,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 915,
+              "nodes_launched": 11,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 176718889,
+              "total": 393452221,
+              "idle_share": 0.44915
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 352,
+              "wait_s_p90": 877,
+              "wait_s_p99": 6670,
+              "wait_s_max": 6670,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6670,
+              "nodes_launched": 47,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1050937491,
+              "idle": 55249300,
+              "total": 1106186791,
+              "idle_share": 0.049946
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2910,
+              "wait_s_p90": 8574,
+              "wait_s_p99": 9481,
+              "wait_s_max": 9814,
+              "started_within_10_min": 0.352941,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8842,
+              "nodes_launched": 62,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 0,
+              "peak_queue": 152,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 421681244,
+              "idle": 162813745,
+              "total": 584494989,
+              "idle_share": 0.278555
+            }
+          }
+        },
+        "44": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 416,
+            "wait_s_p90": 5036,
+            "wait_s_p99": 6608,
+            "wait_s_max": 6778,
+            "started_within_10_min": 0.635983,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 6327,
+            "nodes_launched": 210,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 51,
+            "peak_queue": 153,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2261078093,
+            "idle": 742741576,
+            "total": 3003819669,
+            "provider_overhead": 2500000,
+            "grand_total": 3006319669,
+            "idle_share": 0.24706,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 306,
+              "wait_s_p90": 1153,
+              "wait_s_p99": 2397,
+              "wait_s_max": 2397,
+              "started_within_10_min": 0.809524,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 38,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 20,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 600660,
+              "busy": 179720827,
+              "idle": 79709578,
+              "total": 259430405,
+              "idle_share": 0.307248
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 274,
+              "wait_s_p90": 473,
+              "wait_s_p99": 3109,
+              "wait_s_max": 3109,
+              "started_within_10_min": 0.925,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 52,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 9,
+              "peak_queue": 3,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 397232285,
+              "idle": 211811317,
+              "total": 609043602,
+              "idle_share": 0.347777
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 469,
+              "wait_s_p99": 829,
+              "wait_s_max": 829,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 829,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216191665,
+              "idle": 198938054,
+              "total": 415129719,
+              "idle_share": 0.479219
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 355,
+              "wait_s_p90": 948,
+              "wait_s_p99": 4679,
+              "wait_s_max": 4679,
+              "started_within_10_min": 0.857143,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 4679,
+              "nodes_launched": 49,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 14,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049766657,
+              "idle": 68624992,
+              "total": 1118391649,
+              "idle_share": 0.06136
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2031,
+              "wait_s_p90": 5920,
+              "wait_s_p99": 6681,
+              "wait_s_max": 6778,
+              "started_within_10_min": 0.427451,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 6327,
+              "nodes_launched": 61,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 7,
+              "peak_queue": 153,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 418166659,
+              "idle": 183657635,
+              "total": 601824294,
+              "idle_share": 0.305168
+            }
+          }
+        },
+        "45": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 399,
+            "wait_s_p90": 7429,
+            "wait_s_p99": 9537,
+            "wait_s_max": 9854,
+            "started_within_10_min": 0.608787,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8924,
+            "nodes_launched": 206,
+            "never_ready_nodes": 3,
+            "capacity_unavailable": 22,
+            "peak_queue": 152,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2268966633,
+            "idle": 658288454,
+            "total": 2927255087,
+            "provider_overhead": 3500000,
+            "grand_total": 2930755087,
+            "idle_share": 0.224614,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 120,
+              "wait_s_p90": 453,
+              "wait_s_p99": 1401,
+              "wait_s_max": 1401,
+              "started_within_10_min": 0.920635,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 31,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 181658328,
+              "idle": 135804719,
+              "total": 317463047,
+              "idle_share": 0.427781
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 326,
+              "wait_s_p90": 462,
+              "wait_s_p99": 1500,
+              "wait_s_max": 1500,
+              "started_within_10_min": 0.9375,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 60,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 6,
+              "peak_queue": 2,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 401493740,
+              "idle": 128526248,
+              "total": 530019988,
+              "idle_share": 0.242493
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 685,
+              "wait_s_p99": 2071,
+              "wait_s_max": 2071,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 745,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 176954443,
+              "total": 393687775,
+              "idle_share": 0.449479
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 361,
+              "wait_s_p90": 1175,
+              "wait_s_p99": 7233,
+              "wait_s_max": 7233,
+              "started_within_10_min": 0.839286,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7233,
+              "nodes_launched": 51,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 7,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1050624991,
+              "idle": 63149296,
+              "total": 1113774287,
+              "idle_share": 0.056698
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2955,
+              "wait_s_p90": 8645,
+              "wait_s_p99": 9593,
+              "wait_s_max": 9854,
+              "started_within_10_min": 0.352941,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8924,
+              "nodes_launched": 54,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 3,
+              "peak_queue": 152,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 418456242,
+              "idle": 153853748,
+              "total": 572309990,
+              "idle_share": 0.268829
+            }
+          }
+        },
+        "46": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 407,
+            "wait_s_p90": 8034,
+            "wait_s_p99": 10619,
+            "wait_s_max": 10896,
+            "started_within_10_min": 0.596234,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 9840,
+            "nodes_launched": 203,
+            "never_ready_nodes": 7,
+            "capacity_unavailable": 40,
+            "peak_queue": 154,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2263838507,
+            "idle": 742699358,
+            "total": 3006537865,
+            "provider_overhead": 11000000,
+            "grand_total": 3017537865,
+            "idle_share": 0.246128,
+            "duplicates": 14,
+            "drained_at": 1741548780
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 180,
+              "wait_s_p90": 471,
+              "wait_s_p99": 1246,
+              "wait_s_max": 1246,
+              "started_within_10_min": 0.936508,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 33,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 182914578,
+              "idle": 99602080,
+              "total": 282516658,
+              "idle_share": 0.352553
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 278,
+              "wait_s_p90": 698,
+              "wait_s_p99": 3041,
+              "wait_s_max": 3041,
+              "started_within_10_min": 0.8625,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 53,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 24,
+              "peak_queue": 3,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 397261451,
+              "idle": 192586317,
+              "total": 589847768,
+              "idle_share": 0.326502
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 371,
+              "wait_s_p99": 756,
+              "wait_s_max": 756,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 756,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 2,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 176659444,
+              "total": 393392776,
+              "idle_share": 0.449066
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 387,
+              "wait_s_p90": 753,
+              "wait_s_p99": 7520,
+              "wait_s_max": 7520,
+              "started_within_10_min": 0.839286,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7520,
+              "nodes_launched": 52,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 8,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049266655,
+              "idle": 79190825,
+              "total": 1128457480,
+              "idle_share": 0.070176
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3447,
+              "wait_s_p90": 9526,
+              "wait_s_p99": 10688,
+              "wait_s_max": 10896,
+              "started_within_10_min": 0.345098,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 9840,
+              "nodes_launched": 55,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 8,
+              "peak_queue": 154,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 417662491,
+              "idle": 194660692,
+              "total": 612323183,
+              "idle_share": 0.317905
+            }
+          }
+        }
+      },
+      "summary": {
+        "overall": {
+          "jobs": {
+            "median": 478,
+            "min": 478,
+            "max": 478
+          },
+          "wait_s_p50": {
+            "median": 415,
+            "min": 399,
+            "max": 420
+          },
+          "wait_s_p90": {
+            "median": 7429,
+            "min": 5036,
+            "max": 8754
+          },
+          "wait_s_p99": {
+            "median": 9537,
+            "min": 6608,
+            "max": 11472
+          },
+          "wait_s_max": {
+            "median": 9854,
+            "min": 6778,
+            "max": 11708
+          },
+          "started_within_10_min": {
+            "median": 0.606695,
+            "min": 0.587866,
+            "max": 0.635983
+          },
+          "burst_jobs": {
+            "median": 176,
+            "min": 176,
+            "max": 176
+          },
+          "burst_wait_s_p90": {
+            "median": 8924,
+            "min": 6327,
+            "max": 10661
+          },
+          "nodes_launched": {
+            "median": 208,
+            "min": 203,
+            "max": 212
+          },
+          "never_ready_nodes": {
+            "median": 3,
+            "min": 3,
+            "max": 13
+          },
+          "capacity_unavailable": {
+            "median": 38,
+            "min": 22,
+            "max": 51
+          },
+          "peak_queue": {
+            "median": 153,
+            "min": 151,
+            "max": 154
+          },
+          "peak_alive_nodes": {
+            "median": 10,
+            "min": 10,
+            "max": 10
+          },
+          "gpu_seconds": {
+            "median": 7532520,
+            "min": 7532520,
+            "max": 7532520
+          },
+          "busy": {
+            "median": 2263838507,
+            "min": 2261078093,
+            "max": 2271729136
+          },
+          "idle": {
+            "median": 690258722,
+            "min": 593689424,
+            "max": 742741576
+          },
+          "total": {
+            "median": 2952746191,
+            "min": 2865418560,
+            "max": 3006537865
+          },
+          "provider_overhead": {
+            "median": 3500000,
+            "min": 2500000,
+            "max": 12250000
+          },
+          "grand_total": {
+            "median": 2964996191,
+            "min": 2867918560,
+            "max": 3017537865
+          },
+          "idle_share": {
+            "median": 0.232803,
+            "min": 0.207011,
+            "max": 0.24706
+          },
+          "duplicates": {
+            "median": 14,
+            "min": 14,
+            "max": 14
+          },
+          "drained_at": {
+            "median": 1741548780,
+            "min": 1741548780,
+            "max": 1741548780
+          }
+        },
+        "teams": {
+          "forecast": {
+            "jobs": {
+              "median": 63,
+              "min": 63,
+              "max": 63
+            },
+            "wait_s_p50": {
+              "median": 180,
+              "min": 120,
+              "max": 306
+            },
+            "wait_s_p90": {
+              "median": 477,
+              "min": 453,
+              "max": 1153
+            },
+            "wait_s_p99": {
+              "median": 1467,
+              "min": 1246,
+              "max": 2397
+            },
+            "wait_s_max": {
+              "median": 1467,
+              "min": 1246,
+              "max": 2397
+            },
+            "started_within_10_min": {
+              "median": 0.920635,
+              "min": 0.809524,
+              "max": 0.936508
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 33,
+              "min": 31,
+              "max": 38
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 2
+            },
+            "capacity_unavailable": {
+              "median": 1,
+              "min": 0,
+              "max": 20
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 5,
+              "min": 5,
+              "max": 6
+            },
+            "gpu_seconds": {
+              "median": 600660,
+              "min": 600660,
+              "max": 600660
+            },
+            "busy": {
+              "median": 181658328,
+              "min": 178664577,
+              "max": 182914578
+            },
+            "idle": {
+              "median": 99602080,
+              "min": 79709578,
+              "max": 135804719
+            },
+            "total": {
+              "median": 282516658,
+              "min": 259430405,
+              "max": 317463047
+            },
+            "idle_share": {
+              "median": 0.352553,
+              "min": 0.307248,
+              "max": 0.427781
+            }
+          },
+          "nlp": {
+            "jobs": {
+              "median": 80,
+              "min": 80,
+              "max": 80
+            },
+            "wait_s_p50": {
+              "median": 291,
+              "min": 274,
+              "max": 330
+            },
+            "wait_s_p90": {
+              "median": 633,
+              "min": 462,
+              "max": 838
+            },
+            "wait_s_p99": {
+              "median": 2233,
+              "min": 1500,
+              "max": 3109
+            },
+            "wait_s_max": {
+              "median": 2233,
+              "min": 1500,
+              "max": 3109
+            },
+            "started_within_10_min": {
+              "median": 0.8875,
+              "min": 0.8625,
+              "max": 0.9375
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 56,
+              "min": 52,
+              "max": 60
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 4
+            },
+            "capacity_unavailable": {
+              "median": 10,
+              "min": 6,
+              "max": 24
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 8,
+              "min": 8,
+              "max": 8
+            },
+            "gpu_seconds": {
+              "median": 1316340,
+              "min": 1316340,
+              "max": 1316340
+            },
+            "busy": {
+              "median": 399695825,
+              "min": 397232285,
+              "max": 401493740
+            },
+            "idle": {
+              "median": 150255204,
+              "min": 89188745,
+              "max": 211811317
+            },
+            "total": {
+              "median": 550602071,
+              "min": 488884570,
+              "max": 609043602
+            },
+            "idle_share": {
+              "median": 0.272893,
+              "min": 0.182433,
+              "max": 0.347777
+            }
+          },
+          "platform": {
+            "jobs": {
+              "median": 24,
+              "min": 24,
+              "max": 24
+            },
+            "wait_s_p50": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "wait_s_p90": {
+              "median": 685,
+              "min": 371,
+              "max": 1248
+            },
+            "wait_s_p99": {
+              "median": 1372,
+              "min": 756,
+              "max": 2071
+            },
+            "wait_s_max": {
+              "median": 1372,
+              "min": 756,
+              "max": 2071
+            },
+            "started_within_10_min": {
+              "median": 0.875,
+              "min": 0.875,
+              "max": 0.916667
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 829,
+              "min": 745,
+              "max": 1946
+            },
+            "nodes_launched": {
+              "median": 10,
+              "min": 10,
+              "max": 11
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            "capacity_unavailable": {
+              "median": 0,
+              "min": 0,
+              "max": 5
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 2,
+              "min": 2,
+              "max": 2
+            },
+            "gpu_seconds": {
+              "median": 694260,
+              "min": 694260,
+              "max": 694260
+            },
+            "busy": {
+              "median": 216733332,
+              "min": 216191665,
+              "max": 216733332
+            },
+            "idle": {
+              "median": 176774860,
+              "min": 176659444,
+              "max": 198938054
+            },
+            "total": {
+              "median": 393508192,
+              "min": 393392776,
+              "max": 415129719
+            },
+            "idle_share": {
+              "median": 0.449228,
+              "min": 0.449066,
+              "max": 0.479219
+            }
+          },
+          "speech": {
+            "jobs": {
+              "median": 56,
+              "min": 56,
+              "max": 56
+            },
+            "wait_s_p50": {
+              "median": 361,
+              "min": 352,
+              "max": 390
+            },
+            "wait_s_p90": {
+              "median": 948,
+              "min": 753,
+              "max": 1934
+            },
+            "wait_s_p99": {
+              "median": 7233,
+              "min": 4679,
+              "max": 8644
+            },
+            "wait_s_max": {
+              "median": 7233,
+              "min": 4679,
+              "max": 8644
+            },
+            "started_within_10_min": {
+              "median": 0.839286,
+              "min": 0.803571,
+              "max": 0.875
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 7233,
+              "min": 4679,
+              "max": 8644
+            },
+            "nodes_launched": {
+              "median": 49,
+              "min": 47,
+              "max": 52
+            },
+            "never_ready_nodes": {
+              "median": 2,
+              "min": 0,
+              "max": 2
+            },
+            "capacity_unavailable": {
+              "median": 8,
+              "min": 5,
+              "max": 18
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 3,
+              "max": 4
+            },
+            "peak_alive_nodes": {
+              "median": 7,
+              "min": 7,
+              "max": 7
+            },
+            "gpu_seconds": {
+              "median": 3548160,
+              "min": 3548160,
+              "max": 3548160
+            },
+            "busy": {
+              "median": 1050208326,
+              "min": 1049266655,
+              "max": 1050937491
+            },
+            "idle": {
+              "median": 68624992,
+              "min": 55249300,
+              "max": 79190825
+            },
+            "total": {
+              "median": 1118391649,
+              "min": 1106186791,
+              "max": 1128457480
+            },
+            "idle_share": {
+              "median": 0.06136,
+              "min": 0.049946,
+              "max": 0.070176
+            }
+          },
+          "vision": {
+            "jobs": {
+              "median": 255,
+              "min": 255,
+              "max": 255
+            },
+            "wait_s_p50": {
+              "median": 2955,
+              "min": 2031,
+              "max": 3447
+            },
+            "wait_s_p90": {
+              "median": 8645,
+              "min": 5920,
+              "max": 10141
+            },
+            "wait_s_p99": {
+              "median": 9593,
+              "min": 6681,
+              "max": 11500
+            },
+            "wait_s_max": {
+              "median": 9854,
+              "min": 6778,
+              "max": 11708
+            },
+            "started_within_10_min": {
+              "median": 0.352941,
+              "min": 0.341176,
+              "max": 0.427451
+            },
+            "burst_jobs": {
+              "median": 170,
+              "min": 170,
+              "max": 170
+            },
+            "burst_wait_s_p90": {
+              "median": 8924,
+              "min": 6327,
+              "max": 10661
+            },
+            "nodes_launched": {
+              "median": 60,
+              "min": 54,
+              "max": 62
+            },
+            "never_ready_nodes": {
+              "median": 2,
+              "min": 1,
+              "max": 4
+            },
+            "capacity_unavailable": {
+              "median": 7,
+              "min": 0,
+              "max": 9
+            },
+            "peak_queue": {
+              "median": 152,
+              "min": 150,
+              "max": 154
+            },
+            "peak_alive_nodes": {
+              "median": 9,
+              "min": 9,
+              "max": 9
+            },
+            "gpu_seconds": {
+              "median": 1373100,
+              "min": 1373100,
+              "max": 1373100
+            },
+            "busy": {
+              "median": 418166659,
+              "min": 416534367,
+              "max": 421681244
+            },
+            "idle": {
+              "median": 183657635,
+              "min": 153853748,
+              "max": 197956868
+            },
+            "total": {
+              "median": 601824294,
+              "min": 572309990,
+              "max": 614491235
+            },
+            "idle_share": {
+              "median": 0.305168,
+              "min": 0.268829,
+              "max": 0.322148
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "fair@30",
+      "policy": "fair",
+      "idle_minutes": 30,
+      "runs": {
+        "42": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 388,
+            "wait_s_p90": 7407,
+            "wait_s_p99": 9428,
+            "wait_s_max": 9661,
+            "started_within_10_min": 0.604603,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8903,
+            "nodes_launched": 161,
+            "never_ready_nodes": 10,
+            "capacity_unavailable": 36,
+            "peak_queue": 151,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2265430185,
+            "idle": 1074853663,
+            "total": 3340283848,
+            "provider_overhead": 7875000,
+            "grand_total": 3348158848,
+            "idle_share": 0.321028,
+            "duplicates": 14,
+            "drained_at": 1741552380
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 478,
+              "wait_s_p99": 1062,
+              "wait_s_max": 1062,
+              "started_within_10_min": 0.952381,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 28,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 1,
+              "peak_queue": 3,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 179979162,
+              "idle": 139514998,
+              "total": 319494160,
+              "idle_share": 0.436675
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 240,
+              "wait_s_p90": 478,
+              "wait_s_p99": 2271,
+              "wait_s_max": 2271,
+              "started_within_10_min": 0.925,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 43,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 10,
+              "peak_queue": 3,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 399601034,
+              "idle": 270012705,
+              "total": 669613739,
+              "idle_share": 0.403237
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 453,
+              "wait_s_p99": 838,
+              "wait_s_max": 838,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 838,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 3,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 191455832,
+              "total": 408189164,
+              "idle_share": 0.469037
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 340,
+              "wait_s_p90": 2060,
+              "wait_s_p99": 6580,
+              "wait_s_max": 6580,
+              "started_within_10_min": 0.767857,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6580,
+              "nodes_launched": 38,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 18,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049887494,
+              "idle": 197740825,
+              "total": 1247628319,
+              "idle_share": 0.158493
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3052,
+              "wait_s_p90": 8573,
+              "wait_s_p99": 9536,
+              "wait_s_max": 9661,
+              "started_within_10_min": 0.352941,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8903,
+              "nodes_launched": 42,
+              "never_ready_nodes": 5,
+              "capacity_unavailable": 7,
+              "peak_queue": 151,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 419229163,
+              "idle": 276129303,
+              "total": 695358466,
+              "idle_share": 0.397104
+            }
+          }
+        },
+        "43": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 374,
+            "wait_s_p90": 7899,
+            "wait_s_p99": 10488,
+            "wait_s_max": 10689,
+            "started_within_10_min": 0.604603,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 9702,
+            "nodes_launched": 142,
+            "never_ready_nodes": 1,
+            "capacity_unavailable": 32,
+            "peak_queue": 154,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2271033311,
+            "idle": 1008050407,
+            "total": 3279083718,
+            "provider_overhead": 250000,
+            "grand_total": 3279333718,
+            "idle_share": 0.307395,
+            "duplicates": 14,
+            "drained_at": 1741552380
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 479,
+              "wait_s_p99": 1465,
+              "wait_s_max": 1465,
+              "started_within_10_min": 0.904762,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 23,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 6,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 182788538,
+              "idle": 154872012,
+              "total": 337660550,
+              "idle_share": 0.458662
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 240,
+              "wait_s_p90": 861,
+              "wait_s_p99": 2261,
+              "wait_s_max": 2261,
+              "started_within_10_min": 0.8625,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 40,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 21,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 402329160,
+              "idle": 229897500,
+              "total": 632226660,
+              "idle_share": 0.363631
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 442,
+              "wait_s_p99": 721,
+              "wait_s_max": 721,
+              "started_within_10_min": 0.916667,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 721,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 3,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 191372639,
+              "total": 408105971,
+              "idle_share": 0.468929
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 294,
+              "wait_s_p90": 802,
+              "wait_s_p99": 7633,
+              "wait_s_max": 7633,
+              "started_within_10_min": 0.892857,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7633,
+              "nodes_launched": 33,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 3548160,
+              "busy": 1049683326,
+              "idle": 186981107,
+              "total": 1236664433,
+              "idle_share": 0.151198
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3413,
+              "wait_s_p90": 9407,
+              "wait_s_p99": 10563,
+              "wait_s_max": 10689,
+              "started_within_10_min": 0.356863,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 9702,
+              "nodes_launched": 36,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 154,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 419498955,
+              "idle": 244927149,
+              "total": 664426104,
+              "idle_share": 0.36863
+            }
+          }
+        },
+        "44": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 368,
+            "wait_s_p90": 7059,
+            "wait_s_p99": 9024,
+            "wait_s_max": 9367,
+            "started_within_10_min": 0.600418,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8385,
+            "nodes_launched": 143,
+            "never_ready_nodes": 2,
+            "capacity_unavailable": 42,
+            "peak_queue": 150,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2263515600,
+            "idle": 1105883806,
+            "total": 3369399406,
+            "provider_overhead": 1375000,
+            "grand_total": 3370774406,
+            "idle_share": 0.32808,
+            "duplicates": 14,
+            "drained_at": 1741552380
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 135,
+              "wait_s_p90": 1080,
+              "wait_s_p99": 2352,
+              "wait_s_max": 2352,
+              "started_within_10_min": 0.825397,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 28,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 16,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 600660,
+              "busy": 179426037,
+              "idle": 133706038,
+              "total": 313132075,
+              "idle_share": 0.426996
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 59,
+              "wait_s_p90": 608,
+              "wait_s_p99": 3066,
+              "wait_s_max": 3066,
+              "started_within_10_min": 0.8875,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 34,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 8,
+              "peak_queue": 2,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 400269786,
+              "idle": 295451039,
+              "total": 695720825,
+              "idle_share": 0.424669
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 433,
+              "wait_s_p99": 645,
+              "wait_s_max": 645,
+              "started_within_10_min": 0.958333,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 645,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 1,
+              "peak_queue": 2,
+              "peak_alive_nodes": 3,
+              "gpu_seconds": 694260,
+              "busy": 216191665,
+              "idle": 214880417,
+              "total": 431072082,
+              "idle_share": 0.498479
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 287,
+              "wait_s_p90": 1052,
+              "wait_s_p99": 5838,
+              "wait_s_max": 5838,
+              "started_within_10_min": 0.857143,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 5838,
+              "nodes_launched": 34,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 13,
+              "peak_queue": 3,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 3548160,
+              "busy": 1049241659,
+              "idle": 187204996,
+              "total": 1236446655,
+              "idle_share": 0.151406
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2173,
+              "wait_s_p90": 8087,
+              "wait_s_p99": 9123,
+              "wait_s_max": 9367,
+              "started_within_10_min": 0.364706,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8385,
+              "nodes_launched": 37,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 4,
+              "peak_queue": 150,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 418386453,
+              "idle": 274641316,
+              "total": 693027769,
+              "idle_share": 0.396292
+            }
+          }
+        },
+        "45": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 367,
+            "wait_s_p90": 7238,
+            "wait_s_p99": 9284,
+            "wait_s_max": 9623,
+            "started_within_10_min": 0.617155,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 8771,
+            "nodes_launched": 149,
+            "never_ready_nodes": 2,
+            "capacity_unavailable": 20,
+            "peak_queue": 151,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2271822893,
+            "idle": 1037369013,
+            "total": 3309191906,
+            "provider_overhead": 2250000,
+            "grand_total": 3311441906,
+            "idle_share": 0.313268,
+            "duplicates": 14,
+            "drained_at": 1741552380
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 456,
+              "wait_s_p99": 1445,
+              "wait_s_max": 1445,
+              "started_within_10_min": 0.920635,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 23,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 183168747,
+              "idle": 137145970,
+              "total": 320314717,
+              "idle_share": 0.42816
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 267,
+              "wait_s_p90": 500,
+              "wait_s_p99": 2136,
+              "wait_s_max": 2136,
+              "started_within_10_min": 0.9,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 44,
+              "never_ready_nodes": 2,
+              "capacity_unavailable": 6,
+              "peak_queue": 2,
+              "peak_alive_nodes": 7,
+              "gpu_seconds": 1316340,
+              "busy": 402037492,
+              "idle": 253124859,
+              "total": 655162351,
+              "idle_share": 0.386354
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 752,
+              "wait_s_p99": 2165,
+              "wait_s_max": 2165,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 812,
+              "nodes_launched": 10,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 5,
+              "peak_queue": 2,
+              "peak_alive_nodes": 3,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 191386804,
+              "total": 408120136,
+              "idle_share": 0.468947
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 308,
+              "wait_s_p90": 1027,
+              "wait_s_p99": 6532,
+              "wait_s_max": 6532,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 6532,
+              "nodes_launched": 35,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 7,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 3548160,
+              "busy": 1049683326,
+              "idle": 200824579,
+              "total": 1250507905,
+              "idle_share": 0.160594
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 2781,
+              "wait_s_p90": 8469,
+              "wait_s_p99": 9310,
+              "wait_s_max": 9623,
+              "started_within_10_min": 0.372549,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 8771,
+              "nodes_launched": 37,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 2,
+              "peak_queue": 151,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 420199996,
+              "idle": 254886801,
+              "total": 675086797,
+              "idle_share": 0.377562
+            }
+          }
+        },
+        "46": {
+          "overall": {
+            "jobs": 478,
+            "wait_s_p50": 351,
+            "wait_s_p90": 7885,
+            "wait_s_p99": 10490,
+            "wait_s_max": 10717,
+            "started_within_10_min": 0.615063,
+            "burst_jobs": 176,
+            "burst_wait_s_p90": 9642,
+            "nodes_launched": 145,
+            "never_ready_nodes": 5,
+            "capacity_unavailable": 28,
+            "peak_queue": 154,
+            "peak_alive_nodes": 10,
+            "gpu_seconds": 7532520,
+            "busy": 2266436433,
+            "idle": 1146218112,
+            "total": 3412654545,
+            "provider_overhead": 8625000,
+            "grand_total": 3421279545,
+            "idle_share": 0.335026,
+            "duplicates": 14,
+            "drained_at": 1741552380
+          },
+          "teams": {
+            "forecast": {
+              "jobs": 63,
+              "wait_s_p50": 0,
+              "wait_s_p90": 450,
+              "wait_s_p99": 1435,
+              "wait_s_max": 1435,
+              "started_within_10_min": 0.968254,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 22,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 5,
+              "gpu_seconds": 600660,
+              "busy": 183843747,
+              "idle": 150221109,
+              "total": 334064856,
+              "idle_share": 0.449676
+            },
+            "nlp": {
+              "jobs": 80,
+              "wait_s_p50": 211,
+              "wait_s_p90": 477,
+              "wait_s_p99": 4127,
+              "wait_s_max": 4127,
+              "started_within_10_min": 0.9,
+              "burst_jobs": 0,
+              "burst_wait_s_p90": null,
+              "nodes_launched": 43,
+              "never_ready_nodes": 3,
+              "capacity_unavailable": 15,
+              "peak_queue": 2,
+              "peak_alive_nodes": 8,
+              "gpu_seconds": 1316340,
+              "busy": 399613533,
+              "idle": 311680348,
+              "total": 711293881,
+              "idle_share": 0.438188
+            },
+            "platform": {
+              "jobs": 24,
+              "wait_s_p50": 0,
+              "wait_s_p90": 738,
+              "wait_s_p99": 1359,
+              "wait_s_max": 1359,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 798,
+              "nodes_launched": 11,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 0,
+              "peak_queue": 2,
+              "peak_alive_nodes": 3,
+              "gpu_seconds": 694260,
+              "busy": 216733332,
+              "idle": 191139166,
+              "total": 407872498,
+              "idle_share": 0.468625
+            },
+            "speech": {
+              "jobs": 56,
+              "wait_s_p50": 325,
+              "wait_s_p90": 902,
+              "wait_s_p99": 7493,
+              "wait_s_max": 7493,
+              "started_within_10_min": 0.875,
+              "burst_jobs": 3,
+              "burst_wait_s_p90": 7493,
+              "nodes_launched": 32,
+              "never_ready_nodes": 0,
+              "capacity_unavailable": 8,
+              "peak_queue": 3,
+              "peak_alive_nodes": 6,
+              "gpu_seconds": 3548160,
+              "busy": 1048537493,
+              "idle": 199825132,
+              "total": 1248362625,
+              "idle_share": 0.16007
+            },
+            "vision": {
+              "jobs": 255,
+              "wait_s_p50": 3404,
+              "wait_s_p90": 9398,
+              "wait_s_p99": 10563,
+              "wait_s_max": 10717,
+              "started_within_10_min": 0.356863,
+              "burst_jobs": 170,
+              "burst_wait_s_p90": 9642,
+              "nodes_launched": 37,
+              "never_ready_nodes": 1,
+              "capacity_unavailable": 5,
+              "peak_queue": 154,
+              "peak_alive_nodes": 9,
+              "gpu_seconds": 1373100,
+              "busy": 417708328,
+              "idle": 293352357,
+              "total": 711060685,
+              "idle_share": 0.412556
+            }
+          }
+        }
+      },
+      "summary": {
+        "overall": {
+          "jobs": {
+            "median": 478,
+            "min": 478,
+            "max": 478
+          },
+          "wait_s_p50": {
+            "median": 368,
+            "min": 351,
+            "max": 388
+          },
+          "wait_s_p90": {
+            "median": 7407,
+            "min": 7059,
+            "max": 7899
+          },
+          "wait_s_p99": {
+            "median": 9428,
+            "min": 9024,
+            "max": 10490
+          },
+          "wait_s_max": {
+            "median": 9661,
+            "min": 9367,
+            "max": 10717
+          },
+          "started_within_10_min": {
+            "median": 0.604603,
+            "min": 0.600418,
+            "max": 0.617155
+          },
+          "burst_jobs": {
+            "median": 176,
+            "min": 176,
+            "max": 176
+          },
+          "burst_wait_s_p90": {
+            "median": 8903,
+            "min": 8385,
+            "max": 9702
+          },
+          "nodes_launched": {
+            "median": 145,
+            "min": 142,
+            "max": 161
+          },
+          "never_ready_nodes": {
+            "median": 2,
+            "min": 1,
+            "max": 10
+          },
+          "capacity_unavailable": {
+            "median": 32,
+            "min": 20,
+            "max": 42
+          },
+          "peak_queue": {
+            "median": 151,
+            "min": 150,
+            "max": 154
+          },
+          "peak_alive_nodes": {
+            "median": 10,
+            "min": 10,
+            "max": 10
+          },
+          "gpu_seconds": {
+            "median": 7532520,
+            "min": 7532520,
+            "max": 7532520
+          },
+          "busy": {
+            "median": 2266436433,
+            "min": 2263515600,
+            "max": 2271822893
+          },
+          "idle": {
+            "median": 1074853663,
+            "min": 1008050407,
+            "max": 1146218112
+          },
+          "total": {
+            "median": 3340283848,
+            "min": 3279083718,
+            "max": 3412654545
+          },
+          "provider_overhead": {
+            "median": 2250000,
+            "min": 250000,
+            "max": 8625000
+          },
+          "grand_total": {
+            "median": 3348158848,
+            "min": 3279333718,
+            "max": 3421279545
+          },
+          "idle_share": {
+            "median": 0.321028,
+            "min": 0.307395,
+            "max": 0.335026
+          },
+          "duplicates": {
+            "median": 14,
+            "min": 14,
+            "max": 14
+          },
+          "drained_at": {
+            "median": 1741552380,
+            "min": 1741552380,
+            "max": 1741552380
+          }
+        },
+        "teams": {
+          "forecast": {
+            "jobs": {
+              "median": 63,
+              "min": 63,
+              "max": 63
+            },
+            "wait_s_p50": {
+              "median": 0,
+              "min": 0,
+              "max": 135
+            },
+            "wait_s_p90": {
+              "median": 478,
+              "min": 450,
+              "max": 1080
+            },
+            "wait_s_p99": {
+              "median": 1445,
+              "min": 1062,
+              "max": 2352
+            },
+            "wait_s_max": {
+              "median": 1445,
+              "min": 1062,
+              "max": 2352
+            },
+            "started_within_10_min": {
+              "median": 0.920635,
+              "min": 0.825397,
+              "max": 0.968254
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 23,
+              "min": 22,
+              "max": 28
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 3
+            },
+            "capacity_unavailable": {
+              "median": 1,
+              "min": 0,
+              "max": 16
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 5,
+              "min": 5,
+              "max": 6
+            },
+            "gpu_seconds": {
+              "median": 600660,
+              "min": 600660,
+              "max": 600660
+            },
+            "busy": {
+              "median": 182788538,
+              "min": 179426037,
+              "max": 183843747
+            },
+            "idle": {
+              "median": 139514998,
+              "min": 133706038,
+              "max": 154872012
+            },
+            "total": {
+              "median": 320314717,
+              "min": 313132075,
+              "max": 337660550
+            },
+            "idle_share": {
+              "median": 0.436675,
+              "min": 0.426996,
+              "max": 0.458662
+            }
+          },
+          "nlp": {
+            "jobs": {
+              "median": 80,
+              "min": 80,
+              "max": 80
+            },
+            "wait_s_p50": {
+              "median": 240,
+              "min": 59,
+              "max": 267
+            },
+            "wait_s_p90": {
+              "median": 500,
+              "min": 477,
+              "max": 861
+            },
+            "wait_s_p99": {
+              "median": 2271,
+              "min": 2136,
+              "max": 4127
+            },
+            "wait_s_max": {
+              "median": 2271,
+              "min": 2136,
+              "max": 4127
+            },
+            "started_within_10_min": {
+              "median": 0.9,
+              "min": 0.8625,
+              "max": 0.925
+            },
+            "burst_jobs": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_wait_s_p90": null,
+            "nodes_launched": {
+              "median": 43,
+              "min": 34,
+              "max": 44
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 3
+            },
+            "capacity_unavailable": {
+              "median": 10,
+              "min": 6,
+              "max": 21
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 7,
+              "min": 7,
+              "max": 8
+            },
+            "gpu_seconds": {
+              "median": 1316340,
+              "min": 1316340,
+              "max": 1316340
+            },
+            "busy": {
+              "median": 400269786,
+              "min": 399601034,
+              "max": 402329160
+            },
+            "idle": {
+              "median": 270012705,
+              "min": 229897500,
+              "max": 311680348
+            },
+            "total": {
+              "median": 669613739,
+              "min": 632226660,
+              "max": 711293881
+            },
+            "idle_share": {
+              "median": 0.403237,
+              "min": 0.363631,
+              "max": 0.438188
+            }
+          },
+          "platform": {
+            "jobs": {
+              "median": 24,
+              "min": 24,
+              "max": 24
+            },
+            "wait_s_p50": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "wait_s_p90": {
+              "median": 453,
+              "min": 433,
+              "max": 752
+            },
+            "wait_s_p99": {
+              "median": 838,
+              "min": 645,
+              "max": 2165
+            },
+            "wait_s_max": {
+              "median": 838,
+              "min": 645,
+              "max": 2165
+            },
+            "started_within_10_min": {
+              "median": 0.916667,
+              "min": 0.875,
+              "max": 0.958333
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 798,
+              "min": 645,
+              "max": 838
+            },
+            "nodes_launched": {
+              "median": 10,
+              "min": 10,
+              "max": 11
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            "capacity_unavailable": {
+              "median": 0,
+              "min": 0,
+              "max": 5
+            },
+            "peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 2
+            },
+            "peak_alive_nodes": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "gpu_seconds": {
+              "median": 694260,
+              "min": 694260,
+              "max": 694260
+            },
+            "busy": {
+              "median": 216733332,
+              "min": 216191665,
+              "max": 216733332
+            },
+            "idle": {
+              "median": 191386804,
+              "min": 191139166,
+              "max": 214880417
+            },
+            "total": {
+              "median": 408120136,
+              "min": 407872498,
+              "max": 431072082
+            },
+            "idle_share": {
+              "median": 0.468947,
+              "min": 0.468625,
+              "max": 0.498479
+            }
+          },
+          "speech": {
+            "jobs": {
+              "median": 56,
+              "min": 56,
+              "max": 56
+            },
+            "wait_s_p50": {
+              "median": 308,
+              "min": 287,
+              "max": 340
+            },
+            "wait_s_p90": {
+              "median": 1027,
+              "min": 802,
+              "max": 2060
+            },
+            "wait_s_p99": {
+              "median": 6580,
+              "min": 5838,
+              "max": 7633
+            },
+            "wait_s_max": {
+              "median": 6580,
+              "min": 5838,
+              "max": 7633
+            },
+            "started_within_10_min": {
+              "median": 0.875,
+              "min": 0.767857,
+              "max": 0.892857
+            },
+            "burst_jobs": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "burst_wait_s_p90": {
+              "median": 6580,
+              "min": 5838,
+              "max": 7633
+            },
+            "nodes_launched": {
+              "median": 34,
+              "min": 32,
+              "max": 38
+            },
+            "never_ready_nodes": {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            "capacity_unavailable": {
+              "median": 8,
+              "min": 5,
+              "max": 18
+            },
+            "peak_queue": {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            "peak_alive_nodes": {
+              "median": 6,
+              "min": 6,
+              "max": 7
+            },
+            "gpu_seconds": {
+              "median": 3548160,
+              "min": 3548160,
+              "max": 3548160
+            },
+            "busy": {
+              "median": 1049683326,
+              "min": 1048537493,
+              "max": 1049887494
+            },
+            "idle": {
+              "median": 197740825,
+              "min": 186981107,
+              "max": 200824579
+            },
+            "total": {
+              "median": 1247628319,
+              "min": 1236446655,
+              "max": 1250507905
+            },
+            "idle_share": {
+              "median": 0.158493,
+              "min": 0.151198,
+              "max": 0.160594
+            }
+          },
+          "vision": {
+            "jobs": {
+              "median": 255,
+              "min": 255,
+              "max": 255
+            },
+            "wait_s_p50": {
+              "median": 3052,
+              "min": 2173,
+              "max": 3413
+            },
+            "wait_s_p90": {
+              "median": 8573,
+              "min": 8087,
+              "max": 9407
+            },
+            "wait_s_p99": {
+              "median": 9536,
+              "min": 9123,
+              "max": 10563
+            },
+            "wait_s_max": {
+              "median": 9661,
+              "min": 9367,
+              "max": 10717
+            },
+            "started_within_10_min": {
+              "median": 0.356863,
+              "min": 0.352941,
+              "max": 0.372549
+            },
+            "burst_jobs": {
+              "median": 170,
+              "min": 170,
+              "max": 170
+            },
+            "burst_wait_s_p90": {
+              "median": 8903,
+              "min": 8385,
+              "max": 9702
+            },
+            "nodes_launched": {
+              "median": 37,
+              "min": 36,
+              "max": 42
+            },
+            "never_ready_nodes": {
+              "median": 1,
+              "min": 0,
+              "max": 5
+            },
+            "capacity_unavailable": {
+              "median": 4,
+              "min": 0,
+              "max": 7
+            },
+            "peak_queue": {
+              "median": 151,
+              "min": 150,
+              "max": 154
+            },
+            "peak_alive_nodes": {
+              "median": 9,
+              "min": 9,
+              "max": 9
+            },
+            "gpu_seconds": {
+              "median": 1373100,
+              "min": 1373100,
+              "max": 1373100
+            },
+            "busy": {
+              "median": 419229163,
+              "min": 417708328,
+              "max": 420199996
+            },
+            "idle": {
+              "median": 274641316,
+              "min": 244927149,
+              "max": 293352357
+            },
+            "total": {
+              "median": 693027769,
+              "min": 664426104,
+              "max": 711060685
+            },
+            "idle_share": {
+              "median": 0.396292,
+              "min": 0.36863,
+              "max": 0.412556
+            }
+          }
+        }
+      }
+    }
+  ]
+}

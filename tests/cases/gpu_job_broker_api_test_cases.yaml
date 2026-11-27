@@ -1,0 +1,1899 @@
+# Shared GPU Job Broker - API conformance test cases
+#
+# This file uses the case DSL supplied in the request. It is a test specification,
+# not a pytest test module. A runner must load this YAML and execute each case.
+#
+# API contract / assumptions made explicit for deterministic tests:
+# - POST /jobs: 201 for a new job; 200 for an idempotent replay; 409 for key/body conflict.
+# - Invalid request data: 422. Unknown job IDs: 404. Invalid lifecycle transitions: 409.
+# - Job response fields: id, team, gpus, estimated_minutes, priority, status,
+#   submitted_at, started_at, ended_at, wait_seconds.
+# - POST /jobs/{id}/cancel and POST /jobs/{id}/complete return 200 on success.
+# - GET /queue and GET /nodes return JSON arrays. Queue entries contain id, position,
+#   priority, submitted_at and wait_seconds. Node entries contain id, type, team, state,
+#   gpus_total, gpus_used, gpus_free, running_job_ids, idle_since and cost_so_far.
+# - GET /sim/now returns {now_ts: <integer>}; POST /sim/advance returns {now_ts: <integer>}.
+# - GET /reports/cost returns {from_ts, to_ts, grand_total, provider_overhead,
+#   teams: [{team, gpu_hours, busy_cost, idle_cost, total_cost}]} (teams sorted by
+#   name). Money values are USD rounded half-up to cents.
+# - Simulated timestamps are integer seconds. Report windows are half-open [from_ts, to_ts).
+#   from_ts == to_ts is rejected with 422. A job starting exactly at to_ts contributes
+#   zero GPU-hours to that window.
+# - Node cost is rate * billable_seconds / 3600. billable_seconds is max(actual lifetime,
+#   600 seconds). To make window reports additive, the minimum billable interval is
+#   [launched_at, launched_at + 600); otherwise it is [launched_at, terminated_at).
+#   For a live node, billable time is clipped to the report's to_ts.
+# - Node cost is attributed to its owning team. A failed launch (state=failed) is
+#   attributed to provider_overhead, although the node still records an owner team. Idle time remains charged to the node's owning team.
+# - GPU-hours are requested GPUs * actual running seconds / 3600, clipped to the report window.
+# - Idempotency keys are trimmed and scoped by team. A repeated key with an equivalent
+#   normalized request returns the original job even if that job is now cancelled.
+# - Team names are non-empty strings of at most 128 characters; UTF-8 / non-ASCII is allowed.
+# - estimated_minutes is a positive integer, maximum 10080 minutes (7 days). This upper
+#   bound is an explicit test-policy assumption because the exercise does not specify one.
+# - wait_seconds means: queued = now - submitted_at; started or completed = started_at -
+#   submitted_at; cancelled before start = ended_at - submitted_at.
+# - Queue ordering is priority (high, normal, low), then submitted_at, then creation
+#   order (jobs.created_seq; SPEC_DECISIONS.md #6). With the default 'fair' policy the
+#   team's 24 h GPU usage comes between priority and submitted_at.
+# - A node may only run jobs from its owning team. Same-team jobs may share its GPUs.
+# - The runner fixture extensions used below are: raw_body for non-JSON requests;
+#   restart: {same_database: true}; given.config.idle_timeout_minutes; and given.provider
+#   controls deterministic_launch_delay_seconds, launch_failure_probability,
+#   unavailable_windows ({type: [{from_ts, to_ts}]}, half-open) and never_ready_launches
+#   (SPEC_DECISIONS.md #4).
+# - Node ids are sequential: node-00001, node-00002, ... (ANY_NODE_ID; decision #14). A parallel_requests step is included as an OPTIONAL
+#   concurrency case; a runner may skip it if parallel execution is unsupported.
+# - SQL checks assume a jobs table and an events table. Adapt SQL table/column names if the
+#   implementation uses a different schema; API assertions remain applicable.
+
+- id: JOB-SUBMIT-HAPPY-MATRIX
+  endpoint: POST /jobs
+  category: happy
+  title: accept every supported GPU quantity and every priority
+  source: docx req 1
+  given:
+    now_ts: 0
+  base_body:
+    team: vision
+    estimated_minutes: 30
+  table:
+    - set: {gpus: 1, priority: low}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 1, priority: low, status: queued}
+    - set: {gpus: 1, priority: normal}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 1, priority: normal, status: queued}
+    - set: {gpus: 1, priority: high}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 1, priority: high, status: queued}
+    - set: {gpus: 2, priority: low}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 2, priority: low, status: queued}
+    - set: {gpus: 2, priority: normal}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 2, priority: normal, status: queued}
+    - set: {gpus: 2, priority: high}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 2, priority: high, status: queued}
+    - set: {gpus: 4, priority: low}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 4, priority: low, status: queued}
+    - set: {gpus: 4, priority: normal}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 4, priority: normal, status: queued}
+    - set: {gpus: 4, priority: high}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 4, priority: high, status: queued}
+    - set: {gpus: 8, priority: low}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 8, priority: low, status: queued}
+    - set: {gpus: 8, priority: normal}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 8, priority: normal, status: queued}
+    - set: {gpus: 8, priority: high}
+      status: 201
+      body: {id: ANY_JOB_ID, gpus: 8, priority: high, status: queued}
+
+- id: JOB-SUBMIT-DEFAULT-PRIORITY
+  endpoint: POST /jobs
+  category: happy
+  title: omitted priority defaults to normal
+  source: docx req 1
+  given: {now_ts: 120}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, priority: normal, status: queued, submitted_at: 120}
+    events_added: 2  # D1: job_submitted + node_launched (scheduling runs in the request)
+
+- id: JOB-SUBMIT-UNICODE-TEAM
+  endpoint: POST /jobs
+  category: happy
+  title: accept a valid non-ASCII team name
+  source: validation edge from checklist
+  given: {now_ts: 0}
+  when:
+    - request: POST /jobs
+      body: {team: "visión-日本", gpus: 1, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, team: "visión-日本", status: queued}
+
+- id: JOB-SUBMIT-GPU-VALIDATION-MATRIX
+  endpoint: POST /jobs
+  category: validation
+  title: reject unsupported or incorrectly typed GPU counts
+  source: docx req 1
+  base_body: {team: vision, gpus: 1, estimated_minutes: 30}
+  table:
+    - set: {gpus: 0}
+      status: 422
+    - set: {gpus: 3}
+      status: 422
+    - set: {gpus: 16}
+      status: 422
+    - set: {gpus: -1}
+      status: 422
+    - set: {gpus: "4"}
+      status: 422
+    - set: {gpus: 4.0}
+      status: 422
+    - set: {gpus: true}
+      status: 422
+    - set: {gpus: null}
+      status: 422
+
+- id: JOB-SUBMIT-ESTIMATE-VALIDATION-MATRIX
+  endpoint: POST /jobs
+  category: validation
+  title: reject invalid estimated duration values
+  source: validation policy documented in file header
+  base_body: {team: vision, gpus: 1, estimated_minutes: 30}
+  table:
+    - set: {estimated_minutes: 0}
+      status: 422
+    - set: {estimated_minutes: -1}
+      status: 422
+    - set: {estimated_minutes: 1000000}
+      status: 422
+    - set: {estimated_minutes: 10081}
+      status: 422
+    - set: {estimated_minutes: 30.5}
+      status: 422
+
+- id: JOB-SUBMIT-TEAM-VALIDATION-MATRIX
+  endpoint: POST /jobs
+  category: validation
+  title: reject blank, missing, non-string and overlong team names
+  source: validation policy documented in file header
+  base_body: {team: vision, gpus: 1, estimated_minutes: 30}
+  table:
+    - set: {team: ""}
+      status: 422
+    - remove: [team]
+      status: 422
+    - set: {team: 123}
+      status: 422
+    - set:
+        team: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      status: 422
+
+- id: JOB-SUBMIT-PRIORITY-CASE-VALIDATION
+  endpoint: POST /jobs
+  category: validation
+  title: reject priority with incorrect enum casing
+  source: checklist priority wrong case
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30, priority: HIGH}
+  then: {status: 422}
+
+- id: JOB-SUBMIT-UNKNOWN-FIELD
+  endpoint: POST /jobs
+  category: validation
+  title: reject an unknown request field
+  source: checklist unknown field
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30, unexpected: true}
+  then: {status: 422}
+
+- id: JOB-SUBMIT-EMPTY-BODY
+  endpoint: POST /jobs
+  category: validation
+  title: reject an empty JSON body
+  when:
+    - request: POST /jobs
+      body: {}
+  then: {status: 422}
+
+- id: JOB-SUBMIT-NON-JSON-BODY
+  endpoint: POST /jobs
+  category: validation
+  title: reject a body that is not valid JSON
+  when:
+    - request: POST /jobs
+      headers: {content-type: application/json}
+      raw_body: "{not-json"
+  then: {status: 422}
+
+- id: JOB-SUBMIT-IDEMPOTENT-REPLAY
+  endpoint: POST /jobs
+  category: idempotency
+  title: same key and same normalized request returns existing job
+  source: docx req 1
+  given:
+    now_ts: 0
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, priority: normal, idempotency_key: k1}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 2, estimated_minutes: 30, priority: normal, idempotency_key: k1}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: queued}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+    events_added: 0
+
+- id: JOB-SUBMIT-IDEMPOTENT-DEFAULT-EQUIVALENCE
+  endpoint: POST /jobs
+  category: idempotency
+  title: omitted priority and explicit normal are equivalent for same key
+  given:
+    now_ts: 0
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, idempotency_key: k1}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 2, estimated_minutes: 30, priority: normal, idempotency_key: k1}
+  then:
+    status: 200
+    body: {id: {ref: A}, priority: normal}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+    events_added: 0
+
+- id: JOB-SUBMIT-IDEMPOTENCY-CONFLICT
+  endpoint: POST /jobs
+  category: idempotency
+  title: same key with different GPUs returns 409
+  source: docx req 1
+  given:
+    now_ts: 0
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, idempotency_key: k1}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 2, estimated_minutes: 30, idempotency_key: k1}
+  then:
+    status: 409
+    body: {detail: idempotency key reused with different request}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+    events_added: 0
+    unchanged: [sim_now, queue]
+
+- id: JOB-SUBMIT-IDEMPOTENCY-SCOPED-BY-TEAM
+  endpoint: POST /jobs
+  category: idempotency
+  title: same key used by another team creates a separate job
+  given:
+    now_ts: 0
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, idempotency_key: shared-key}
+  when:
+    - request: POST /jobs
+      body: {team: nlp, gpus: 1, estimated_minutes: 30, idempotency_key: shared-key}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, team: nlp, status: queued}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 2
+    events_added: 2  # D1: job_submitted + node_launched (scheduling runs in the request)
+
+- id: JOB-SUBMIT-IDEMPOTENCY-AFTER-CANCEL
+  endpoint: POST /jobs
+  category: idempotency
+  title: replay after cancellation returns the original cancelled job
+  given:
+    now_ts: 100
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, idempotency_key: k1}
+  when:
+    - request: POST /jobs/{A}/cancel
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30, priority: normal, idempotency_key: k1}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: cancelled}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+    events_added: 0
+
+- id: JOB-SUBMIT-IDEMPOTENCY-TRIM-KEY
+  endpoint: POST /jobs
+  category: idempotency
+  title: idempotency key is trimmed before lookup
+  given:
+    now_ts: 0
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, idempotency_key: " k1 "}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30, idempotency_key: k1}
+  then:
+    status: 200
+    body: {id: {ref: A}}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+    events_added: 0
+
+- id: JOB-SUBMIT-WITHOUT-IDEMPOTENCY-KEY
+  endpoint: POST /jobs
+  category: idempotency
+  title: requests without an idempotency key create separate jobs
+  given: {now_ts: 0}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30}
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, status: queued}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 2
+    events_added: 2  # D1: job_submitted + node_launched (scheduling runs in the request)
+
+- id: JOB-SUBMIT-SIDE-EFFECTS
+  endpoint: POST /jobs
+  category: side_effect
+  title: new submission records simulated timestamp and exactly one job_submitted event
+  given: {now_ts: 123456789}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30, idempotency_key: time-check}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, submitted_at: 123456789, status: queued}
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+      - sql: SELECT COUNT(*) FROM events WHERE event_type = 'job_submitted'
+        equals: 1
+    events_added: 2  # D1: job_submitted + node_launched (scheduling runs in the request)
+
+- id: JOB-GET-HAPPY
+  endpoint: GET /jobs/{A}
+  category: happy
+  title: retrieve an existing queued job
+  given:
+    now_ts: 0
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30}
+  when:
+    - advance: {minutes: 1}
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, team: vision, gpus: 1, status: queued, submitted_at: 0, wait_seconds: 60}
+
+- id: JOB-GET-NOT-FOUND
+  endpoint: GET /jobs/does-not-exist
+  category: not_found
+  title: unknown job returns 404
+  when:
+    - request: GET /jobs/does-not-exist
+  then: {status: 404}
+
+- id: JOB-GET-WAIT-QUEUED
+  endpoint: GET /jobs/{A}
+  category: time
+  title: queued wait_seconds grows with simulated time
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, submitted_at: 60, sql: true}
+  when:
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: queued, wait_seconds: 240}
+
+- id: JOB-GET-WAIT-RUNNING
+  endpoint: GET /jobs/{A}
+  category: time
+  title: running job wait_seconds is submission-to-start duration
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 120, node: node-1, sql: true}
+  when:
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: running, started_at: 120, wait_seconds: 120}
+
+- id: JOB-GET-WAIT-FINISHED
+  endpoint: GET /jobs/{A}
+  category: time
+  title: finished job preserves its actual queue wait duration
+  given:
+    now_ts: 600
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: succeeded, submitted_at: 0, started_at: 120, ended_at: 300, node: node-1, sql: true}
+  when:
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: succeeded, wait_seconds: 120}
+
+- id: JOB-GET-WAIT-CANCELLED-BEFORE-START
+  endpoint: GET /jobs/{A}
+  category: time
+  title: cancelled-before-start wait_seconds ends at cancellation time
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: cancelled, submitted_at: 0, ended_at: 300, sql: true}
+  when:
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: cancelled, started_at: null, wait_seconds: 300}
+
+- id: JOB-CANCEL-QUEUED
+  endpoint: POST /jobs/{A}/cancel
+  category: state
+  title: cancel a queued job
+  given:
+    now_ts: 120
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30}
+  when:
+    - request: POST /jobs/{A}/cancel
+  then:
+    status: 200
+    body: {id: {ref: A}, status: cancelled, ended_at: 120}
+    events_added: 1
+
+- id: JOB-CANCEL-RUNNING-LAST-ON-NODE
+  endpoint: POST /jobs/{A}/cancel
+  category: side_effect
+  title: cancelling the last running job sets node idle_since to now
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 300, terminated_at: null, idle_since: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 120, node: node-1, sql: true}
+  when:
+    - request: POST /jobs/{A}/cancel
+  then:
+    status: 200
+    body: {id: {ref: A}, status: cancelled, ended_at: 300}
+    db:
+      - sql: SELECT idle_since FROM nodes WHERE id = 'node-1'
+        equals: 300
+    events_added: 1
+
+- id: JOB-CANCEL-RUNNING-NOT-LAST-ON-NODE
+  endpoint: POST /jobs/{A}/cancel
+  category: side_effect
+  title: cancelling one of multiple running jobs does not mark node idle
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 300, terminated_at: null, idle_since: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 100, node: node-1, sql: true}
+      - {ref: B, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 10, started_at: 110, node: node-1, sql: true}
+  when:
+    - request: POST /jobs/{A}/cancel
+  then:
+    status: 200
+    db:
+      - sql: SELECT idle_since FROM nodes WHERE id = 'node-1'
+        equals: null
+    events_added: 1
+
+- id: JOB-CANCEL-IDEMPOTENT-NOOP
+  endpoint: POST /jobs/{A}/cancel
+  category: idempotency
+  title: cancelling an already cancelled job is a no-op
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: cancelled, submitted_at: 0, ended_at: 200, sql: true}
+  when:
+    - request: POST /jobs/{A}/cancel
+  then:
+    status: 200
+    body: {id: {ref: A}, status: cancelled, ended_at: 200}
+    events_added: 0
+
+- id: JOB-CANCEL-SUCCEEDED-CONFLICT
+  endpoint: POST /jobs/{A}/cancel
+  category: state
+  title: cancelling a succeeded job returns 409
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: succeeded, submitted_at: 0, started_at: 10, ended_at: 100, sql: true}
+  when:
+    - request: POST /jobs/{A}/cancel
+  then: {status: 409}
+
+- id: JOB-CANCEL-FAILED-CONFLICT
+  endpoint: POST /jobs/{A}/cancel
+  category: state
+  title: cancelling a failed job returns 409
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: failed, submitted_at: 0, started_at: 10, ended_at: 100, sql: true}
+  when:
+    - request: POST /jobs/{A}/cancel
+  then: {status: 409}
+
+- id: JOB-CANCEL-NOT-FOUND
+  endpoint: POST /jobs/no-such-job/cancel
+  category: not_found
+  title: cancelling an unknown job returns 404
+  when:
+    - request: POST /jobs/no-such-job/cancel
+  then: {status: 404}
+
+- id: JOB-COMPLETE-SUCCEEDED
+  endpoint: POST /jobs/{A}/complete
+  category: happy
+  title: complete a running job as succeeded
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 100, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 100, node: node-1, sql: true}
+  when:
+    - request: POST /jobs/{A}/complete
+      body: {outcome: succeeded}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: succeeded, ended_at: 300}
+    events_added: 1
+
+- id: JOB-COMPLETE-FAILED
+  endpoint: POST /jobs/{A}/complete
+  category: happy
+  title: complete a running job as failed
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 100, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 100, node: node-1, sql: true}
+  when:
+    - request: POST /jobs/{A}/complete
+      body: {outcome: failed}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: failed, ended_at: 300}
+    events_added: 1
+
+- id: JOB-COMPLETE-FROM-QUEUED-CONFLICT
+  endpoint: POST /jobs/{A}/complete
+  category: state
+  title: completing a queued job returns 409
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30}
+  when:
+    - request: POST /jobs/{A}/complete
+      body: {outcome: succeeded}
+  then: {status: 409}
+
+- id: JOB-COMPLETE-FROM-CANCELLED-CONFLICT
+  endpoint: POST /jobs/{A}/complete
+  category: state
+  title: completing a cancelled job returns 409
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: cancelled, submitted_at: 0, ended_at: 100, sql: true}
+  when:
+    - request: POST /jobs/{A}/complete
+      body: {outcome: succeeded}
+  then: {status: 409}
+
+- id: JOB-COMPLETE-ALREADY-TERMINAL-CONFLICT
+  endpoint: POST /jobs/{A}/complete
+  category: state
+  title: completing an already completed job returns 409
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: succeeded, submitted_at: 0, started_at: 10, ended_at: 100, sql: true}
+  when:
+    - request: POST /jobs/{A}/complete
+      body: {outcome: succeeded}
+  then: {status: 409}
+
+- id: JOB-COMPLETE-NOT-FOUND
+  endpoint: POST /jobs/no-such-job/complete
+  category: not_found
+  title: completing an unknown job returns 404
+  when:
+    - request: POST /jobs/no-such-job/complete
+      body: {outcome: succeeded}
+  then: {status: 404}
+
+- id: JOB-COMPLETE-OUTCOME-VALIDATION
+  endpoint: POST /jobs/{A}/complete
+  category: validation
+  title: only succeeded or failed are valid completion outcomes
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 10, node: node-1, sql: true}
+  base_body: {outcome: succeeded}
+  table:
+    - set: {outcome: cancelled}
+      status: 422
+    - remove: [outcome]
+      status: 422
+    - set: {outcome: SUCCEEDED}
+      status: 422
+
+- id: QUEUE-PRIORITY-TIME-ID-ORDER
+  endpoint: GET /queue
+  category: happy
+  title: queue orders by priority, then submission time, then job id
+  given:
+    now_ts: 120
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, priority: normal, status: queued, submitted_at: 0, sql: true}
+      - {ref: B, team: vision, gpus: 1, estimated_minutes: 30, priority: high, status: queued, submitted_at: 0, sql: true}
+      - {ref: C, team: vision, gpus: 1, estimated_minutes: 30, priority: high, status: queued, submitted_at: 60, sql: true}
+      - {ref: D, team: vision, gpus: 1, estimated_minutes: 30, priority: high, status: queued, submitted_at: 60, sql: true}
+      - {ref: E, team: vision, gpus: 1, estimated_minutes: 30, priority: low, status: queued, submitted_at: 0, sql: true}
+  when:
+    - request: GET /queue
+  then:
+    status: 200
+    body:
+      - {id: {ref: B}, position: 1, priority: high, wait_seconds: 120}
+      - {id: {ref: C}, position: 2, priority: high, wait_seconds: 60}
+      - {id: {ref: D}, position: 3, priority: high, wait_seconds: 60}
+      - {id: {ref: A}, position: 4, priority: normal, wait_seconds: 120}
+      - {id: {ref: E}, position: 5, priority: low, wait_seconds: 120}
+
+- id: QUEUE-EMPTY
+  endpoint: GET /queue
+  category: boundary
+  title: empty queue returns an empty array
+  given: {now_ts: 0}
+  when:
+    - request: GET /queue
+  then:
+    status: 200
+    body: []
+
+- id: QUEUE-EXCLUDES-NONQUEUED
+  endpoint: GET /queue
+  category: consistency
+  title: queue excludes cancelled running and terminal jobs
+  given:
+    now_ts: 300
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: queued, submitted_at: 0, sql: true}
+      - {ref: B, team: vision, gpus: 1, estimated_minutes: 30, status: cancelled, submitted_at: 0, ended_at: 100, sql: true}
+      - {ref: C, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 100, node: node-1, sql: true}
+      - {ref: D, team: vision, gpus: 1, estimated_minutes: 30, status: succeeded, submitted_at: 0, started_at: 100, ended_at: 200, sql: true}
+      - {ref: E, team: vision, gpus: 1, estimated_minutes: 30, status: failed, submitted_at: 0, started_at: 100, ended_at: 200, sql: true}
+  when:
+    - request: GET /queue
+  then:
+    status: 200
+    body:
+      - {id: {ref: A}, position: 1, priority: normal, wait_seconds: 300}
+
+- id: QUEUE-WAIT-SECONDS
+  endpoint: GET /queue
+  category: time
+  title: each queued job exposes wait_seconds based on simulated time
+  given:
+    now_ts: 900
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, submitted_at: 600, sql: true}
+      - {ref: B, team: nlp, gpus: 1, estimated_minutes: 30, submitted_at: 750, sql: true}
+  when:
+    - request: GET /queue
+  then:
+    status: 200
+    body:
+      - {id: {ref: A}, wait_seconds: 300}
+      - {id: {ref: B}, wait_seconds: 150}
+
+- id: SIM-GET-NOW-STARTS-AT-ZERO
+  endpoint: GET /sim/now
+  category: time
+  title: fresh simulator starts at timestamp zero
+  given: {now_ts: 0}
+  when:
+    - request: GET /sim/now
+  then:
+    status: 200
+    body: {now_ts: 0}
+
+- id: SIM-ADVANCE-BY-MINUTES
+  endpoint: POST /sim/advance
+  category: time
+  title: advance simulated time by a number of minutes
+  given: {now_ts: 0}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 5}
+  then:
+    status: 200
+    body: {now_ts: 300}
+
+- id: SIM-ADVANCE-TO-TIMESTAMP
+  endpoint: POST /sim/advance
+  category: time
+  title: advance simulated time to an absolute timestamp
+  given: {now_ts: 120}
+  when:
+    - request: POST /sim/advance
+      body: {to_ts: 600}
+  then:
+    status: 200
+    body: {now_ts: 600}
+
+- id: SIM-ADVANCE-TO-PAST-CONFLICT
+  endpoint: POST /sim/advance
+  category: time
+  title: moving simulated time backwards returns 409
+  given: {now_ts: 600}
+  when:
+    - request: POST /sim/advance
+      body: {to_ts: 599}
+  then:
+    status: 409
+    unchanged: [sim_now]
+
+- id: SIM-ADVANCE-TO-NOW-NOOP
+  endpoint: POST /sim/advance
+  category: boundary
+  title: advancing to the current timestamp is a no-op
+  given: {now_ts: 600}
+  when:
+    - request: POST /sim/advance
+      body: {to_ts: 600}
+  then:
+    status: 200
+    body: {now_ts: 600}
+    events_added: 0
+    unchanged: [sim_now, queue]
+
+- id: SIM-ADVANCE-VALIDATION-BOTH-FIELDS
+  endpoint: POST /sim/advance
+  category: validation
+  title: reject a request containing both minutes and to_ts
+  given: {now_ts: 0}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 5, to_ts: 300}
+  then: {status: 422}
+
+- id: SIM-ADVANCE-EMPTY-BODY
+  endpoint: POST /sim/advance
+  category: validation
+  title: reject advance request with neither minutes nor to_ts
+  when:
+    - request: POST /sim/advance
+      body: {}
+  then: {status: 422}
+
+- id: SIM-ADVANCE-MINUTES-ZERO
+  endpoint: POST /sim/advance
+  category: boundary
+  title: zero-minute advance is an accepted no-op
+  given: {now_ts: 100}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 0}
+  then:
+    status: 200
+    body: {now_ts: 100}
+    events_added: 0
+    unchanged: [sim_now, queue]
+
+- id: SIM-ADVANCE-NEGATIVE-MINUTES
+  endpoint: POST /sim/advance
+  category: validation
+  title: reject negative minutes
+  when:
+    - request: POST /sim/advance
+      body: {minutes: -1}
+  then: {status: 422}
+
+- id: SIM-ADVANCE-FLOAT-MINUTES
+  endpoint: POST /sim/advance
+  category: validation
+  title: reject fractional minutes
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 1.5}
+  then: {status: 422}
+
+- id: SIM-ADVANCE-STRING-TO-TS
+  endpoint: POST /sim/advance
+  category: validation
+  title: reject string timestamp
+  when:
+    - request: POST /sim/advance
+      body: {to_ts: "600"}
+  then: {status: 422}
+
+- id: SIM-ADVANCE-SMALL-STEPS-EQUIVALENCE
+  endpoint: POST /sim/advance
+  category: time
+  title: multiple small advances process events identically to one large advance
+  given:
+    now_ts: 0
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: launching, launched_at: 0, ready_at: 120, terminated_at: null}
+  when:
+    - advance: {minutes: 1}
+    - advance: {minutes: 1}
+    - advance: {minutes: 1}
+    - advance: {minutes: 1}
+    - advance: {minutes: 1}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready}
+
+- id: SIM-ADVANCE-LARGE-STEP-EQUIVALENCE
+  endpoint: POST /sim/advance
+  category: time
+  title: one large advance reaches the same state as small advances
+  given:
+    now_ts: 0
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: launching, launched_at: 0, ready_at: 120, terminated_at: null}
+  when:
+    - advance: {minutes: 5}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready}
+
+- id: NODES-EMPTY
+  endpoint: GET /nodes
+  category: boundary
+  title: no nodes returns an empty array
+  given: {now_ts: 0}
+  when:
+    - request: GET /nodes
+  then:
+    status: 200
+    body: []
+
+- id: NODES-DERIVED-GPU-COUNTS
+  endpoint: GET /nodes
+  category: consistency
+  title: used and free GPUs are derived from running allocations
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 100, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 100, node: node-1, sql: true}
+      - {ref: B, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 110, node: node-1, sql: true}
+  when:
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - id: node-1
+        gpus_total: 4
+        gpus_used: 3
+        gpus_free: 1
+        running_job_ids: [{ref: A}, {ref: B}]
+
+- id: NODES-LAUNCHING-STATE
+  endpoint: GET /nodes
+  category: state
+  title: launching nodes are visible but not schedulable
+  given:
+    now_ts: 100
+    nodes:
+      - {id: node-1, type: gpu-l, team: vision, state: launching, launched_at: 0, ready_at: 400, terminated_at: null}
+  when:
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: launching, gpus_total: 8, gpus_used: 0}
+
+- id: NODES-HIDE-TERMINATED-BY-DEFAULT
+  endpoint: GET /nodes
+  category: happy
+  title: terminated nodes are hidden by default
+  given:
+    now_ts: 900
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 100, terminated_at: 600}
+  when:
+    - request: GET /nodes
+  then:
+    status: 200
+    body: []
+
+- id: NODES-SHOW-TERMINATED
+  endpoint: GET /nodes
+  category: happy
+  title: include_terminated query flag shows ended nodes
+  given:
+    now_ts: 900
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 100, terminated_at: 600}
+  when:
+    - request: GET /nodes
+      query: {include_terminated: true}
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: terminated}
+
+- id: NODES-COST-SO-FAR
+  endpoint: GET /nodes
+  category: cost
+  title: node cost_so_far includes the 10-minute minimum
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 100, terminated_at: null}
+  when:
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, cost_so_far: "~0.75"}
+
+- id: NODES-IDLE-SINCE-AFTER-LAST-JOB
+  endpoint: GET /nodes
+  category: side_effect
+  title: node idle_since is set after its last running job completes
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 100, terminated_at: null, idle_since: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 100, node: node-1, sql: true}
+  when:
+    - request: POST /jobs/{A}/complete
+      body: {outcome: succeeded}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, idle_since: 300, gpus_used: 0, gpus_free: 4}
+
+- id: COST-SPEC-RATE-EXAMPLE
+  endpoint: GET /reports/cost
+  category: cost
+  title: one gpu-m billed for one hour costs 4.50 dollars
+  source: docx provider pricing
+  given:
+    now_ts: 3600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: terminated, launched_at: 0, ready_at: 100, terminated_at: 3600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 3600}
+  then:
+    status: 200
+    body:
+      grand_total: "~4.5"
+      provider_overhead: "~0.0"
+      teams:
+        - {team: vision, total_cost: "~4.5", gpu_hours: "~0.0"}
+
+- id: COST-MINIMUM-120-SECOND-LIFETIME
+  endpoint: GET /reports/cost
+  category: cost
+  title: 120-second node lifetime is charged at the 600-second minimum
+  source: docx billing minimum
+  given:
+    now_ts: 120
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: terminated, launched_at: 0, ready_at: 30, terminated_at: 120}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body:
+      grand_total: "~0.75"
+      teams:
+        - {team: vision, total_cost: "~0.75"}
+
+- id: COST-BOUNDARY-599-SECONDS
+  endpoint: GET /reports/cost
+  category: boundary
+  title: 599-second node lifetime bills exactly the 600-second minimum
+  given:
+    now_ts: 599
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 599}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body:
+      grand_total: "~0.166667"
+      teams:
+        - {team: vision, total_cost: "~0.166667"}
+
+- id: COST-BOUNDARY-600-SECONDS
+  endpoint: GET /reports/cost
+  category: boundary
+  title: 600-second node lifetime bills exactly 600 seconds
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body:
+      grand_total: "~0.166667"
+      teams:
+        - {team: vision, total_cost: "~0.166667"}
+
+- id: COST-BOUNDARY-601-SECONDS
+  endpoint: GET /reports/cost
+  category: boundary
+  title: 601-second node lifetime bills 601 seconds rather than rounding to 600
+  given:
+    now_ts: 601
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 601}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 601}
+  then:
+    status: 200
+    body:
+      grand_total: "~0.167"
+      teams:
+        - {team: vision, total_cost: "~0.167"}
+
+- id: COST-WINDOW-TERMINATED-AT-TO-TS
+  endpoint: GET /reports/cost
+  category: boundary
+  title: termination exactly at to_ts is included up to but not beyond to_ts
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body: {grand_total: "~0.166667"}
+
+- id: COST-WINDOW-TERMINATED-AT-FROM-TS
+  endpoint: GET /reports/cost
+  category: boundary
+  title: termination exactly at from_ts contributes no post-termination cost
+  given:
+    now_ts: 1200
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 600, to_ts: 1200}
+  then:
+    status: 200
+    body: {grand_total: "~0.0", provider_overhead: "~0.0"}
+
+- id: COST-JOB-STARTS-AT-TO-TS
+  endpoint: GET /reports/cost
+  category: boundary
+  title: job starting exactly at to_ts contributes no GPU-hours to the window
+  given:
+    now_ts: 900
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 900}
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: succeeded, submitted_at: 0, started_at: 600, ended_at: 900, node: node-1, sql: true}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body:
+      teams:
+        - {team: vision, gpu_hours: "~0.0"}
+
+- id: COST-ADJACENT-WINDOW-LEFT
+  endpoint: GET /reports/cost
+  category: consistency
+  title: first half of adjacent billing windows reports 2.25 dollars
+  given:
+    now_ts: 3600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: terminated, launched_at: 0, ready_at: 100, terminated_at: 3600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 1800}
+  then:
+    status: 200
+    body: {grand_total: "~2.25"}
+
+- id: COST-ADJACENT-WINDOW-RIGHT
+  endpoint: GET /reports/cost
+  category: consistency
+  title: second half of adjacent billing windows reports 2.25 dollars
+  given:
+    now_ts: 3600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: terminated, launched_at: 0, ready_at: 100, terminated_at: 3600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 1800, to_ts: 3600}
+  then:
+    status: 200
+    body: {grand_total: "~2.25"}
+
+- id: COST-ADJACENT-WINDOW-WHOLE
+  endpoint: GET /reports/cost
+  category: consistency
+  title: combined window equals the sum of the two adjacent windows
+  given:
+    now_ts: 3600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: terminated, launched_at: 0, ready_at: 100, terminated_at: 3600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 3600}
+  then:
+    status: 200
+    body: {grand_total: "~4.5"}
+
+- id: COST-TEAM-TOTALS-SUM-TO-GRAND-TOTAL
+  endpoint: GET /reports/cost
+  category: consistency
+  title: per-team and overhead totals add up to the grand total
+  given:
+    now_ts: 900
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 900}
+      - {id: node-2, type: gpu-m, team: nlp, state: terminated, launched_at: 0, ready_at: 10, terminated_at: 900}
+      - {id: node-3, type: gpu-l, team: vision, state: failed, launched_at: 0, ready_at: 900, terminated_at: 900}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 900}
+  then:
+    status: 200
+    body:
+      teams:
+        - {team: nlp, total_cost: "~1.125"}
+        - {team: vision, total_cost: "~0.25"}
+      provider_overhead: "~2.125"
+      grand_total: "~3.5"
+
+- id: COST-FAILED-NODE-OVERHEAD
+  endpoint: GET /reports/cost
+  category: cost
+  title: failed launch is charged to provider overhead, not to its owner team
+  given:
+    now_ts: 900
+    nodes:
+      - {id: node-1, type: gpu-l, team: vision, state: failed, launched_at: 0, ready_at: 900, terminated_at: 900}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 900}
+  then:
+    status: 200
+    body:
+      provider_overhead: "~2.125"
+      grand_total: "~2.125"
+      teams: []
+
+- id: COST-TEAM-WITH-IDLE-TIME-ONLY
+  endpoint: GET /reports/cost
+  category: cost
+  title: team with idle-only node receives node cost but zero GPU-hours
+  given:
+    now_ts: 3600
+    nodes:
+      - {id: node-1, type: gpu-m, team: nlp, state: terminated, launched_at: 0, ready_at: 60, terminated_at: 3600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 3600}
+  then:
+    status: 200
+    body:
+      teams:
+        - {team: nlp, total_cost: "~4.5", gpu_hours: "~0.0"}
+      grand_total: "~4.5"
+
+- id: COST-WINDOW-WITH-NO-NODES
+  endpoint: GET /reports/cost
+  category: boundary
+  title: report over a window with no nodes returns zero totals
+  given: {now_ts: 3600}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 3600}
+  then:
+    status: 200
+    body: {grand_total: "~0.0", provider_overhead: "~0.0", teams: []}
+
+- id: COST-VALIDATION-EQUAL-WINDOW
+  endpoint: GET /reports/cost
+  category: validation
+  title: reject an empty cost-report window
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 100, to_ts: 100}
+  then: {status: 422}
+
+- id: COST-VALIDATION-REVERSED-WINDOW
+  endpoint: GET /reports/cost
+  category: validation
+  title: reject from_ts greater than to_ts
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 200, to_ts: 100}
+  then: {status: 422}
+
+- id: COST-VALIDATION-FLOAT-FROM-TS
+  endpoint: GET /reports/cost
+  category: validation
+  title: reject fractional from_ts
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0.5, to_ts: 100}
+  then: {status: 422}
+
+- id: COST-VALIDATION-FLOAT-TO-TS
+  endpoint: GET /reports/cost
+  category: validation
+  title: reject fractional to_ts
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 100.5}
+  then: {status: 422}
+
+- id: COST-VALIDATION-NONNUMERIC-FROM-TS
+  endpoint: GET /reports/cost
+  category: validation
+  title: reject non-numeric from_ts
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: "zero", to_ts: 100}
+  then: {status: 422}
+
+- id: COST-GPU-HOURS-ACTUAL-RUNTIME
+  endpoint: GET /reports/cost
+  category: cost
+  title: GPU-hours use requested GPUs multiplied by actual running duration
+  given:
+    now_ts: 7200
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: terminated, launched_at: 0, ready_at: 60, terminated_at: 7200}
+    jobs:
+      - {ref: A, team: vision, gpus: 4, estimated_minutes: 30, status: succeeded, submitted_at: 0, started_at: 3600, ended_at: 5400, node: node-1, sql: true}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 7200}
+  then:
+    status: 200
+    body:
+      teams:
+        - {team: vision, gpu_hours: "~2.0"}
+
+- id: NODES-COST-SO-FAR-CONSISTENT-WITH-REPORT
+  endpoint: GET /nodes
+  category: consistency
+  title: node cost_so_far agrees with cost report over same interval
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 60, terminated_at: null}
+  when:
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, cost_so_far: "~0.75"}
+  # Paired oracle: GET /reports/cost?from_ts=0&to_ts=600 must return total_cost ~= 0.75.
+
+- id: COST-REPORT-CONSISTENT-WITH-NODE-COST
+  endpoint: GET /reports/cost
+  category: consistency
+  title: report total agrees with the node cost_so_far fixture
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 60, terminated_at: null}
+  when:
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body: {grand_total: "~0.75"}
+
+- id: QUEUE-JOB-GET-CONSISTENCY
+  endpoint: GET /jobs/{A}
+  category: consistency
+  title: job details agree with queue entry for a queued job
+  given:
+    now_ts: 120
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, priority: high, submitted_at: 0}
+  when:
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: queued, priority: high, wait_seconds: 120}
+  # Paired oracle: GET /queue must contain the same job ID, status/priority and wait_seconds.
+
+- id: QUEUE-GET-JOB-CONSISTENCY
+  endpoint: GET /queue
+  category: consistency
+  title: queue entry agrees with job details for a queued job
+  given:
+    now_ts: 120
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, priority: high, submitted_at: 0}
+  when:
+    - request: GET /queue
+  then:
+    status: 200
+    body:
+      - {id: {ref: A}, priority: high, wait_seconds: 120, position: 1}
+
+- id: RESTART-JOBS-CLOCK-NODES-SURVIVE
+  endpoint: GET /jobs/{A}
+  category: restart
+  title: jobs nodes and simulated time survive application restart
+  given:
+    now_ts: 123456
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 120000, ready_at: 120300, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 120100, started_at: 120300, node: node-1, sql: true}
+  when:
+    - restart: {same_database: true}
+    - request: GET /jobs/{A}
+  then:
+    status: 200
+    body: {id: {ref: A}, status: running, submitted_at: 120100, started_at: 120300}
+
+- id: RESTART-CLOCK-SURVIVES
+  endpoint: GET /sim/now
+  category: restart
+  title: simulated clock resumes at its previous value after restart
+  given: {now_ts: 987654}
+  when:
+    - restart: {same_database: true}
+    - request: GET /sim/now
+  then:
+    status: 200
+    body: {now_ts: 987654}
+
+- id: RESTART-NODES-SURVIVE
+  endpoint: GET /nodes
+  category: restart
+  title: provider nodes and GPU allocations survive application restart
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 300, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 300, node: node-1, sql: true}
+  when:
+    - restart: {same_database: true}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready, gpus_used: 2, gpus_free: 2, running_job_ids: [{ref: A}]}
+
+- id: RESTART-COST-HISTORY-SURVIVES
+  endpoint: GET /reports/cost
+  category: restart
+  title: cost report is unchanged after application restart
+  given:
+    now_ts: 600
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 60, terminated_at: null}
+  when:
+    - restart: {same_database: true}
+    - request: GET /reports/cost
+      query: {from_ts: 0, to_ts: 600}
+  then:
+    status: 200
+    body:
+      grand_total: "~0.75"
+      teams:
+        - {team: vision, total_cost: "~0.75"}
+
+- id: TIME-NO-REAL-CLOCK-READS
+  endpoint: POST /jobs
+  category: side_effect
+  title: request timestamps come only from simulated clock, never wall clock
+  given: {now_ts: 123456789}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {submitted_at: 123456789}
+    unchanged: [sim_now]
+  # Run this case with wall-clock access mocked to fail. The request must still pass.
+
+- id: OPTIONAL-JOB-SUBMIT-CONCURRENT-IDEMPOTENCY
+  endpoint: POST /jobs
+  category: concurrency
+  title: two simultaneous submissions with the same key create exactly one job
+  given: {now_ts: 0}
+  when:
+    - parallel_requests:
+        - {request: POST /jobs, body: {team: vision, gpus: 2, estimated_minutes: 30, idempotency_key: concurrent-k1}}
+        - {request: POST /jobs, body: {team: vision, gpus: 2, estimated_minutes: 30, idempotency_key: concurrent-k1}}
+  then:
+    db:
+      - sql: SELECT COUNT(*) FROM jobs
+        equals: 1
+      - sql: SELECT COUNT(*) FROM events WHERE event_type = 'job_submitted'  # D1: launch events come on top
+        equals: 1
+  # Optional: execute only if the case runner supports deterministic parallel requests.
+
+# Additional integration cases for requirements 2 and 3. They exercise scheduling
+# and idle reaping through the public submit/advance/nodes endpoints; these behaviors
+# do not need separate user-facing HTTP endpoints.
+
+- id: SCHEDULER-REUSE-SAME-TEAM-NODE
+  endpoint: POST /jobs
+  category: consistency
+  title: new same-team job is placed on an existing node with sufficient free GPUs
+  source: docx req 2
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-1, sql: true}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 2, estimated_minutes: 30, priority: normal}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, status: running, node_id: node-1}
+    db:
+      - sql: SELECT COUNT(*) FROM nodes
+        equals: 1
+
+- id: SCHEDULER-NEW-NODE-FITS-GPU-REQUEST
+  endpoint: POST /jobs
+  category: state
+  title: when no existing node fits, launch the smallest supported node that fits
+  source: docx req 2
+  given:
+    now_ts: 0
+    provider:
+      deterministic_launch_delay_seconds: 240
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 4, estimated_minutes: 30}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: ANY_NODE_ID, type: gpu-m, team: vision, state: launching, gpus_total: 4}
+
+- id: SCHEDULER-DO-NOT-OVERCOMMIT-GPUS
+  endpoint: POST /jobs
+  category: consistency
+  title: job that cannot fit existing free GPUs must not overcommit a node
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-1, sql: true}
+      - {ref: B, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-1, sql: true}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 4, estimated_minutes: 30}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, gpus_total: 4, gpus_used: 3, gpus_free: 1}
+      - {id: ANY_NODE_ID, type: gpu-m, team: vision, state: launching, gpus_total: 4}
+
+- id: SCHEDULER-MAX-TEN-LIVE-NODES
+  endpoint: POST /jobs
+  category: boundary
+  title: never launch an eleventh live node
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-01, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-02, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-03, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-04, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-05, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-06, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-07, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-08, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-09, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+      - {id: node-10, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-01, sql: true}
+      - {ref: B, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-02, sql: true}
+      - {ref: C, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-03, sql: true}
+      - {ref: D, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-04, sql: true}
+      - {ref: E, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-05, sql: true}
+      - {ref: F, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-06, sql: true}
+      - {ref: G, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-07, sql: true}
+      - {ref: H, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-08, sql: true}
+      - {ref: I, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-09, sql: true}
+      - {ref: J, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-10, sql: true}
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 8, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {status: queued}
+    db:
+      - sql: SELECT COUNT(*) FROM nodes WHERE state IN ('launching', 'ready')
+        equals: 10
+
+- id: SCHEDULER-CAPACITY-UNAVAILABLE-DOES-NOT-CRASH
+  endpoint: POST /jobs
+  category: state
+  title: provider CapacityUnavailable leaves job queued and service usable
+  source: docx req 2; SPEC_DECISIONS.md #3, #4
+  # Rewritten (TEST_MIGRATION_MAP.md): every type that may serve the job is
+  # refused, so one capacity_unavailable event per type tried (gpu-m, then the
+  # gpu-l fallback) and no node.
+  given:
+    now_ts: 0
+    provider:
+      unavailable_windows:
+        gpu-m: [{from_ts: 0, to_ts: 3600}]
+        gpu-l: [{from_ts: 0, to_ts: 3600}]
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 4, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, status: queued}
+    events_added: 3  # job_submitted, capacity_unavailable gpu-m, capacity_unavailable gpu-l
+    db:
+      - sql: SELECT COUNT(*) FROM nodes
+        equals: 0
+      - sql: SELECT group_concat(event_type || ':' || COALESCE(json_extract(details, '$.node_type'), ''), ',') FROM (SELECT * FROM events ORDER BY id)
+        equals: "job_submitted:,capacity_unavailable:gpu-m,capacity_unavailable:gpu-l"
+
+- id: SCHEDULER-CAPACITY-UNAVAILABLE-FALLS-BACK-TO-LARGER-TYPE
+  endpoint: POST /jobs
+  category: state
+  title: preferred type refused, next larger type within 2x the price is launched in the same pass
+  source: SPEC_DECISIONS.md #3 (policy)
+  given:
+    now_ts: 0
+    provider:
+      unavailable_windows:
+        gpu-m: [{from_ts: 0, to_ts: 3600}]
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 2, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, status: queued}
+    events_added: 3
+    db:
+      - sql: SELECT group_concat(event_type || ':' || COALESCE(json_extract(details, '$.node_type'), ''), ',') FROM (SELECT * FROM events ORDER BY id)
+        equals: "job_submitted:,capacity_unavailable:gpu-m,node_launched:gpu-l"
+      - sql: SELECT entity_type || ':' || json_extract(details, '$.k') FROM events WHERE event_type = 'capacity_unavailable'
+        equals: "provider:1"
+      - sql: SELECT node_type || ':' || state FROM nodes
+        equals: "gpu-l:launching"
+
+- id: SCHEDULER-CAPACITY-UNAVAILABLE-NO-EXPENSIVE-FALLBACK
+  endpoint: POST /jobs
+  category: state
+  title: a 1-GPU job does not fall back from gpu-s to gpu-m (4.5x the price); it waits
+  source: SPEC_DECISIONS.md #3, #13 (policy)
+  given:
+    now_ts: 0
+    provider:
+      unavailable_windows:
+        gpu-s: [{from_ts: 0, to_ts: 3600}]
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30}
+  then:
+    status: 201
+    body: {id: ANY_JOB_ID, status: queued}
+    events_added: 2  # job_submitted, capacity_unavailable gpu-s
+    db:
+      - sql: SELECT COUNT(*) FROM nodes
+        equals: 0
+
+- id: SCHEDULER-NODE-READY-AT-FOUR-MINUTES
+  endpoint: POST /sim/advance
+  category: time
+  title: launching node becomes ready when its ready_at time is reached
+  given:
+    now_ts: 0
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: launching, launched_at: 0, ready_at: 240, terminated_at: null}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 4}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready}
+
+- id: SCHEDULER-NODE-REMAINS-LAUNCHING-BEFORE-READY
+  endpoint: GET /nodes
+  category: boundary
+  title: node is not ready before its ready_at timestamp
+  given:
+    # D: starts at 0 and advances to 239, so the engine really processes
+    # time up to one second before ready_at (a GET alone changes nothing).
+    now_ts: 0
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: launching, launched_at: 0, ready_at: 240, terminated_at: null}
+  when:
+    - advance: {to_ts: 239}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: launching}
+
+- id: SCHEDULER-LAUNCH-FAILURE-AFTER-FIFTEEN-MINUTES
+  endpoint: POST /jobs
+  category: state
+  title: launch that never becomes ready is marked failed after fifteen minutes
+  source: docx provider launch failure behavior
+  given:
+    now_ts: 0
+    provider:
+      launch_failure_probability: 1.0
+      deterministic_launch_delay_seconds: 240
+  # Rewritten (TEST_MIGRATION_MAP.md): the first never-ready failure is retried
+  # at once (SPEC_DECISIONS.md #2, delay 0), so a second node is launching at 900.
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 4, estimated_minutes: 30}
+    - advance: {minutes: 15}
+    - request: GET /nodes
+      query: {include_terminated: true}
+  then:
+    status: 200
+    body:
+      - {id: node-00001, state: failed, launched_at: 0, terminated_at: 900}
+      - {id: node-00002, state: launching, launched_at: 900}
+    db:
+      - sql: SELECT end_reason FROM nodes WHERE id = 'node-00001'
+        equals: launch_failed
+      - sql: SELECT status FROM jobs
+        equals: queued
+
+- id: SCHEDULER-NEVER-READY-RETRY-BACKS-OFF
+  endpoint: POST /sim/advance
+  category: time
+  title: the second consecutive never-ready failure waits 60 s before relaunching
+  source: SPEC_DECISIONS.md #2
+  # A 1-GPU job, so there is no allowed fallback type (gpu-m costs 4.5x gpu-s)
+  # and only the backoff decides: fail 900 -> relaunch 900 (k=1, 0 s); fail
+  # 1800 -> relaunch 1860 (k=2, 60 s), not 1800.
+  given:
+    now_ts: 0
+    provider:
+      launch_failure_probability: 1.0
+  when:
+    - request: POST /jobs
+      body: {team: vision, gpus: 1, estimated_minutes: 30}
+    - advance: {to_ts: 1860}
+  then:
+    status: 200
+    db:
+      - sql: SELECT group_concat(id || ':' || node_type || '@' || launched_at, ',') FROM (SELECT * FROM nodes ORDER BY id)
+        equals: "node-00001:gpu-s@0,node-00002:gpu-s@900,node-00003:gpu-s@1860"
+
+- id: IDLE-REAPER-BEFORE-TIMEOUT
+  endpoint: GET /nodes
+  category: time
+  title: idle node is not terminated before the configured idle timeout
+  given:
+    now_ts: 0
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: 0}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 4}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready, idle_since: 0}
+
+- id: IDLE-REAPER-EXACT-TIMEOUT
+  endpoint: GET /nodes
+  category: boundary
+  title: idle node remains alive at exactly N minutes when rule is more than N
+  given:
+    now_ts: 0
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: 0}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 5}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready, idle_since: 0}
+
+- id: IDLE-REAPER-AFTER-TIMEOUT
+  endpoint: GET /nodes
+  category: side_effect
+  title: idle node is terminated after more than the configured idle timeout
+  # Rewritten (TEST_MIGRATION_MAP.md): the node has already lived the 600 s
+  # minimum lifetime (SPEC_DECISIONS.md #1), so only the idle rule decides:
+  # idle since 600, timeout 300 s, reaped at 901 (more than N minutes).
+  given:
+    now_ts: 600
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: 600}
+  when:
+    - request: POST /sim/advance
+      body: {to_ts: 901}
+    - request: GET /nodes
+      query: {include_terminated: true}
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: terminated, terminated_at: 901}
+    db:
+      - sql: SELECT end_reason FROM nodes WHERE id = 'node-1'
+        equals: idle_timeout
+
+- id: IDLE-REAPER-EXACT-TIMEOUT-AFTER-MIN-LIFETIME
+  endpoint: GET /nodes
+  category: boundary
+  title: past the minimum lifetime, an idle node is still alive at exactly N minutes
+  source: SPEC_DECISIONS.md #1
+  given:
+    now_ts: 600
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: 600}
+  when:
+    - advance: {to_ts: 900}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready}
+
+- id: IDLE-REAPER-WAITS-FOR-MIN-LIFETIME
+  endpoint: GET /nodes
+  category: boundary
+  title: idle past the timeout but younger than 600 s, the node is kept
+  source: SPEC_DECISIONS.md #1 (policy)
+  # Replaces the old expectation of IDLE-REAPER-AFTER-TIMEOUT (terminated at 301).
+  given:
+    now_ts: 0
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: 0}
+  when:
+    - advance: {to_ts: 599}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready}
+
+- id: IDLE-REAPER-AT-MIN-LIFETIME
+  endpoint: GET /nodes
+  category: side_effect
+  title: idle since launch with a 5-minute timeout, the node is reaped at 600 s
+  source: SPEC_DECISIONS.md #1 example
+  given:
+    now_ts: 0
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-s, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: 0}
+  when:
+    - advance: {to_ts: 3600}
+    - request: GET /nodes
+      query: {include_terminated: true}
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: terminated, terminated_at: 600}
+    db:
+      - sql: SELECT end_reason FROM nodes WHERE id = 'node-1'
+        equals: idle_timeout
+
+- id: IDLE-REAPER-NEVER-TERMINATES-BUSY-NODE
+  endpoint: GET /nodes
+  category: state
+  title: idle reaper does not terminate a node while a job is running
+  given:
+    now_ts: 0
+    config: {idle_timeout_minutes: 5}
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 0, terminated_at: null, idle_since: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 2, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 0, node: node-1, sql: true}
+  when:
+    - request: POST /sim/advance
+      body: {minutes: 10}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, state: ready, gpus_used: 2}
+
+- id: SCHEDULER-TEAM-ISOLATION-POLICY
+  endpoint: POST /jobs
+  category: consistency
+  title: different teams do not share the same node under the selected isolation policy
+  source: security stakeholder design decision, not a hard API requirement
+  given:
+    now_ts: 300
+    nodes:
+      - {id: node-1, type: gpu-m, team: vision, state: ready, launched_at: 0, ready_at: 240, terminated_at: null}
+    jobs:
+      - {ref: A, team: vision, gpus: 1, estimated_minutes: 30, status: running, submitted_at: 0, started_at: 240, node: node-1, sql: true}
+    provider:
+      deterministic_launch_delay_seconds: 240
+  when:
+    - request: POST /jobs
+      body: {team: nlp, gpus: 1, estimated_minutes: 30}
+    - request: GET /nodes
+  then:
+    status: 200
+    body:
+      - {id: node-1, team: vision, gpus_used: 1}
+      - {id: ANY_NODE_ID, team: nlp, type: gpu-s, state: launching}

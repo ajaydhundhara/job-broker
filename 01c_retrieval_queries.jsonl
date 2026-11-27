@@ -1,0 +1,24 @@
+{"qid": "Q01", "query": "rank aborted communicator error", "expected_ids": ["F025", "F026", "F027", "F028", "F029", "F030"]}
+{"qid": "Q02", "query": "loss turned to NaN after a few epochs", "expected_ids": ["F019", "F020", "F021", "F022", "F023", "F024"]}
+{"qid": "Q03", "query": "can I run two jobs on one GPU", "expected_ids": []}
+{"qid": "Q04", "query": "job crashed saving a checkpoint, disk is full", "expected_ids": ["F031", "F032", "F033", "F034", "F035", "F036"]}
+{"qid": "Q05", "query": "my training job died, GPU memory exhausted", "expected_ids": ["F001", "F002", "F003", "F004", "F005", "F006", "F910", "F911", "F912"]}
+{"qid": "Q06", "query": "job cannot download its container image, access denied", "expected_ids": ["F007", "F008", "F009", "F010", "F011", "F012"]}
+{"qid": "Q07", "query": "cannot read the training data, permission problem", "expected_ids": ["F013", "F014", "F015", "F016", "F017", "F018"]}
+{"qid": "Q08", "query": "interruptible node was taken back and killed the job", "expected_ids": ["F037", "F038", "F039", "F040", "F041", "F042"]}
+{"qid": "Q09", "query": "multi-GPU run hangs then times out in all-reduce", "expected_ids": ["F025", "F026", "F027", "F028", "F029", "F030"]}
+{"qid": "Q10", "query": "no space left on device in scratch", "expected_ids": ["F031", "F032", "F033", "F034", "F035", "F036"]}
+{"qid": "Q11", "query": "how do I reset my account password", "expected_ids": []}
+{"qid": "Q12", "query": "where can I find the quarterly report", "expected_ids": []}
+{"qid": "Q13", "query": "dataset file missing at startup", "expected_ids": ["F013", "F014", "F015", "F016", "F017", "F018"]}
+{"qid": "Q14", "query": "node vanished mid run, termination notice", "expected_ids": ["F037", "F038", "F039", "F040", "F041", "F042"]}
+{"qid": "Q15", "query": "access denied, the token has expired", "expected_ids": ["F043", "F044", "F045", "F046", "F047", "F048"]}
+{"qid": "Q16", "query": "what is the maintenance window for the cluster", "expected_ids": []}
+{"qid": "Q17", "query": "how do I rename my team", "expected_ids": []}
+{"qid": "Q18", "query": "image pull keeps backing off with 401", "expected_ids": ["F007", "F008", "F009", "F010", "F011", "F012"]}
+{"qid": "Q19", "query": "container killed with exit code 137", "expected_ids": ["F001", "F002", "F003", "F004", "F005", "F006", "F910", "F911", "F912"]}
+{"qid": "Q20", "query": "torch complains driver too old for CUDA", "expected_ids": ["F049", "F050", "F051", "F052", "F053", "F054"]}
+{"qid": "Q21", "query": "training blew up, gradients infinite", "expected_ids": ["F019", "F020", "F021", "F022", "F023", "F024"]}
+{"qid": "Q22", "query": "libcudnn missing when starting the job", "expected_ids": ["F049", "F050", "F051", "F052", "F053", "F054"]}
+{"qid": "Q23", "query": "how do I add a teammate to my group", "expected_ids": []}
+{"qid": "Q24", "query": "token rejected, says expired", "expected_ids": ["F043", "F044", "F045", "F046", "F047", "F048"]}
