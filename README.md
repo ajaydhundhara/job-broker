@@ -36,7 +36,7 @@ nothing real runs), **test-only** (exists only so tests can be exact),
 | Fake provider: boot 4–8 min, ~3% never ready, capacity bursts, billing | simulation-only | `broker/provider.py`, D4, D10 |
 | `/sim/now`, `/sim/advance`, `/jobs/{id}/complete`, hidden job plans (`attach_plan`) | simulation-only | *API*, *Running the replay* |
 | `scheduler_enabled`, `reaper_enabled`, `unavailable_windows`, `never_ready_launches` | test-only | `broker/config.py`, D7 |
-| MiniLM backend: optional, never installed or evaluated here | known limitation | *Retrieval* |
+| MiniLM backend: optional; implemented, not evaluated in this environment | known limitation | *Retrieval* |
 | No auth; one process; interruptible nodes and preemption not built; guessable job ids | known limitation | *Known limitations* |
 
 ## Run
@@ -70,15 +70,13 @@ FastAPI's `/docs` page is the full API reference.
   table below (checked against the served routes by `tests/test_docs.py`),
   the HTTP tests, the YAML cases that also run against a live server, and
   the reports in `reports/`.
-- **AI tools used, and what each was used for:** [Ajay to complete with actual details]
-- **Start time:** [Ajay to complete with actual details]
-- **Finish time:** [Ajay to complete with actual details]
-- **Total hours worked, including AI-assisted work:** [Ajay to complete with actual details]
-- **Not built (documented as known limitations; Ajay to confirm which were deliberate cuts):**
+- **Not built (documented as known limitations):**
   - interruptible nodes (optional in the brief) and preemption: priority
     only orders the queue (*Scope*, *Known limitations*);
-  - the MiniLM backend: optional, never installed or evaluated here, so
-    every retrieval number is tfidf (*Retrieval*);
+  - an evaluation of the MiniLM backend: it is implemented
+    (`retrieval/embed.py`) but not evaluated in this environment (the model
+    is not installed or cached), so every retrieval number is tfidf
+    (*Retrieval*);
   - authentication, and more than one process or worker on one database
     (*Known limitations*);
   - autoscaling across regions, and estimated minutes in placement
@@ -478,8 +476,9 @@ index, search and API (C), and evaluation with parameter selection (D).
 - **Backend.** `RETRIEVAL_BACKEND=auto` (the default) uses MiniLM only if it
   is installed and already in the local cache, otherwise tfidf
   (scikit-learn) with one warning; `tfidf` and `minilm` force one. MiniLM is
-  not installed here, so the service runs, and every number below was
-  measured, on tfidf. The backend in use is in every response.
+  implemented but not evaluated in this environment (not installed or
+  cached), so the service runs, and every number below was measured, on
+  tfidf. The backend in use is in every response.
 - **Grouping assumption (a heuristic).** Logs with the same resolution text
   (case and spacing ignored) are treated as sharing a cause; results are
   ranked and returned group by group. This is a resolution-based heuristic,
@@ -539,8 +538,8 @@ about 3 s.
   - The one miss is the same query: on the full set it ranks the
     out-of-memory group first. It is left unfixed on purpose: a fix
     written now would be fitted to a visible query.
-- **Backend.** All numbers are tfidf. MiniLM is not installed or cached
-  here, so it is not evaluated, and its `params.json` entry keeps the
+- **Backend.** All numbers are tfidf. MiniLM is implemented but not
+  evaluated in this environment (not installed or cached), and its `params.json` entry keeps the
   untuned defaults.
 - **Ablations** (cross-validated P@5):
 
@@ -584,7 +583,8 @@ about 3 s.
   not been changed since. The failure above is documented, not fixed.
   `--extra` with new questions is the real test.
 - **Lexical at heart.** tfidf can't bridge synonyms the glossary lacks;
-  MiniLM (or another local embedding model) would, but is untested here.
+  MiniLM (or another local embedding model) might; MiniLM is implemented
+  but not evaluated in this environment.
 - **False positives from fix wording.** Resolution text is part of the
   relevance documents, because questions are often worded like the fix
   (removing it dropped CV P@5 to 0.81–0.88 and CV rejection to 0.75). So a
@@ -633,8 +633,9 @@ cause groups, the inferred resolutions and the conflicts.
   - Nothing is ever downloaded: the model loads with `local_files_only`,
     with `HF_HUB_OFFLINE=1` as a backstop.
   - MiniLM needs `pip install -r requirements-embeddings.txt` and a model
-    already in the local cache. It is not installed in this repo's
-    environment, so every number here is tfidf.
+    already in the local cache. It is implemented but not evaluated
+    in this environment (not installed or cached), so every number here is
+    tfidf.
   - The backend in use is returned in each response.
 - **`score`** is the cause group's score, the number compared with TAU, so
   logs in one group share it. Within a group, logs are ordered by their own

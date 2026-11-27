@@ -11,11 +11,22 @@ retrieval inference and classification, the README and the docs. It
 supersedes the earlier sections where they say so ("*Update:*"); the rest
 of the report is the original validation pass, kept as measured.
 
+**Repository snapshots.** The report covers three points in the history of
+`main`:
+
+| Snapshot | Commit | What it is | Sections |
+|---|---|---|---|
+| Original validation pass | `6bd616b` | the code that sections 1–12 measured; the pass's own test, holdout and report files were then committed as `645007f` | 1–12 |
+| Pre-submission review baseline | `645007f` ("final test") | the starting point of the review | 0 |
+| Reviewed result | `72b2d7e` ("Infer fixes from failure evidence only and withhold them when ambiguous") | the review's code, tests and reports; the summary (§1) and verdict (§12) describe this state | 0, 1, 12 |
+
+Later commits change documentation only (README wording and this report).
+
 ## 0. Pre-submission review (update)
 
 Baseline: HEAD `645007fe4913fcdac37571481017824b20f5da84` ("final test") on
-`main`, equal to `origin/main` (read from `.git/`; `git status` not run).
-Nothing was committed or pushed.
+`main`, equal to `origin/main` at the time (read from `.git/`). The
+review's changes were committed as `72b2d7e`; it was not pushed from here.
 
 ### Status of the issues found in the validation pass
 
@@ -26,7 +37,7 @@ Nothing was committed or pushed.
 | 3 | Shared vocabulary infers a wrong fix (§5, case 4) | **unchanged** | E4 still reaches only the disk group (0.360; token 0.229), so it is still inferred. Strict xfail kept, with an updated reason. |
 | 4 | One-line docker daemon error is a "question" (§7) | **fixed** | `Error response from <component>:` is a record start (SPEC_DECISIONS #18). Strict xfail replaced by 5 positive and 4 negative examples plus a redaction check. |
 | 5 | README "idle cost never goes negative" (§3, §11.5) | **fixed** | README *Cost attribution*: non-negative over a window starting at launch; a later window can show −1 micro-dollar, displayed as $0.00. |
-| 6 | AI-tool and time disclosure missing (§9, §12.1) | **partial** | README *Submission notes* added with placeholders `[Ajay to complete with actual details]`; only the author can fill them. |
+| 6 | AI-tool and time disclosure missing (§9, §12.1) | **not in the repository (author's decision)** | README *Submission notes* states the interface (HTTP API, no UI), what was not built, and next steps. The AI-tool, time and hours disclosure the brief asks for is not in the README, at the author's request; it has to be supplied with the submission. |
 | 7 | Grouping is a heuristic (§6, §11.3) | **unchanged, documented** | Grouping rules unchanged; README *Retrieval as implemented* now calls it a resolution-based heuristic and cites the pairwise numbers. |
 
 ### Part A: why the scoring was not changed (public queries only, tfidf)
@@ -125,27 +136,45 @@ patterns found nothing. The temporary `.claude/launch.json` was deleted.
 
 ## 1. Executive summary
 
-**Verdict: READY WITH CAVEATS.**
+**Verdict at `72b2d7e`: READY WITH CAVEATS.** This summary describes the
+reviewed result; the original pass's figures are in sections 3–9 and its
+changes in section 0.
 
 - **Core service and cost accounting:** correct on every case checked.
-  18 new cost tests pass, including report-level additivity over 37 s,
-  600 s and 1000 s cuts with five node situations and three teams.
-- **Retrieval on 40 unseen holdout queries** (unchanged parameters, `tfidf`):
+  18 cost tests pass, including report-level additivity over 37 s, 600 s and
+  1000 s cuts with five node situations and three teams. The README's
+  idle-cost wording now matches the code (a window starting after launch can
+  show −1 micro-dollar, displayed as $0.00).
+- **Public retrieval evaluation (tfidf, cross-validated):** P@3 0.938,
+  P@5 0.938, rejection 1.000, above the floors (P@5 ≥ 0.88, rejection
+  ≥ 0.95); unchanged by the review.
+- **40 holdout queries** (read-only audit, unchanged parameters, `tfidf`):
   - answerable queries hit their ceiling: P@3 0.979, P@5 0.9625, MRR 1.000,
     0 false rejections;
-  - rejection is the weak point: 5 of 8 unanswerable queries rejected (0.625),
-    against 1.000 on the public set.
-- **Three behaviour gaps**, pinned as strict-xfail tests and not fixed
-  (*Update:* the first and third are fixed, see section 0):
-  - an ambiguous top-two inference is assigned silently;
-  - shared vocabulary can infer a fix for a different root cause;
-  - a one-line docker daemon error is classified as a question.
-- **Submission blocker (documentation only):** the brief asks you to name
-  the AI tools you used and what for, and to give your start time, finish
-  time and hours worked. Neither is anywhere in the repository. Only you can
-  write it.
+  - rejection is the weak point: 5 of 8 unanswerable queries rejected
+    (0.625), against 1.000 on the public set. Unchanged by the review.
+- **Behaviour gaps from the original pass:**
+  - fixed: an ambiguous inference is no longer assigned silently (F910 is
+    now ambiguous and shows no fix; SPEC_DECISIONS #17);
+  - fixed: a one-line `Error response from <component>:` error is a log
+    (SPEC_DECISIONS #18);
+  - not fixed: shared vocabulary with a single wrong group still infers that
+    group's fix (case 4, strict xfail);
+  - not fixed, documented: how-to questions that only share a fix's wording,
+    and some absent failure families, pass TAU; some paraphrases are
+    rejected (`tests/test_retrieval_false_positives.py`, 6 strict xfails).
+- **Tests at `72b2d7e`:** 815 passed, 1 skipped (MiniLM not cached),
+  7 strict xfails; `ruff check` and `ruff format --check` clean.
+- **MiniLM:** implemented (`retrieval/embed.py`) but not evaluated in this
+  environment (the model is not installed or cached); every number is tfidf.
+- **Submission:** the brief's AI-tool, time and hours disclosure is not in
+  the repository (author's decision); it has to be supplied with the
+  submission.
 
 ## 2. Repository state
+
+*Snapshot at the original validation pass (`6bd616b`); later snapshots are
+listed in the introduction.*
 
 Read from `.git/` files; no git command was run (project rule).
 
@@ -153,13 +182,14 @@ Read from `.git/` files; no git command was run (project rule).
 |---|---|
 | Remote | `https://github.com/ajaydhundhara/job-broker.git` (`origin`) |
 | Branch | `main` (`.git/HEAD`) |
-| HEAD | `6bd616b5b7b45a44254557b79f11cc4a12b65b28`, "Replace replay report Analysis TODOs with written analysis from reports/replay_analysis.md" |
+| HEAD (original pass) | `6bd616b5b7b45a44254557b79f11cc4a12b65b28`, "Replace replay report Analysis TODOs with written analysis from reports/replay_analysis.md" |
 | `origin/main` | same commit (`.git/refs/remotes/origin/main`) |
 | Working tree | new, uncommitted files from this pass only (section 10). Run `git status` to confirm; it was not run here. |
 
 Environment: macOS (Darwin 25.6.0), Python 3.12.13, fastapi 0.165.0,
 scikit-learn 1.9.1, numpy 2.5.5, pydantic 2.14.4. Retrieval backend `tfidf`
-(`RETRIEVAL_BACKEND=tfidf`; MiniLM is not cached on this machine).
+(`RETRIEVAL_BACKEND=tfidf`). MiniLM is implemented but not evaluated in
+this environment: the model is not installed or cached on this machine.
 
 ## 3. Cost evaluation and accounting
 
@@ -619,6 +649,9 @@ The original brief (`Take_Home_Exercise.docx`) was inspected (text extracted).
     you cut". Known limitations and next steps exist (README "Known
     limitations", "Known limits and next steps"); the AI and time disclosure
     does not exist anywhere in the repository.
+  - *Update:* README *Submission notes* now covers the interface and what
+    was not built. The AI-tool, time and hours disclosure is left out of the
+    repository at the author's request.
 
 ## 10. Changed files
 
@@ -660,18 +693,20 @@ afterwards. Nothing was committed or pushed.
 
 ## 12. Verdict
 
-*Update:* items 1 and 3 are partly addressed by the pre-submission review
-(placeholders added, README fixed); the disclosure still has to be written
-by the author.
+**At `72b2d7e`: READY WITH CAVEATS.** The service, cost accounting and
+public-set retrieval meet their documented contracts and floors; every
+generated report reproduces byte for byte or was regenerated by its own
+command; two of the three behaviour gaps are fixed. Caveats:
 
-**READY WITH CAVEATS.** The service, cost accounting and public-set retrieval
-meet their documented contracts and floors, and every generated report
-reproduces byte for byte. Before submitting:
+1. The brief's AI-tool, start and finish time, and hours disclosure is not
+   in the repository (author's decision); supply it with the submission.
+2. Hard negatives: holdout rejection 0.625; fix-wording false positives and
+   the case 4 inference gap remain, pinned as strict xfails.
+3. The holdout file and its results are committed; if the repository is
+   public, they are public too. Check the repository's visibility before
+   sending the link.
 
-1. Add the AI-tool and time disclosure the brief requires: tools and what
-   each was used for, start and finish time, and hours actually worked.
-2. Decide whether to commit the holdout. If the repository is public, it
-   becomes public too.
-3. Optionally: fix the README idle-cost sentence; mention in the README the
-   hard-negative rejection result and the three xfail gaps as known
-   limitations; check the repository is public.
+*Original verdict (at `6bd616b`):* READY WITH CAVEATS, with the disclosure,
+the holdout decision and the README idle-cost sentence as open items. The
+idle-cost sentence and the known-limitations notes were addressed in the
+review (section 0).
