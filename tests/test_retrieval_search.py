@@ -267,7 +267,8 @@ def test_search_is_deterministic(idx):
 def test_a_question_with_an_exit_code_is_expanded(idx):
     out = search.search(idx, "what does exit code 137 mean?")
     assert out.input_type == "question"
-    assert "oomkilled" in out.query
+    # 137 is SIGKILL, not proof of OOM (P0-03): termination terms, no OOM terms.
+    assert "sigkill" in out.query and "oomkilled" not in out.query
 
 
 def test_a_pasted_log_is_noise_filtered_even_with_a_question_mark(idx):

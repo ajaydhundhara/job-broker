@@ -218,7 +218,7 @@ def scenario(conn, cfg):
 
 
 def snapshot(conn):
-    # Job ids are random; compare what happened, by creation order.
+    # Compare what happened, by creation order (ids are sequential since D16).
     jobs = conn.execute(
         """SELECT created_seq, team, gpus, status, node_id, started_at, ended_at
            FROM jobs ORDER BY created_seq"""

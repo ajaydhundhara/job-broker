@@ -14,6 +14,17 @@ PERCENTILE_METHOD = (
     "(1-based); no interpolation, so every percentile is an observed wait"
 )
 WITHIN_S = 10 * 60  # "started within 10 minutes", the ML engineers' wish
+# Burst window: the queue every 15 min, from the window start to 2 h after its end.
+BURST_SAMPLE_S = 15 * 60
+BURST_TAIL_S = 2 * 3600
+BURST_METHOD = (
+    "queue at t = jobs with submitted_at <= t < started_at (half-open); "
+    "burst_queue: the queue every 15 min from the window start to 2 h after its "
+    "end; burst_peak_queue: the largest queue at any instant in the window, "
+    "first reached burst_peak_after_s after its start; burst_recovery_s: when "
+    "the last job submitted in the window started, minus the window end "
+    "(negative: before the window ended; null: no job submitted in it)"
+)
 
 
 def percentile(values, p: float) -> int | None:
@@ -38,6 +49,32 @@ def peak(intervals) -> int:
         open_now += step
         best = max(best, open_now)
     return best
+
+
+def burst_sample_times(burst) -> list[int]:
+    start, end = burst
+    return list(range(start, end + BURST_TAIL_S + 1, BURST_SAMPLE_S))
+
+
+def _queued_at(jobs, t: int) -> int:
+    return sum(j["submitted_at"] <= t < j["started_at"] for j in jobs)
+
+
+def _burst(jobs, burst) -> dict:
+    """Queue samples, peak and recovery for one group of jobs (see BURST_METHOD)."""
+    start, end = burst
+    # The queue only grows at a submit, so its largest value in the window is
+    # at the window start or at a submit inside it; the first such instant wins.
+    instants = sorted({start} | {j["submitted_at"] for j in jobs
+                                 if start <= j["submitted_at"] < end})  # fmt: skip
+    peak_q, peak_t = max((_queued_at(jobs, t), -t) for t in instants)
+    in_window = [j["started_at"] for j in jobs if start <= j["submitted_at"] < end]
+    return {
+        "burst_queue": [_queued_at(jobs, t) for t in burst_sample_times(burst)],
+        "burst_peak_queue": peak_q,
+        "burst_peak_after_s": -peak_t - start,
+        "burst_recovery_s": max(in_window) - end if in_window else None,
+    }
 
 
 def _ratio(part: float, whole: float) -> float | None:
@@ -67,6 +104,7 @@ def _group(jobs, nodes, events, burst) -> dict:
         "peak_alive_nodes": peak(
             [(n["launched_at"], n["terminated_at"]) for n in nodes]
         ),
+        **_burst(jobs, burst),
     }
 
 
@@ -115,6 +153,8 @@ def scenario_metrics(result: dict, burst_window: tuple[int, int]) -> dict:
 def aggregate(runs: list[dict]):
     """The same nested shape, each number -> {median, min, max} across runs.
 
+    A list (a time series of equal length in every run) is aggregated per element.
+
     Median is the LOWER median (statistics.median_low): with an even number
     of seeds it is still an observed value, so micro-dollars stay integers.
     None (no data in that run, e.g. no burst jobs) is left out.
@@ -122,6 +162,8 @@ def aggregate(runs: list[dict]):
     first = runs[0]
     if isinstance(first, dict):
         return {k: aggregate([r[k] for r in runs]) for k in first}
+    if isinstance(first, list):  # a series: element by element
+        return [aggregate([r[i] for r in runs]) for i in range(len(first))]
     values = [v for v in runs if v is not None]
     if not values:
         return None

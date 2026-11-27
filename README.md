@@ -1,5 +1,44 @@
 # Job Broker
 
+An HTTP service that queues GPU jobs from teams, places them on simulated
+nodes, starts and stops nodes to control cost and reports cost per team,
+plus a retrieval endpoint that returns similar past failures and their
+resolutions.
+
+**Scope:** the whole brief (`Take_Home_Exercise.docx`): requirements 1–9
+and the Retrieval / AI track. Interruptible nodes, optional in the brief,
+are not used.
+
+### Feature status
+
+Labels: **implemented** (works as the brief asks), **policy choice** (our
+answer where the brief leaves it open), **simulation-only** (exists because
+nothing real runs), **test-only** (exists only so tests can be exact),
+**known limitation**.
+
+| Feature | Label | Where |
+|---|---|---|
+| Submit a job, idempotency key per team (req. 1) | implemented | `POST /jobs`, *Decisions* |
+| Placement on a node with free GPUs, launch if none fits, keeps working when the provider fails (req. 2) | implemented | *Scheduler policy*, *Retry policies* |
+| Larger node type as a fallback, at most 2× the price | policy choice | D3, D13 |
+| Idle reaper, N minutes configurable (req. 3) | implemented | *Idle reaper* |
+| A ready node lives at least 10 minutes before it is reaped | policy choice | D1 |
+| Lifecycle queued → running → succeeded / failed / cancelled, cancel while queued or running (req. 4) | implemented | `docs/state_machine.md` |
+| Fairness: `fair` queue order by 24 h GPU usage, a per-team node cap, eviction of another team's idle node at the cap (req. 5) | policy choice | D6, D12 |
+| Priority only orders the queue; it never preempts | policy choice | *Queue order* |
+| One team per node (Security: no two teams on one machine) | policy choice | D13 |
+| Cost report: GPU-hours and cost per team for a window (req. 6) | implemented | `GET /reports/cost`, *Billing* |
+| Idle cost charged to the node's owning team, failed launches to `provider_overhead` | policy choice | *Cost attribution* |
+| Restart without losing jobs, nodes or cost history (req. 7) | implemented | *Restart recovery* |
+| Trace replay, wait percentiles, cost, fair vs fifo (req. 8) | implemented | *Running the replay*, `reports/replay_results.md` |
+| HTTP API (req. 9) | implemented | *API* |
+| Failure retrieval for a log or a question (Retrieval track) | implemented | *Retrieval* |
+| Fake provider: boot 4–8 min, ~3% never ready, capacity bursts, billing | simulation-only | `broker/provider.py`, D4, D10 |
+| `/sim/now`, `/sim/advance`, `/jobs/{id}/complete`, hidden job plans (`attach_plan`) | simulation-only | *API*, *Running the replay* |
+| `scheduler_enabled`, `reaper_enabled`, `unavailable_windows`, `never_ready_launches` | test-only | `broker/config.py`, D7 |
+| MiniLM backend: optional, never installed or evaluated here | known limitation | *Retrieval* |
+| No auth; one process; interruptible nodes and preemption not built; guessable job ids | known limitation | *Known limitations* |
+
 ## Run
 
 ```bash
@@ -36,7 +75,12 @@ FastAPI's `/docs` page is the full API reference.
 | GET | `/sim/now` | Current simulated time (`now_ts`, `now_iso`). |
 | POST | `/sim/advance` | *Internal.* Move simulated time forward by `minutes` or to `to_ts`. |
 | GET | `/nodes` | Live nodes with GPUs used/free (derived from running jobs) and cost so far; `?include_terminated=true` adds ended nodes. |
-| GET | `/reports/cost` | GPU-hours, busy/idle/total cost per team, provider overhead and grand total for `[from_ts, to_ts)` (defaults: 0 to now). |
+| GET | `/reports/cost` | GPU-hours, busy/idle/total cost per team, provider overhead and grand total for `[from_ts, to_ts)` (defaults: 0 to now; `from_ts >= to_ts` is 422). |
+| POST | `/failures/search` | Similar past failures and their resolutions for a log or a question (see *Retrieval*, API). |
+| GET | `/failures/{failure_id}` | One past failure, redacted, with its group and resolution; 404 if unknown. |
+
+Errors: 404 unknown job or failure id, 409 a conflict with the current state
+(below), 422 invalid input, 503 `/failures` when no logs file is configured.
 
 ### Decisions
 
@@ -61,9 +105,7 @@ FastAPI's `/docs` page is the full API reference.
 - **Queue order.** high > normal > low, then (policy `fair`, the default)
   the team's last-24 h GPU usage, then oldest submit, then creation order
   (`jobs.created_seq`) for jobs submitted in the same second (`queue_order()`
-  in `broker/scheduler.py`, SPEC_DECISIONS.md #6). Not the job id: ids are
-  random, so an id tie-break would make two runs of the same workload place
-  jobs differently.
+  in `broker/scheduler.py`, SPEC_DECISIONS.md #6).
 - **`wait_seconds`.** started − submitted once started; now − submitted while
   queued; ended − submitted if cancelled before starting (it waited until it
   was cancelled; the brief counts cancelled jobs in wait time).
@@ -71,8 +113,16 @@ FastAPI's `/docs` page is the full API reference.
   `to_ts` is 409. `{"minutes": 0}` and `to_ts` equal to now return 200 and
   do not move the clock (no `clock_advanced` event), but run one scheduling
   pass, so anything already due happens (SPEC_DECISIONS.md #8).
+- **Concurrent advances.** `/sim/advance` calls are serialized by one
+  process-wide lock: two parallel `{"minutes": 10}` move the clock 20
+  minutes, and an absolute `to_ts` waits for a running advance (then 409 if
+  the clock is already past it). Each response reports the clock after its
+  own advance; which caller goes first is not defined (SPEC_DECISIONS.md #15).
 - **Cost window.** `[from_ts, to_ts)`: from inclusive, to exclusive, so
   adjacent windows never count a second twice. `from_ts >= to_ts` is 422.
+  The defaults are `from_ts = 0` and `to_ts = now`, so on a new server whose
+  clock is still at 0 the default window is empty and also 422: advance the
+  clock first or pass `to_ts`.
 - **Billing.** A node is billed per second from launch (boot time included)
   until termination, or until now if still alive, clipped to the window.
 - **10-minute minimum.** Applies once a node has terminated: a node that lived
@@ -102,19 +152,25 @@ FastAPI's `/docs` page is the full API reference.
   may run the dependency and the route on different thread-pool threads; the
   connection is still used by only that request, one step at a time. Writes
   are serialized by `BEGIN IMMEDIATE`, so the idempotency lookup and insert
-  cannot interleave, and `UNIQUE (team, idempotency_key)` backs it up in the
-  schema. `tests/test_concurrency.py` checks this with 50 rounds of 8 parallel
-  submits per scenario.
+  cannot interleave, and `UNIQUE (team, idempotency_key)` in the schema stops a
+  duplicate even if the lookup misses: the insert is rolled back with its
+  event and the existing job is returned (or 409 for a different request).
+  `tests/test_idempotency.py` forces these interleavings on separate
+  connections, with and without a missed lookup; `tests/test_concurrency.py`
+  adds 50-round stress tests of 8 parallel submits (marker `slow`).
 - **No auth.** Any caller can act on any team's jobs. `/jobs/{id}/complete` and
   `/sim/*` are internal (for tests and the simulator) and would not be exposed
   in production.
 
 ## Scheduling and simulation
 
+Every job, node and provider-node state, each transition, the component
+that performs it and where each invariant is enforced: [docs/state_machine.md](docs/state_machine.md).
+
 The full rule set, with which parts are **[brief]** (the assignment),
 **[policy]** (our design choice) and **[test]** (exists only for exact
 tests), is in [SPEC_DECISIONS.md](SPEC_DECISIONS.md). This section is the
-overview; the decision numbers (D1–D14) point there. How the tests changed
+overview; the decision numbers (D1–D16) point there. How the tests changed
 with it: [tests/TEST_MIGRATION_MAP.md](tests/TEST_MIGRATION_MAP.md).
 
 ### Architecture
@@ -133,7 +189,7 @@ with it: [tests/TEST_MIGRATION_MAP.md](tests/TEST_MIGRATION_MAP.md).
 | `broker/trace.py` | trace loading, validation and the data-quality report |
 | `broker/service.py` `attach_plan` | simulator only: a replayed job's hidden duration and outcome (no HTTP route) |
 | `replay/run_replay.py` | replays the trace through the HTTP API; policy comparison CLI |
-| `replay/metrics.py` | nearest-rank percentiles and per-team summaries |
+| `replay/metrics.py` | nearest-rank percentiles, per-team summaries and the burst-window metrics |
 
 A request commits its own change first (e.g. the new job), then the API runs
 `engine.run_pass()`, a zero-minute timestamp group, in a second transaction.
@@ -197,7 +253,8 @@ engine wakes up at exactly that second. Jobs stay `queued` throughout.
 ready). `nodes.end_reason`: `idle_timeout` (reaper), `evicted` (cap),
 `launch_failed` (never ready), `provider_reconciled` (the provider ended it,
 found by reconciliation), `manual`, `provider_reclaimed` (interruptible,
-not used). Node ids are sequential, `node-00001`, … (D14); job ids are random.
+not used). Node ids are sequential, `node-00001`, … (D14); so are job ids,
+`job-000000000001`, … (the creation sequence in hex, D16).
 
 ### Idle reaper (D1, D5)
 
@@ -267,8 +324,8 @@ advance; hitting one raises `SimulationStuck` instead of hanging. Advancing
 
 Everything is in SQLite: the clock, jobs, nodes, the provider's own nodes,
 the events the retry policies count, and the plans. A restart builds a new
-`FakeProvider`; with keyed generators and sequential ids it continues the
-same sequence. A crash mid-advance keeps every committed group and rolls
+`FakeProvider`; with keyed generators and sequential node and job ids it
+continues the same sequence. A crash mid-advance keeps every committed group and rolls
 back the one in progress; calling `advance_to` again resumes from the stored
 clock and does nothing twice, because each step acts only on state still
 due (tested by injecting a crash). Reconciliation runs in every group and at
@@ -296,6 +353,11 @@ data quality in [reports/data_quality.md](reports/data_quality.md). Options:
 `--seeds 42,43,44,45,46`, `--burst-window 2025-03-05T05:00Z,2025-03-05T08:00Z`,
 `--keep-duplicates`, `--check-invariants`, `--out-dir reports`.
 `python -m broker.trace 01a_trace.csv` writes only the data-quality report.
+Candidate observations for the report's Analysis section, for author review
+and tied to its tables, are in
+[reports/replay_analysis_candidates.md](reports/replay_analysis_candidates.md)
+(hand-written; `tests/test_replay_candidates.py` fails if a figure it cites is
+no longer in the regenerated report).
 
 How the replay works and the rules it follows:
 
@@ -334,11 +396,22 @@ How the replay works and the rules it follows:
   1-based); medians across seeds are lower medians (an observed value, so
   micro-dollars stay integers); idle share = idle / grand total (provider
   overhead, i.e. never-ready nodes, is reported on its own).
+- **Burst window (section 5).** Computed after the run from the jobs table;
+  the scheduler is not involved. Queue at t = jobs with
+  `submitted_at <= t < started_at`. `burst_queue`: the queue every 15 min from
+  the window start to 2 h after its end (overall in the table, per team in
+  the JSON); `burst_peak_queue` / `burst_peak_after_s`: the largest queue at
+  any instant in the window and when it was first reached; `burst_recovery_s`:
+  when the last job submitted in the window started, minus the window end
+  (negative: before it ended). Reported for the scenarios at the main idle
+  timeout.
 
 ### Known limitations
 
 - **One process.** The engine runs inside requests; there is no background
-  clock. Simulated time only moves on `/sim/advance` (or replay).
+  clock. Simulated time only moves on `/sim/advance` (or replay). Deploy
+  one process with one worker: the advance lock is in memory, so a second
+  process or `uvicorn --workers N` on the same database is not serialized.
 - **Provider in the same database.** A launch and the broker's record of it
   commit together, which is only possible because the fake provider is local.
   Reconciliation is there for a real provider, but has only been tested
@@ -348,6 +421,8 @@ How the replay works and the rules it follows:
 - **Usage window.** Fair ordering uses the last 24 h of GPU-seconds,
   recomputed per pass with a query over all started jobs; fine for this
   scale, not indexed for millions of jobs.
+- **Guessable job ids.** Job ids are the creation sequence (D16), so they
+  show how many jobs exist; with no auth this exposes nothing new.
 - **Not built:** preemption, interruptible nodes, autoscaling across regions,
   estimated minutes in placement.
 
@@ -358,6 +433,25 @@ most similar past failures and their resolutions.
 
 Built in four sub-steps: cleaning and data quality (A), the glossary (B),
 index, search and API (C), and evaluation with parameter selection (D).
+
+### Retrieval as implemented
+
+- **Backend.** `RETRIEVAL_BACKEND=auto` (the default) uses MiniLM only if it
+  is installed and already in the local cache, otherwise tfidf
+  (scikit-learn) with one warning; `tfidf` and `minilm` force one. MiniLM is
+  not installed here, so the service runs, and every number below was
+  measured, on tfidf. The backend in use is in every response.
+- **Grouping assumption.** Logs with the same resolution text (case and
+  spacing ignored) share a cause; results are ranked and returned group by
+  group. Two different texts for one real cause would form two groups.
+- **Inferred-resolution assumption.** A log with an empty resolution joins
+  the group of its most similar log if that hybrid score is at least
+  `ASSIGN_MIN = 0.3`, and is returned as `inferred` with a note; otherwise it
+  is `none` with resolution `null` and the note "no resolution recorded for
+  this failure". In this corpus 3 logs are inferred (see *Resolutions*).
+- **Evaluation limits.** 24 labelled queries (18 answerable), all seen
+  while building; numbers are tfidf only; one answerable query still fails;
+  details under *Known limits and next steps*.
 
 ### Evaluation
 
@@ -392,8 +486,9 @@ about 3 s.
   which accounts for fold 2's P@5 of 0.75.
 - **Full set, optimistic** (parameters chosen on the same 24 queries):
   P@3 0.944, P@5 0.944, rejection accuracy 1.000.
-  - Chosen: `w_dense=0.3, g_member=0.5, lex_k=2, tau=0.596`, now in
-    `params.json`.
+  - Chosen: `w_dense=0.5, g_member=0.7, lex_k=2.0, tau=0.419598`, saved in
+    `params.json` (fixed: `assign_min=0.3`, `noise_df=0.15`). Every
+    cross-validation fold chose `0.3 / 0.5 / 2.0` with TAU 0.528–0.536.
   - The one miss is the same query: on the full set it ranks the
     out-of-memory group first. It is left unfixed on purpose: a fix
     written now would be fitted to a visible query.
@@ -410,9 +505,11 @@ about 3 s.
   | hybrid + groups | 0.887 |
   | + glossary | 0.938 |
 
-  The glossary also lifts rejection accuracy from 0.750 to 1.000. The noise
-  filter changes nothing here: all 24 queries are single-line, so it acts
-  only on the indexed documents.
+  The glossary also lifts rejection accuracy from 0.750 to 1.000. Without
+  the noise filter, CV is unchanged (P@5 0.938, rejection 1.000), but the
+  full-set score rises from 0.944 to 1.000 for P@3 and P@5. The queries are
+  single-line, so the filter acts only on the indexed documents. The filter
+  stays on with `noise_df = 0.15`, a fixed value that is not tuned.
 - **Regression floors** (`tests/test_retrieval_eval.py`): CV P@5 ≥ 0.88 and
   CV rejection accuracy ≥ 0.95. That is the measured value minus 0.05: one
   query moves a fold's P@5 by about 0.2.
@@ -517,12 +614,24 @@ query:  text → redact → log? signal lines : question? + glossary terms
     never padded with weak matches.
   - If no group reaches TAU, the answer is `no_match` with "No similar past
     failure found".
-- **Log or question.** `is_log` decides whether the noise filter runs, so a
-  pasted log never brings its boilerplate.
-  - `glossary.is_question_like` only decides whether to expand. So "what
-    does exit code 137 mean?" is still expanded, while a log containing a
-    URL with `?` is still filtered.
-  - `input_type` is `question` whenever the text was expanded.
+- **Log or question.** One classifier, `clean.classify`, decides. A log is
+  reduced to its signal lines and never expanded; a question is expanded with
+  the glossary. `input_type` reports the result. Tiers, first match wins:
+  1. Structural log evidence → log: several non-blank lines, a stack trace,
+     a structured record (JSON object, 3+ `key=value` fields), or a line
+     starting like a record (timestamp, level, `SomeError:`).
+  2. A question cue → question: a question or request word first (what,
+     why, how, explain, …), or a `?` that ends a sentence. A `?` inside a
+     URL does not count.
+  3. Log words in one line → log: an exception class, an exit code (`exit
+     code`, `exited with code N`, `exit status N`), `errno`, an upper-case
+     level.
+  4. Anything else → question (a short symptom such as "gpu out of memory").
+
+  So `ERROR fetch https://h/x?rev=3 failed` is a log and gets no glossary
+  terms, while "what does exit code 137 mean?" stays a question. A question
+  with a log pasted under it counts as a log: the log is cleaned, and the
+  question's words are not expanded.
 - **Why no vector database.** 59 documents (plus 11 group documents) fit
   in a NumPy matrix, and a search is one matrix-vector product. Measured with
   tfidf: about 5 µs for the product, about 0.6 ms for a whole search
@@ -545,10 +654,10 @@ query:  text → redact → log? signal lines : question? + glossary terms
   resolution `null`, and the note "no resolution recorded for this
   failure".
   - The max rather than the mean: a cause group is worded differently on
-    purpose. Measured here, an OOMKilled log scored 0.76 against its
-    look-alike but 0.17 as a group mean.
+    purpose. Measured here (tuned tfidf parameters), an OOMKilled log
+    scored 0.806 against its look-alike but 0.188 as a group mean.
   - Here all three empty logs are out-of-memory logs and are inferred into
-    the batch-size group, at 0.396, 0.761 and 0.761.
+    the batch-size group, at 0.482, 0.806 and 0.806.
 - **Conflicts:** identical signal text with different resolutions. Here
   that is one byte-identical pair, which keep their own resolutions; both
   carry the note "conflicting resolutions recorded for an identical log".
@@ -569,11 +678,22 @@ query:  text → redact → log? signal lines : question? + glossary terms
 
 ### Glossary (`retrieval/glossary.py`)
 
-- 25 entries. Drafted in sub-step B from general ML-ops knowledge and the
+- 26 entries. Drafted in sub-step B from general ML-ops knowledge and the
   error vocabulary in the logs, before the evaluation queries were opened.
   They were then edited by hand.
 - 13 phrases that matched visible queries were removed in sub-step D (see
   "Evaluation").
+- **Exit code 137 is not proof of OOM.** 137 = 128 + signal 9 (SIGKILL); the
+  OOM killer is one cause, preemption, an operator kill or a timeout are
+  others. So the entry was split in two:
+  - a bare `137` / `SIGKILL` / `signal 9` adds termination terms only
+    (`137 sigkill signal 9 killed terminated`);
+  - OOM terms (`oomkilled oom 137 memory limit`) need memory evidence in
+    the text: OOMKilled, OOM killer, out of memory killer, a memory or
+    cgroup limit exceeded.
+
+  In this corpus every real 137 is an OOM, so the split changed no visible
+  eval result (the reports are byte-identical); it protects unseen inputs.
 - A test checks that the module never refers to the queries file.
 - Expansion only appends terms. Multi-word phrases may skip up to two
   harmless bridge words ("disk is completely full"). Single words must
@@ -612,10 +732,11 @@ query:  text → redact → log? signal lines : question? + glossary terms
     lines appear in too few logs to count as noise, so they add a little
     shared signal across unrelated causes. Dropping INFO/DEBUG lines
     whenever another signal line exists was rejected: it would also lose a
-    real error logged at INFO level. Sub-step D measures the effect.
-- **Log or question.** Text counts as a log if it has several lines, an
-  upper-case log level, an exception class name (`RuntimeError`, but not a
-  plain "Error"), "exit code" or "errno".
+    real error logged at INFO level. Its effect is not measured on its
+    own: the evaluation's one related ablation turns the whole noise filter
+    off (see *Evaluation*).
+- **Log or question.** `clean.classify`, with the four tiers described under
+  *Pipeline*.
 - **Tokens.** Logs and questions use the same rules:
   - lower-case words and numbers (137, 401 are kept);
   - `all-reduce` gives `allreduce`, `all` and `reduce`;
@@ -658,7 +779,8 @@ ruff check . && ruff format --check .
 ```
 
 The full-trace smoke test (`tests/test_replay.py::test_full_trace_smoke`,
-marker `slow`) takes about 5 s; skip it with `pytest -m "not slow"`.
+about 5 s) and the repeated stress rounds in `tests/test_concurrency.py` carry
+the marker `slow`; plain `pytest` runs them, `pytest -m "not slow"` skips them.
 
 ### Test configuration
 
@@ -677,7 +799,7 @@ the boot delay, and ask for failures explicitly with `unavailable_windows` /
 
 - **No wall clock, no global random.** `tests/test_no_wall_clock.py` scans
   `broker/` (Python AST and SQL) for wall-clock calls (`time.*`,
-  `datetime.now/utcnow/today`, `uuid1`, SQLite `CURRENT_TIMESTAMP` / `'now'`)
+  `datetime.now/utcnow/today`, `uuid`, `secrets`, `os.urandom`, SQLite `CURRENT_TIMESTAMP` / `'now'`)
   and for any `random.*` use other than a seeded `random.Random(...)`, and runs a full workload with
   every wall-clock read from `broker.*` code made to fail
   (`tests/wall_clock_guard.py`). Every in-process YAML case runs under the
@@ -695,6 +817,14 @@ the boot delay, and ask for failures explicitly with `unavailable_windows` /
   an uninterrupted run, and checks that cost parts add up, that any split
   of a cost window adds up to the micro-dollar, and that billing stops at
   the last termination.
+- **Replay determinism.** `tests/test_replay_restart.py` replays a trace with
+  launch failures, outages, duplicates and reaping twice, in two processes
+  with different `PYTHONHASHSEED`s, and with a restart (new app, provider and
+  connection) mid-boot, mid-failing-launch, mid-backoff, with jobs running
+  and queued, and before the drain. Every table (jobs incl. requeue counts,
+  nodes, provider nodes, events with ids and timestamps, plans, clock) and
+  the cost report must match the uninterrupted run exactly; nothing is
+  renamed. Inputs and the argument: SPEC_DECISIONS.md #16.
 
 ### YAML test cases
 

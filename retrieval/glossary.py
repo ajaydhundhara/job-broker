@@ -1,10 +1,9 @@
 """A small ML-ops glossary: precise everyday phrases -> terms used in logs.
 
 The glossary expands natural-language QUESTIONS before semantic/lexical
-retrieval. It does not classify a pasted log and should not be used to rewrite
-one. Call ``expand_for_retrieval(text, is_log=...)`` from the retrieval layer:
-question-shaped text takes precedence over a coarse log detector, so a query
-such as "what does exit code 137 mean?" is still expanded.
+retrieval. It does not classify text and is never applied to a pasted log:
+``retrieval.clean.classify`` decides that, and ``retrieval.search`` calls
+``expand`` only for questions.
 
 Entries are based on general ML-ops terminology and the failure vocabulary in
 the supplied historical logs, not on the labelled evaluation queries. Each
@@ -96,14 +95,31 @@ GLOSSARY: tuple[Entry, ...] = (
             "code 137",
             "exit status 137",
             "status 137",
-            "oomkilled",
             "sigkill",
             "sig kill",
+            "signal 9",
         ),
-        ("137", "sigkill", "oomkilled", "oom"),
-        "Exit code 137 indicates termination by SIGKILL (128 + signal 9); "
-        "containers often report OOMKilled, although SIGKILL is not proof "
-        "of an out-of-memory cause by itself.",
+        ("137", "sigkill", "signal 9", "killed", "terminated"),
+        "Exit code 137 is 128 + signal 9: the process was killed (SIGKILL). "
+        "The OOM killer is one possible cause; preemption, an operator kill or "
+        "a timeout are others, so a bare 137 or SIGKILL adds no memory terms.",
+    ),
+    Entry(
+        (
+            "oomkilled",
+            "oom killed",
+            "oom killer",
+            "out of memory killer",
+            "memory limit exceeded",
+            "exceeded memory limit",
+            "exceeds memory limit",
+            "memory limit reached",
+            "cgroup memory limit",
+            "memory cgroup",
+        ),
+        ("oomkilled", "oom", "137", "memory limit"),
+        "Memory evidence: the kernel OOM killer or a container / cgroup memory "
+        "limit ended the process (reported as OOMKilled, usually exit code 137).",
     ),
     Entry(
         (
@@ -619,61 +635,6 @@ def expand(question: str, entries: tuple[Entry, ...] = GLOSSARY) -> str:
             if term not in added:
                 added.append(term)
     return f"{question} {' '.join(added)}" if added else question
-
-
-def is_question_like(text: str) -> bool:
-    """Recognize obvious natural-language questions before a coarse log check.
-
-    This intentionally catches questions that contain technical tokens, e.g.
-    "what does exit code 137 mean?". It is a small precedence helper, not a
-    general-purpose log classifier.
-    """
-    stripped = text.strip()
-    if not stripped:
-        return False
-    if "?" in stripped:
-        return True
-    first = tokens(stripped)[:2]
-    question_starts = {
-        "what",
-        "why",
-        "how",
-        "who",
-        "when",
-        "where",
-        "which",
-        "does",
-        "do",
-        "did",
-        "is",
-        "are",
-        "can",
-        "could",
-        "should",
-        "would",
-        "explain",
-        "describe",
-        "define",
-    }
-    return bool(first and first[0] in question_starts)
-
-
-def expand_for_retrieval(
-    text: str,
-    *,
-    is_log: bool = False,
-    entries: tuple[Entry, ...] = GLOSSARY,
-) -> str:
-    """Expand question text while leaving pasted logs unchanged.
-
-    If an upstream detector labels text as a log, a clear natural-language
-    question takes precedence. This fixes the case where "what does exit code
-    137 mean?" is incorrectly classified as a log merely because it contains
-    an error-code phrase. Pass the detector's result through ``is_log``.
-    """
-    if is_log and not is_question_like(text):
-        return text
-    return expand(text, entries)
 
 
 def to_markdown(entries: tuple[Entry, ...] = GLOSSARY) -> str:

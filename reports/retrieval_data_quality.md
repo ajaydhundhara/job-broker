@@ -104,7 +104,7 @@ Logs with more than one signal line:
 
 ## Cause groups (index)
 
-Built by `retrieval.index.build_index` with backend **tfidf**; W_DENSE=0.5, LEX_K=5.0, ASSIGN_MIN=0.3. Logs are grouped by normalised resolution text (case and spacing ignored).
+Built by `retrieval.index.build_index` with backend **tfidf**; W_DENSE=0.5, LEX_K=2.0, ASSIGN_MIN=0.3. Logs are grouped by normalised resolution text (case and spacing ignored).
 
 | group | logs | recorded | inferred | resolution |
 |---|---|---|---|---|
@@ -126,9 +126,9 @@ An empty resolution joins the group of its most similar member (max per-log hybr
 
 | id | status | group | similarity | signal lines |
 |---|---|---|---|---|
-| F910 | inferred | g07 | 0.396 | `torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 512.00 MiB (GPU 0; 15.4 GiB total capacity)` |
-| F911 | inferred | g07 | 0.761 | `Container exited with code 137 (OOMKilled) after loading dataset shard 6153` |
-| F912 | inferred | g07 | 0.761 | `Container exited with code 137 (OOMKilled) after loading dataset shard 3929` |
+| F910 | inferred | g07 | 0.482 | `torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 512.00 MiB (GPU 0; 15.4 GiB total capacity)` |
+| F911 | inferred | g07 | 0.806 | `Container exited with code 137 (OOMKilled) after loading dataset shard 6153` |
+| F912 | inferred | g07 | 0.806 | `Container exited with code 137 (OOMKilled) after loading dataset shard 3929` |
 
 ### Conflicts
 

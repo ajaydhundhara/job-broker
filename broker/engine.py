@@ -199,6 +199,37 @@ def reconcile(conn, now: int, provider: FakeProvider) -> bool:
     for row in stale:
         _mark_ended(conn, row, now)
         changed = True
+
+    # We ended it, the provider still bills it: end it there too.
+    still_billed = conn.execute(
+        """SELECT n.id, n.state, n.terminated_at FROM nodes n
+           JOIN provider_nodes p ON p.id = n.id
+           WHERE n.state IN ('terminated', 'failed')
+             AND p.state IN ('pending', 'ready') ORDER BY n.id"""
+    ).fetchall()
+    for row in still_billed:
+        provider.terminate_node(conn, row["id"], now)
+        log_event(conn, now, "node", row["id"], "provider_bill_stopped",
+                  broker_state=row["state"], broker_ended_at=row["terminated_at"])  # fmt: skip
+        changed = True
+
+    # The provider made it ready but we still say launching: catch up, at the
+    # provider's ready time (its billing and idle clock started then).
+    behind = conn.execute(
+        """SELECT n.id, n.node_type, p.ready_at_planned FROM nodes n
+           JOIN provider_nodes p ON p.id = n.id
+           WHERE n.state = 'launching' AND p.state = 'ready' ORDER BY n.id"""
+    ).fetchall()
+    for row in behind:
+        ts = min(row["ready_at_planned"], now)
+        conn.execute(
+            """UPDATE nodes SET state = 'ready', ready_at = ?, idle_since = ?
+               WHERE id = ? AND state = 'launching'""",
+            (ts, ts, row["id"]),
+        )
+        log_event(conn, ts, "node", row["id"], "node_ready",
+                  node_type=row["node_type"], reconciled=True)  # fmt: skip
+        changed = True
     return changed
 
 

@@ -1,5 +1,10 @@
 # Test migration map
 
+**Snapshot.** The tables and counts below were generated when
+SPEC_DECISIONS.md #1–#14 were introduced and are not regenerated. Every
+later change to an existing test is listed in *Changes to existing tests
+after the snapshot* at the end; tests added later are listed there too.
+
 How every test from the baseline (329 passed) maps to the suite after
 SPEC_DECISIONS.md. Generated from the collected test ids (baseline:
 JUnit report taken before any change) plus the list of hand-written changes;
@@ -487,3 +492,22 @@ a successor that checks the same intent.
 | now: REWRITTEN | 16 |
 | post-baseline: REPLACED | 9 |
 | post-baseline: RETAINED (moved) | 1 |
+
+## Changes to existing tests after the snapshot
+
+Each change kept the test's intent; none weakened, skipped or deleted a test.
+
+| round | test | change | reason |
+|---|---|---|---|
+| P0-02 | `tests/test_retrieval.py` (the `is_log`, `is_question_like` and `expand_for_retrieval` tests) | now call `clean.classify`, with the same inputs and expected outcomes (`""` → question); the corpus check asserts every corpus log is classified as a log | one classifier replaced the three helpers |
+| P0-03 | `tests/test_retrieval_search.py::test_a_question_with_an_exit_code_is_expanded` | asserts `sigkill` is added and `oomkilled` is not | exit code 137 is not proof of OOM; OOM terms need memory evidence |
+| P0-05 | `tests/test_concurrency.py` (4 round-based tests) | `@pytest.mark.slow` added; bodies unchanged | repeated stress tests run only behind `slow`; deterministic interleavings are in `tests/test_idempotency.py` |
+| P0-06 | `tests/test_no_wall_clock.py` | also rejects `uuid`, `secrets`, `uuid4()` and `os.urandom`; 4 guard cases added | job ids are sequential (D16); the scan keeps random ids out |
+| P0-06 | `tests/test_replay_scenario.py::test_the_invariant_check_catches_a_broken_state` | `service.new_id("job")` → `service.next_job_id(conn)` to make distinct ids | `new_id` was removed with the random ids |
+| P0-06 | `tests/test_engine.py`, `tests/test_integration.py` | comments only: ids are sequential | D16 |
+
+Tests added after the snapshot: `test_clock_advance.py` (P0-01),
+`test_query_classification.py` (P0-02), `test_exit_137.py` (P0-03),
+`test_state_machine.py` (P0-04), `test_idempotency.py` (P0-05),
+`test_replay_restart.py` (P0-06), `test_burst_metrics.py` and
+`test_replay_candidates.py` (P0-07), `test_docs.py` (P0-08).

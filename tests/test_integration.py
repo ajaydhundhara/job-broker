@@ -73,7 +73,7 @@ def observe(client):
     jobs = [client.get(f"/jobs/{j}").json() for j in job_ids(client)]
     return {
         "nodes": nodes,
-        # job ids are random per run; compare everything else, in arrival order
+        # compare everything but ids (sequential since D16), in arrival order
         "jobs": [{k: v for k, v in j.items() if k != "id"} for j in jobs],
         "cost": client.get("/reports/cost").json(),
     }

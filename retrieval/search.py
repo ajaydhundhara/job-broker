@@ -48,17 +48,15 @@ def prepare_query(
 ) -> tuple[str, str]:
     """(input type, the text to score), always redacted.
 
-    is_log decides the noise filter, so a pasted log never brings its
-    boilerplate. A clear question is expanded even if it looks like a log
-    ("what does exit code 137 mean?"); is_question_like only decides that.
-    use_glossary=False is for the evaluation's ablation only.
+    clean.classify decides: a log is reduced to its signal lines (never
+    expanded, so a "?" in one of its URLs changes nothing); a question is
+    expanded with the glossary. use_glossary=False is for the evaluation's
+    ablation only.
     """
     q = clean.redact(text)
-    log_like = clean.is_log(q)
-    cleaned = "\n".join(clean.signal_lines(q, index.noise)) if log_like else q
-    if not log_like or glossary.is_question_like(q):
-        return "question", glossary.expand(cleaned) if use_glossary else cleaned
-    return "log", cleaned
+    if clean.classify(q) == "log":
+        return "log", "\n".join(clean.signal_lines(q, index.noise))
+    return "question", glossary.expand(q) if use_glossary else q
 
 
 def _note(index: Index, log_id: str) -> str | None:

@@ -1,6 +1,7 @@
 {
   "method": {
     "percentile": "nearest-rank: sort the n values, take the value at rank ceil(p/100 * n) (1-based); no interpolation, so every percentile is an observed wait",
+    "burst": "queue at t = jobs with submitted_at <= t < started_at (half-open); burst_queue: the queue every 15 min from the window start to 2 h after its end; burst_peak_queue: the largest queue at any instant in the window, first reached burst_peak_after_s after its start; burst_recovery_s: when the last job submitted in the window started, minus the window end (negative: before the window ended; null: no job submitted in it)",
     "wait": "started_at - submitted_at, in seconds",
     "money": "integer micro-dollars (1 USD = 1_000_000); dollars only in the markdown",
     "idle_share": "team: idle / team total; overall: teams' idle / grand total (provider overhead, i.e. never-ready nodes, is reported separately)",
@@ -94,6 +95,32 @@
             "capacity_unavailable": 38,
             "peak_queue": 151,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              0,
+              1,
+              0,
+              149,
+              150,
+              134,
+              132,
+              114,
+              97,
+              83,
+              65,
+              51,
+              35,
+              20,
+              3,
+              1,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 151,
+            "burst_peak_after_s": 5100,
+            "burst_recovery_s": 4971,
             "gpu_seconds": 7532520,
             "busy": 2261492679,
             "idle": 892048940,
@@ -119,6 +146,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 178152079,
               "idle": 109287077,
@@ -139,6 +192,32 @@
               "capacity_unavailable": 10,
               "peak_queue": 5,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 396878116,
               "idle": 222296593,
@@ -159,6 +238,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 180740139,
@@ -179,6 +284,32 @@
               "capacity_unavailable": 18,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 4971,
               "gpu_seconds": 3548160,
               "busy": 1049887492,
               "idle": 109937773,
@@ -199,6 +330,32 @@
               "capacity_unavailable": 9,
               "peak_queue": 151,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                2,
+                0,
+                1,
+                0,
+                149,
+                150,
+                134,
+                130,
+                114,
+                96,
+                82,
+                64,
+                50,
+                34,
+                19,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 151,
+              "burst_peak_after_s": 5100,
+              "burst_recovery_s": 4157,
               "gpu_seconds": 1373100,
               "busy": 419841660,
               "idle": 269787358,
@@ -222,6 +379,32 @@
             "capacity_unavailable": 34,
             "peak_queue": 157,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              1,
+              1,
+              4,
+              4,
+              156,
+              154,
+              144,
+              141,
+              129,
+              115,
+              104,
+              89,
+              80,
+              65,
+              54,
+              42,
+              25,
+              8,
+              2,
+              0
+            ],
+            "burst_peak_queue": 157,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 6328,
             "gpu_seconds": 7532520,
             "busy": 2272166640,
             "idle": 793555537,
@@ -247,6 +430,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 2,
               "peak_alive_nodes": 4,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 180678121,
               "idle": 134410343,
@@ -267,6 +476,32 @@
               "capacity_unavailable": 22,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 401410409,
               "idle": 159172635,
@@ -287,6 +522,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": 2754,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 181007638,
@@ -307,6 +568,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": -2019,
               "gpu_seconds": 3548160,
               "busy": 1049579158,
               "idle": 117038745,
@@ -327,6 +614,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 156,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                1,
+                1,
+                4,
+                4,
+                155,
+                153,
+                144,
+                139,
+                127,
+                112,
+                101,
+                86,
+                77,
+                62,
+                51,
+                42,
+                25,
+                8,
+                2,
+                0
+              ],
+              "burst_peak_queue": 156,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 6328,
               "gpu_seconds": 1373100,
               "busy": 423765620,
               "idle": 201926176,
@@ -350,6 +663,32 @@
             "capacity_unavailable": 51,
             "peak_queue": 149,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              1,
+              0,
+              1,
+              0,
+              149,
+              142,
+              123,
+              110,
+              91,
+              70,
+              49,
+              28,
+              13,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 149,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 1764,
             "gpu_seconds": 7532520,
             "busy": 2262306220,
             "idle": 902603039,
@@ -375,6 +714,32 @@
               "capacity_unavailable": 20,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 178614577,
               "idle": 80320553,
@@ -395,6 +760,32 @@
               "capacity_unavailable": 9,
               "peak_queue": 2,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 398717703,
               "idle": 227402981,
@@ -415,6 +806,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216191665,
               "idle": 203137777,
@@ -435,6 +852,32 @@
               "capacity_unavailable": 15,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 1764,
               "gpu_seconds": 3548160,
               "busy": 1048933323,
               "idle": 119504718,
@@ -455,6 +898,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 149,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                1,
+                0,
+                1,
+                0,
+                149,
+                142,
+                123,
+                108,
+                91,
+                69,
+                48,
+                27,
+                12,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 149,
+              "burst_peak_after_s": 4498,
+              "burst_recovery_s": 1460,
               "gpu_seconds": 1373100,
               "busy": 419848952,
               "idle": 272237010,
@@ -478,6 +947,32 @@
             "capacity_unavailable": 22,
             "peak_queue": 150,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              0,
+              3,
+              0,
+              150,
+              150,
+              136,
+              125,
+              110,
+              93,
+              78,
+              58,
+              45,
+              32,
+              12,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 150,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 4154,
             "gpu_seconds": 7532520,
             "busy": 2267453097,
             "idle": 791819075,
@@ -503,6 +998,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 4,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182004164,
               "idle": 108521384,
@@ -523,6 +1044,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 400672908,
               "idle": 155407635,
@@ -543,6 +1090,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 180654027,
@@ -563,6 +1136,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": 4154,
               "gpu_seconds": 3548160,
               "busy": 1049683324,
               "idle": 119473465,
@@ -583,6 +1182,32 @@
               "capacity_unavailable": 3,
               "peak_queue": 150,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                0,
+                3,
+                0,
+                149,
+                150,
+                136,
+                123,
+                110,
+                92,
+                77,
+                57,
+                44,
+                31,
+                11,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 150,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 3561,
               "gpu_seconds": 1373100,
               "busy": 418359369,
               "idle": 227762564,
@@ -606,6 +1231,32 @@
             "capacity_unavailable": 39,
             "peak_queue": 155,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              1,
+              1,
+              0,
+              153,
+              154,
+              141,
+              133,
+              124,
+              103,
+              95,
+              73,
+              64,
+              46,
+              37,
+              18,
+              7,
+              1,
+              0,
+              0
+            ],
+            "burst_peak_queue": 155,
+            "burst_peak_after_s": 5100,
+            "burst_recovery_s": 5447,
             "gpu_seconds": 7532520,
             "busy": 2263778092,
             "idle": 912554780,
@@ -631,6 +1282,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182039579,
               "idle": 100099581,
@@ -651,6 +1328,32 @@
               "capacity_unavailable": 23,
               "peak_queue": 2,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 398906242,
               "idle": 205806107,
@@ -671,6 +1374,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": -2074,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 180744444,
@@ -691,6 +1420,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 5447,
               "gpu_seconds": 3548160,
               "busy": 1048741656,
               "idle": 122799300,
@@ -711,6 +1466,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 154,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                1,
+                1,
+                0,
+                152,
+                154,
+                141,
+                131,
+                122,
+                102,
+                94,
+                72,
+                63,
+                45,
+                36,
+                17,
+                6,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 154,
+              "burst_peak_after_s": 5100,
+              "burst_recovery_s": 4964,
               "gpu_seconds": 1373100,
               "busy": 417357283,
               "idle": 303105348,
@@ -786,6 +1567,128 @@
             "median": 10,
             "min": 10,
             "max": 10
+          },
+          "burst_queue": [
+            {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            {
+              "median": 3,
+              "min": 1,
+              "max": 3
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 1,
+              "min": 1,
+              "max": 4
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 4
+            },
+            {
+              "median": 150,
+              "min": 149,
+              "max": 156
+            },
+            {
+              "median": 150,
+              "min": 142,
+              "max": 154
+            },
+            {
+              "median": 136,
+              "min": 123,
+              "max": 144
+            },
+            {
+              "median": 132,
+              "min": 110,
+              "max": 141
+            },
+            {
+              "median": 114,
+              "min": 91,
+              "max": 129
+            },
+            {
+              "median": 97,
+              "min": 70,
+              "max": 115
+            },
+            {
+              "median": 83,
+              "min": 49,
+              "max": 104
+            },
+            {
+              "median": 65,
+              "min": 28,
+              "max": 89
+            },
+            {
+              "median": 51,
+              "min": 13,
+              "max": 80
+            },
+            {
+              "median": 35,
+              "min": 0,
+              "max": 65
+            },
+            {
+              "median": 20,
+              "min": 0,
+              "max": 54
+            },
+            {
+              "median": 3,
+              "min": 0,
+              "max": 42
+            },
+            {
+              "median": 1,
+              "min": 0,
+              "max": 25
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 8
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 2
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            }
+          ],
+          "burst_peak_queue": {
+            "median": 151,
+            "min": 149,
+            "max": 157
+          },
+          "burst_peak_after_s": {
+            "median": 4800,
+            "min": 4498,
+            "max": 5100
+          },
+          "burst_recovery_s": {
+            "median": 4971,
+            "min": 1764,
+            "max": 6328
           },
           "gpu_seconds": {
             "median": 7532520,
@@ -896,6 +1799,124 @@
               "min": 4,
               "max": 6
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 600660,
               "min": 600660,
@@ -984,6 +2005,124 @@
               "min": 6,
               "max": 7
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 1316340,
               "min": 1316340,
@@ -1075,6 +2214,128 @@
               "median": 2,
               "min": 2,
               "max": 2
+            },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 2
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "burst_peak_after_s": {
+              "median": 7020,
+              "min": 7020,
+              "max": 8580
+            },
+            "burst_recovery_s": {
+              "median": -2220,
+              "min": -2220,
+              "max": 2754
             },
             "gpu_seconds": {
               "median": 694260,
@@ -1168,6 +2429,128 @@
               "min": 7,
               "max": 7
             },
+            "burst_queue": [
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 2,
+              "min": 1,
+              "max": 2
+            },
+            "burst_peak_after_s": {
+              "median": 60,
+              "min": 0,
+              "max": 60
+            },
+            "burst_recovery_s": {
+              "median": 4154,
+              "min": -2019,
+              "max": 5447
+            },
             "gpu_seconds": {
               "median": 3548160,
               "min": 3548160,
@@ -1260,6 +2643,128 @@
               "min": 9,
               "max": 9
             },
+            "burst_queue": [
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 2,
+                "min": 1,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 4
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 4
+              },
+              {
+                "median": 149,
+                "min": 149,
+                "max": 155
+              },
+              {
+                "median": 150,
+                "min": 142,
+                "max": 154
+              },
+              {
+                "median": 136,
+                "min": 123,
+                "max": 144
+              },
+              {
+                "median": 130,
+                "min": 108,
+                "max": 139
+              },
+              {
+                "median": 114,
+                "min": 91,
+                "max": 127
+              },
+              {
+                "median": 96,
+                "min": 69,
+                "max": 112
+              },
+              {
+                "median": 82,
+                "min": 48,
+                "max": 101
+              },
+              {
+                "median": 64,
+                "min": 27,
+                "max": 86
+              },
+              {
+                "median": 50,
+                "min": 12,
+                "max": 77
+              },
+              {
+                "median": 34,
+                "min": 0,
+                "max": 62
+              },
+              {
+                "median": 19,
+                "min": 0,
+                "max": 51
+              },
+              {
+                "median": 2,
+                "min": 0,
+                "max": 42
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 25
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 8
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 2
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 151,
+              "min": 149,
+              "max": 156
+            },
+            "burst_peak_after_s": {
+              "median": 4800,
+              "min": 4498,
+              "max": 5100
+            },
+            "burst_recovery_s": {
+              "median": 4157,
+              "min": 1460,
+              "max": 6328
+            },
             "gpu_seconds": {
               "median": 1373100,
               "min": 1373100,
@@ -1309,6 +2814,32 @@
             "capacity_unavailable": 39,
             "peak_queue": 151,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              0,
+              1,
+              0,
+              149,
+              150,
+              134,
+              126,
+              108,
+              90,
+              70,
+              48,
+              30,
+              10,
+              4,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 151,
+            "burst_peak_after_s": 5100,
+            "burst_recovery_s": 3658,
             "gpu_seconds": 7532520,
             "busy": 2264407263,
             "idle": 852713663,
@@ -1334,6 +2865,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 177770828,
               "idle": 93445551,
@@ -1354,6 +2911,32 @@
               "capacity_unavailable": 11,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 399578117,
               "idle": 218157289,
@@ -1374,6 +2957,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": 3220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 180685972,
@@ -1394,6 +3003,32 @@
               "capacity_unavailable": 18,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 3658,
               "gpu_seconds": 3548160,
               "busy": 1050091659,
               "idle": 104148746,
@@ -1414,6 +3049,32 @@
               "capacity_unavailable": 9,
               "peak_queue": 151,
               "peak_alive_nodes": 10,
+              "burst_queue": [
+                2,
+                2,
+                0,
+                1,
+                0,
+                149,
+                150,
+                134,
+                124,
+                106,
+                86,
+                66,
+                44,
+                26,
+                6,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 151,
+              "burst_peak_after_s": 5100,
+              "burst_recovery_s": 2230,
               "gpu_seconds": 1373100,
               "busy": 420233327,
               "idle": 256276105,
@@ -1437,6 +3098,32 @@
             "capacity_unavailable": 34,
             "peak_queue": 157,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              1,
+              1,
+              4,
+              4,
+              156,
+              154,
+              144,
+              141,
+              129,
+              115,
+              104,
+              89,
+              80,
+              65,
+              54,
+              37,
+              17,
+              3,
+              1,
+              0
+            ],
+            "burst_peak_queue": 157,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 5758,
             "gpu_seconds": 7532520,
             "busy": 2271605181,
             "idle": 817431577,
@@ -1462,6 +3149,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 2,
               "peak_alive_nodes": 4,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 180678121,
               "idle": 134535204,
@@ -1482,6 +3195,32 @@
               "capacity_unavailable": 22,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 401399992,
               "idle": 159632775,
@@ -1502,6 +3241,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                1,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": 5758,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 183875694,
@@ -1522,6 +3287,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": -2019,
               "gpu_seconds": 3548160,
               "busy": 1049374991,
               "idle": 118682077,
@@ -1542,6 +3333,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 156,
               "peak_alive_nodes": 10,
+              "burst_queue": [
+                2,
+                1,
+                1,
+                4,
+                4,
+                155,
+                153,
+                144,
+                139,
+                127,
+                112,
+                101,
+                86,
+                77,
+                62,
+                51,
+                34,
+                14,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 156,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 5148,
               "gpu_seconds": 1373100,
               "busy": 423418745,
               "idle": 220705827,
@@ -1565,6 +3382,32 @@
             "capacity_unavailable": 40,
             "peak_queue": 150,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              1,
+              0,
+              1,
+              0,
+              148,
+              149,
+              131,
+              125,
+              101,
+              86,
+              65,
+              44,
+              28,
+              6,
+              4,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 150,
+            "burst_peak_after_s": 5100,
+            "burst_recovery_s": 3348,
             "gpu_seconds": 7532520,
             "busy": 2266187473,
             "idle": 914917208,
@@ -1590,6 +3433,32 @@
               "capacity_unavailable": 10,
               "peak_queue": 3,
               "peak_alive_nodes": 4,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182108330,
               "idle": 104284024,
@@ -1610,6 +3479,32 @@
               "capacity_unavailable": 9,
               "peak_queue": 2,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 399444786,
               "idle": 228485621,
@@ -1630,6 +3525,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": 2844,
               "gpu_seconds": 694260,
               "busy": 216191665,
               "idle": 202992221,
@@ -1650,6 +3571,32 @@
               "capacity_unavailable": 14,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 3348,
               "gpu_seconds": 3548160,
               "busy": 1048749990,
               "idle": 116942080,
@@ -1670,6 +3617,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 150,
               "peak_alive_nodes": 10,
+              "burst_queue": [
+                2,
+                1,
+                0,
+                1,
+                0,
+                148,
+                149,
+                131,
+                123,
+                99,
+                82,
+                61,
+                40,
+                24,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 150,
+              "burst_peak_after_s": 5100,
+              "burst_recovery_s": 2015,
               "gpu_seconds": 1373100,
               "busy": 419692702,
               "idle": 262213262,
@@ -1693,6 +3666,32 @@
             "capacity_unavailable": 23,
             "peak_queue": 150,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              0,
+              3,
+              0,
+              150,
+              150,
+              136,
+              125,
+              110,
+              93,
+              78,
+              58,
+              45,
+              32,
+              12,
+              1,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 150,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 4154,
             "gpu_seconds": 7532520,
             "busy": 2267592680,
             "idle": 795434910,
@@ -1718,6 +3717,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 4,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182004164,
               "idle": 108603885,
@@ -1738,6 +3763,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 400608324,
               "idle": 161140691,
@@ -1758,6 +3809,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 180657916,
@@ -1778,6 +3855,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": 4154,
               "gpu_seconds": 3548160,
               "busy": 1049887491,
               "idle": 117148743,
@@ -1798,6 +3901,32 @@
               "capacity_unavailable": 4,
               "peak_queue": 150,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                0,
+                3,
+                0,
+                149,
+                150,
+                136,
+                123,
+                110,
+                92,
+                77,
+                57,
+                44,
+                31,
+                11,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 150,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 3561,
               "gpu_seconds": 1373100,
               "busy": 418359369,
               "idle": 227883675,
@@ -1821,6 +3950,32 @@
             "capacity_unavailable": 39,
             "peak_queue": 155,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              1,
+              1,
+              0,
+              153,
+              154,
+              141,
+              133,
+              124,
+              98,
+              90,
+              65,
+              51,
+              33,
+              15,
+              1,
+              1,
+              0,
+              1,
+              0
+            ],
+            "burst_peak_queue": 155,
+            "burst_peak_after_s": 5100,
+            "burst_recovery_s": 4703,
             "gpu_seconds": 7532520,
             "busy": 2263229136,
             "idle": 867648876,
@@ -1846,6 +4001,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182039579,
               "idle": 101444165,
@@ -1866,6 +4047,32 @@
               "capacity_unavailable": 23,
               "peak_queue": 2,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 398906242,
               "idle": 205920692,
@@ -1886,6 +4093,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                3,
+                3,
+                3,
+                3,
+                3,
+                3,
+                0,
+                0,
+                0,
+                1,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": 3527,
               "gpu_seconds": 694260,
               "busy": 215683332,
               "idle": 149082361,
@@ -1906,6 +4139,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 4703,
               "gpu_seconds": 3548160,
               "busy": 1048537490,
               "idle": 125415547,
@@ -1926,6 +4185,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 154,
               "peak_alive_nodes": 10,
+              "burst_queue": [
+                2,
+                3,
+                1,
+                1,
+                0,
+                152,
+                154,
+                141,
+                131,
+                122,
+                94,
+                86,
+                61,
+                47,
+                29,
+                11,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 154,
+              "burst_peak_after_s": 5100,
+              "burst_recovery_s": 3386,
               "gpu_seconds": 1373100,
               "busy": 418062493,
               "idle": 285786111,
@@ -2001,6 +4286,128 @@
             "median": 10,
             "min": 10,
             "max": 10
+          },
+          "burst_queue": [
+            {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            {
+              "median": 3,
+              "min": 1,
+              "max": 3
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 1,
+              "min": 1,
+              "max": 4
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 4
+            },
+            {
+              "median": 150,
+              "min": 148,
+              "max": 156
+            },
+            {
+              "median": 150,
+              "min": 149,
+              "max": 154
+            },
+            {
+              "median": 136,
+              "min": 131,
+              "max": 144
+            },
+            {
+              "median": 126,
+              "min": 125,
+              "max": 141
+            },
+            {
+              "median": 110,
+              "min": 101,
+              "max": 129
+            },
+            {
+              "median": 93,
+              "min": 86,
+              "max": 115
+            },
+            {
+              "median": 78,
+              "min": 65,
+              "max": 104
+            },
+            {
+              "median": 58,
+              "min": 44,
+              "max": 89
+            },
+            {
+              "median": 45,
+              "min": 28,
+              "max": 80
+            },
+            {
+              "median": 32,
+              "min": 6,
+              "max": 65
+            },
+            {
+              "median": 12,
+              "min": 4,
+              "max": 54
+            },
+            {
+              "median": 1,
+              "min": 0,
+              "max": 37
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 17
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 3
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            }
+          ],
+          "burst_peak_queue": {
+            "median": 151,
+            "min": 150,
+            "max": 157
+          },
+          "burst_peak_after_s": {
+            "median": 5100,
+            "min": 4498,
+            "max": 5100
+          },
+          "burst_recovery_s": {
+            "median": 4154,
+            "min": 3348,
+            "max": 5758
           },
           "gpu_seconds": {
             "median": 7532520,
@@ -2111,6 +4518,124 @@
               "min": 4,
               "max": 5
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 600660,
               "min": 600660,
@@ -2199,6 +4724,124 @@
               "min": 7,
               "max": 7
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 1316340,
               "min": 1316340,
@@ -2290,6 +4933,128 @@
               "median": 2,
               "min": 2,
               "max": 2
+            },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 2,
+                "min": 0,
+                "max": 2
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 3,
+              "min": 2,
+              "max": 3
+            },
+            "burst_peak_after_s": {
+              "median": 8580,
+              "min": 7020,
+              "max": 8580
+            },
+            "burst_recovery_s": {
+              "median": 3220,
+              "min": -2220,
+              "max": 5758
             },
             "gpu_seconds": {
               "median": 694260,
@@ -2383,6 +5148,128 @@
               "min": 6,
               "max": 7
             },
+            "burst_queue": [
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 2,
+              "min": 1,
+              "max": 2
+            },
+            "burst_peak_after_s": {
+              "median": 60,
+              "min": 0,
+              "max": 60
+            },
+            "burst_recovery_s": {
+              "median": 3658,
+              "min": -2019,
+              "max": 4703
+            },
             "gpu_seconds": {
               "median": 3548160,
               "min": 3548160,
@@ -2475,6 +5362,128 @@
               "min": 9,
               "max": 10
             },
+            "burst_queue": [
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 2,
+                "min": 1,
+                "max": 3
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 4
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 4
+              },
+              {
+                "median": 149,
+                "min": 148,
+                "max": 155
+              },
+              {
+                "median": 150,
+                "min": 149,
+                "max": 154
+              },
+              {
+                "median": 136,
+                "min": 131,
+                "max": 144
+              },
+              {
+                "median": 124,
+                "min": 123,
+                "max": 139
+              },
+              {
+                "median": 110,
+                "min": 99,
+                "max": 127
+              },
+              {
+                "median": 92,
+                "min": 82,
+                "max": 112
+              },
+              {
+                "median": 77,
+                "min": 61,
+                "max": 101
+              },
+              {
+                "median": 57,
+                "min": 40,
+                "max": 86
+              },
+              {
+                "median": 44,
+                "min": 24,
+                "max": 77
+              },
+              {
+                "median": 29,
+                "min": 2,
+                "max": 62
+              },
+              {
+                "median": 11,
+                "min": 0,
+                "max": 51
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 34
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 14
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 151,
+              "min": 150,
+              "max": 156
+            },
+            "burst_peak_after_s": {
+              "median": 5100,
+              "min": 4800,
+              "max": 5100
+            },
+            "burst_recovery_s": {
+              "median": 3386,
+              "min": 2015,
+              "max": 5148
+            },
             "gpu_seconds": {
               "median": 1373100,
               "min": 1373100,
@@ -2524,6 +5533,32 @@
             "capacity_unavailable": 38,
             "peak_queue": 151,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              4,
+              0,
+              3,
+              0,
+              151,
+              150,
+              141,
+              134,
+              123,
+              111,
+              96,
+              83,
+              72,
+              57,
+              43,
+              33,
+              18,
+              7,
+              1,
+              0
+            ],
+            "burst_peak_queue": 151,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 6604,
             "gpu_seconds": 7532520,
             "busy": 2262487469,
             "idle": 690258722,
@@ -2549,6 +5584,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 178664577,
               "idle": 94539439,
@@ -2569,6 +5630,32 @@
               "capacity_unavailable": 10,
               "peak_queue": 3,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 400346867,
               "idle": 150255204,
@@ -2589,6 +5676,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 3,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 3,
+              "burst_peak_after_s": 8580,
+              "burst_recovery_s": -1894,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 176774860,
@@ -2609,6 +5722,32 @@
               "capacity_unavailable": 18,
               "peak_queue": 4,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                1,
+                0,
+                0,
+                0,
+                1,
+                1,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 6604,
               "gpu_seconds": 3548160,
               "busy": 1050208326,
               "idle": 70732351,
@@ -2629,6 +5768,32 @@
               "capacity_unavailable": 9,
               "peak_queue": 150,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                0,
+                3,
+                0,
+                150,
+                149,
+                141,
+                132,
+                121,
+                110,
+                95,
+                82,
+                71,
+                56,
+                42,
+                32,
+                17,
+                6,
+                0,
+                0
+              ],
+              "burst_peak_queue": 150,
+              "burst_peak_after_s": 4498,
+              "burst_recovery_s": 5867,
               "gpu_seconds": 1373100,
               "busy": 416534367,
               "idle": 197956868,
@@ -2652,6 +5817,32 @@
             "capacity_unavailable": 35,
             "peak_queue": 153,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              1,
+              4,
+              0,
+              153,
+              151,
+              138,
+              127,
+              114,
+              95,
+              84,
+              64,
+              51,
+              35,
+              19,
+              4,
+              1,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 153,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 4630,
             "gpu_seconds": 7532520,
             "busy": 2271729136,
             "idle": 593689424,
@@ -2677,6 +5868,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182681244,
               "idle": 109718745,
@@ -2697,6 +5914,32 @@
               "capacity_unavailable": 23,
               "peak_queue": 3,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 399695825,
               "idle": 89188745,
@@ -2717,6 +5960,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 176718889,
@@ -2737,6 +6006,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": 4630,
               "gpu_seconds": 3548160,
               "busy": 1050937491,
               "idle": 55249300,
@@ -2757,6 +6052,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 152,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                1,
+                4,
+                0,
+                152,
+                151,
+                138,
+                125,
+                114,
+                94,
+                83,
+                63,
+                50,
+                34,
+                18,
+                3,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 152,
+              "burst_peak_after_s": 4498,
+              "burst_recovery_s": 4114,
               "gpu_seconds": 1373100,
               "busy": 421681244,
               "idle": 162813745,
@@ -2780,6 +6101,32 @@
             "capacity_unavailable": 51,
             "peak_queue": 153,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              2,
+              0,
+              0,
+              0,
+              153,
+              138,
+              123,
+              101,
+              85,
+              57,
+              41,
+              20,
+              1,
+              1,
+              0,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 153,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 2639,
             "gpu_seconds": 7532520,
             "busy": 2261078093,
             "idle": 742741576,
@@ -2805,6 +6152,32 @@
               "capacity_unavailable": 20,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 179720827,
               "idle": 79709578,
@@ -2825,6 +6198,32 @@
               "capacity_unavailable": 9,
               "peak_queue": 3,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 397232285,
               "idle": 211811317,
@@ -2845,6 +6244,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216191665,
               "idle": 198938054,
@@ -2865,6 +6290,32 @@
               "capacity_unavailable": 14,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": 2639,
               "gpu_seconds": 3548160,
               "busy": 1049766657,
               "idle": 68624992,
@@ -2885,6 +6336,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 153,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                2,
+                0,
+                0,
+                0,
+                153,
+                138,
+                123,
+                99,
+                85,
+                56,
+                40,
+                19,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 153,
+              "burst_peak_after_s": 4498,
+              "burst_recovery_s": 899,
               "gpu_seconds": 1373100,
               "busy": 418166659,
               "idle": 183657635,
@@ -2908,6 +6385,32 @@
             "capacity_unavailable": 22,
             "peak_queue": 152,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              1,
+              4,
+              0,
+              152,
+              151,
+              138,
+              129,
+              114,
+              95,
+              84,
+              67,
+              52,
+              35,
+              20,
+              4,
+              1,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 152,
+            "burst_peak_after_s": 4498,
+            "burst_recovery_s": 5193,
             "gpu_seconds": 7532520,
             "busy": 2268966633,
             "idle": 658288454,
@@ -2933,6 +6436,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 181658328,
               "idle": 135804719,
@@ -2953,6 +6482,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 2,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 401493740,
               "idle": 128526248,
@@ -2973,6 +6528,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 176954443,
@@ -2993,6 +6574,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 5193,
               "gpu_seconds": 3548160,
               "busy": 1050624991,
               "idle": 63149296,
@@ -3013,6 +6620,32 @@
               "capacity_unavailable": 3,
               "peak_queue": 152,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                1,
+                4,
+                0,
+                152,
+                151,
+                138,
+                127,
+                114,
+                94,
+                83,
+                66,
+                51,
+                34,
+                19,
+                3,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 152,
+              "burst_peak_after_s": 4498,
+              "burst_recovery_s": 4154,
               "gpu_seconds": 1373100,
               "busy": 418456242,
               "idle": 153853748,
@@ -3036,6 +6669,32 @@
             "capacity_unavailable": 40,
             "peak_queue": 154,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              3,
+              3,
+              1,
+              1,
+              1,
+              152,
+              154,
+              142,
+              133,
+              122,
+              105,
+              96,
+              76,
+              65,
+              47,
+              38,
+              20,
+              8,
+              1,
+              0,
+              0
+            ],
+            "burst_peak_queue": 154,
+            "burst_peak_after_s": 5100,
+            "burst_recovery_s": 5480,
             "gpu_seconds": 7532520,
             "busy": 2263838507,
             "idle": 742699358,
@@ -3061,6 +6720,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182914578,
               "idle": 99602080,
@@ -3081,6 +6766,32 @@
               "capacity_unavailable": 24,
               "peak_queue": 3,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 397261451,
               "idle": 192586317,
@@ -3101,6 +6812,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 2,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 176659444,
@@ -3121,6 +6858,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 5480,
               "gpu_seconds": 3548160,
               "busy": 1049266655,
               "idle": 79190825,
@@ -3141,6 +6904,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 154,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                2,
+                3,
+                1,
+                1,
+                1,
+                152,
+                154,
+                142,
+                131,
+                122,
+                104,
+                95,
+                75,
+                64,
+                46,
+                37,
+                19,
+                7,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 154,
+              "burst_peak_after_s": 5100,
+              "burst_recovery_s": 4988,
               "gpu_seconds": 1373100,
               "busy": 417662491,
               "idle": 194660692,
@@ -3216,6 +7005,128 @@
             "median": 10,
             "min": 10,
             "max": 10
+          },
+          "burst_queue": [
+            {
+              "median": 3,
+              "min": 3,
+              "max": 3
+            },
+            {
+              "median": 3,
+              "min": 2,
+              "max": 4
+            },
+            {
+              "median": 1,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 3,
+              "min": 0,
+              "max": 4
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 152,
+              "min": 151,
+              "max": 153
+            },
+            {
+              "median": 151,
+              "min": 138,
+              "max": 154
+            },
+            {
+              "median": 138,
+              "min": 123,
+              "max": 142
+            },
+            {
+              "median": 129,
+              "min": 101,
+              "max": 134
+            },
+            {
+              "median": 114,
+              "min": 85,
+              "max": 123
+            },
+            {
+              "median": 95,
+              "min": 57,
+              "max": 111
+            },
+            {
+              "median": 84,
+              "min": 41,
+              "max": 96
+            },
+            {
+              "median": 67,
+              "min": 20,
+              "max": 83
+            },
+            {
+              "median": 52,
+              "min": 1,
+              "max": 72
+            },
+            {
+              "median": 35,
+              "min": 1,
+              "max": 57
+            },
+            {
+              "median": 20,
+              "min": 0,
+              "max": 43
+            },
+            {
+              "median": 4,
+              "min": 0,
+              "max": 33
+            },
+            {
+              "median": 1,
+              "min": 0,
+              "max": 18
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 7
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            }
+          ],
+          "burst_peak_queue": {
+            "median": 153,
+            "min": 151,
+            "max": 154
+          },
+          "burst_peak_after_s": {
+            "median": 4498,
+            "min": 4498,
+            "max": 5100
+          },
+          "burst_recovery_s": {
+            "median": 5193,
+            "min": 2639,
+            "max": 6604
           },
           "gpu_seconds": {
             "median": 7532520,
@@ -3326,6 +7237,124 @@
               "min": 5,
               "max": 6
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 600660,
               "min": 600660,
@@ -3414,6 +7443,124 @@
               "min": 8,
               "max": 8
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 1316340,
               "min": 1316340,
@@ -3505,6 +7652,128 @@
               "median": 2,
               "min": 2,
               "max": 2
+            },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 2
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 3
+            },
+            "burst_peak_after_s": {
+              "median": 7020,
+              "min": 7020,
+              "max": 8580
+            },
+            "burst_recovery_s": {
+              "median": -2220,
+              "min": -2220,
+              "max": -1894
             },
             "gpu_seconds": {
               "median": 694260,
@@ -3598,6 +7867,128 @@
               "min": 7,
               "max": 7
             },
+            "burst_queue": [
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 2,
+              "min": 1,
+              "max": 2
+            },
+            "burst_peak_after_s": {
+              "median": 60,
+              "min": 0,
+              "max": 60
+            },
+            "burst_recovery_s": {
+              "median": 5193,
+              "min": 2639,
+              "max": 6604
+            },
             "gpu_seconds": {
               "median": 3548160,
               "min": 3548160,
@@ -3690,6 +8081,128 @@
               "min": 9,
               "max": 9
             },
+            "burst_queue": [
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 3,
+                "min": 2,
+                "max": 3
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 4
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 152,
+                "min": 150,
+                "max": 153
+              },
+              {
+                "median": 151,
+                "min": 138,
+                "max": 154
+              },
+              {
+                "median": 138,
+                "min": 123,
+                "max": 142
+              },
+              {
+                "median": 127,
+                "min": 99,
+                "max": 132
+              },
+              {
+                "median": 114,
+                "min": 85,
+                "max": 122
+              },
+              {
+                "median": 94,
+                "min": 56,
+                "max": 110
+              },
+              {
+                "median": 83,
+                "min": 40,
+                "max": 95
+              },
+              {
+                "median": 66,
+                "min": 19,
+                "max": 82
+              },
+              {
+                "median": 51,
+                "min": 0,
+                "max": 71
+              },
+              {
+                "median": 34,
+                "min": 0,
+                "max": 56
+              },
+              {
+                "median": 19,
+                "min": 0,
+                "max": 42
+              },
+              {
+                "median": 3,
+                "min": 0,
+                "max": 32
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 17
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 6
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 152,
+              "min": 150,
+              "max": 154
+            },
+            "burst_peak_after_s": {
+              "median": 4498,
+              "min": 4498,
+              "max": 5100
+            },
+            "burst_recovery_s": {
+              "median": 4154,
+              "min": 899,
+              "max": 5867
+            },
             "gpu_seconds": {
               "median": 1373100,
               "min": 1373100,
@@ -3739,6 +8252,32 @@
             "capacity_unavailable": 36,
             "peak_queue": 151,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              1,
+              1,
+              1,
+              4,
+              0,
+              150,
+              151,
+              138,
+              131,
+              113,
+              96,
+              84,
+              67,
+              50,
+              35,
+              19,
+              4,
+              1,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 151,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 4540,
             "gpu_seconds": 7532520,
             "busy": 2265430185,
             "idle": 1074853663,
@@ -3764,6 +8303,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 3,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 179979162,
               "idle": 139514998,
@@ -3784,6 +8349,32 @@
               "capacity_unavailable": 10,
               "peak_queue": 3,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 399601034,
               "idle": 270012705,
@@ -3804,6 +8395,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 3,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 191455832,
@@ -3824,6 +8441,32 @@
               "capacity_unavailable": 18,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 4540,
               "gpu_seconds": 3548160,
               "busy": 1049887494,
               "idle": 197740825,
@@ -3844,6 +8487,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 151,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                1,
+                1,
+                1,
+                4,
+                0,
+                150,
+                151,
+                138,
+                129,
+                113,
+                95,
+                83,
+                66,
+                49,
+                34,
+                18,
+                3,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 151,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 3961,
               "gpu_seconds": 1373100,
               "busy": 419229163,
               "idle": 276129303,
@@ -3867,6 +8536,32 @@
             "capacity_unavailable": 32,
             "peak_queue": 154,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              1,
+              1,
+              1,
+              4,
+              0,
+              153,
+              154,
+              139,
+              133,
+              117,
+              102,
+              92,
+              74,
+              62,
+              45,
+              38,
+              18,
+              5,
+              1,
+              0,
+              0
+            ],
+            "burst_peak_queue": 154,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 5593,
             "gpu_seconds": 7532520,
             "busy": 2271033311,
             "idle": 1008050407,
@@ -3892,6 +8587,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 182788538,
               "idle": 154872012,
@@ -3912,6 +8633,32 @@
               "capacity_unavailable": 21,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 402329160,
               "idle": 229897500,
@@ -3932,6 +8679,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 3,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 191372639,
@@ -3952,6 +8725,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 5593,
               "gpu_seconds": 3548160,
               "busy": 1049683326,
               "idle": 186981107,
@@ -3972,6 +8771,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 154,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                1,
+                1,
+                1,
+                4,
+                0,
+                153,
+                154,
+                139,
+                131,
+                117,
+                101,
+                91,
+                73,
+                61,
+                44,
+                37,
+                17,
+                4,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 154,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 4980,
               "gpu_seconds": 1373100,
               "busy": 419498955,
               "idle": 244927149,
@@ -3995,6 +8820,32 @@
             "capacity_unavailable": 42,
             "peak_queue": 150,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              1,
+              0,
+              0,
+              3,
+              0,
+              149,
+              150,
+              132,
+              125,
+              108,
+              91,
+              77,
+              57,
+              43,
+              28,
+              10,
+              2,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 150,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 3798,
             "gpu_seconds": 7532520,
             "busy": 2263515600,
             "idle": 1105883806,
@@ -4020,6 +8871,32 @@
               "capacity_unavailable": 16,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 179426037,
               "idle": 133706038,
@@ -4040,6 +8917,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 2,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 400269786,
               "idle": 295451039,
@@ -4060,6 +8963,32 @@
               "capacity_unavailable": 1,
               "peak_queue": 2,
               "peak_alive_nodes": 3,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216191665,
               "idle": 214880417,
@@ -4080,6 +9009,32 @@
               "capacity_unavailable": 13,
               "peak_queue": 3,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 3798,
               "gpu_seconds": 3548160,
               "busy": 1049241659,
               "idle": 187204996,
@@ -4100,6 +9055,32 @@
               "capacity_unavailable": 4,
               "peak_queue": 150,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                1,
+                0,
+                0,
+                3,
+                0,
+                149,
+                150,
+                132,
+                123,
+                108,
+                90,
+                76,
+                56,
+                42,
+                27,
+                9,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 150,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 3667,
               "gpu_seconds": 1373100,
               "busy": 418386453,
               "idle": 274641316,
@@ -4123,6 +9104,32 @@
             "capacity_unavailable": 20,
             "peak_queue": 151,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              0,
+              0,
+              1,
+              4,
+              0,
+              150,
+              151,
+              134,
+              127,
+              112,
+              94,
+              81,
+              61,
+              46,
+              35,
+              16,
+              3,
+              0,
+              0,
+              0,
+              0
+            ],
+            "burst_peak_queue": 151,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 4492,
             "gpu_seconds": 7532520,
             "busy": 2271822893,
             "idle": 1037369013,
@@ -4148,6 +9155,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 183168747,
               "idle": 137145970,
@@ -4168,6 +9201,32 @@
               "capacity_unavailable": 6,
               "peak_queue": 2,
               "peak_alive_nodes": 7,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 402037492,
               "idle": 253124859,
@@ -4188,6 +9247,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 2,
               "peak_alive_nodes": 3,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 191386804,
@@ -4208,6 +9293,32 @@
               "capacity_unavailable": 7,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 4492,
               "gpu_seconds": 3548160,
               "busy": 1049683326,
               "idle": 200824579,
@@ -4228,6 +9339,32 @@
               "capacity_unavailable": 2,
               "peak_queue": 151,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                0,
+                0,
+                1,
+                4,
+                0,
+                150,
+                151,
+                134,
+                125,
+                112,
+                93,
+                80,
+                60,
+                45,
+                34,
+                15,
+                2,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 151,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 3923,
               "gpu_seconds": 1373100,
               "busy": 420199996,
               "idle": 254886801,
@@ -4251,6 +9388,32 @@
             "capacity_unavailable": 28,
             "peak_queue": 154,
             "peak_alive_nodes": 10,
+            "burst_queue": [
+              0,
+              0,
+              1,
+              4,
+              0,
+              153,
+              154,
+              139,
+              133,
+              117,
+              102,
+              93,
+              73,
+              61,
+              45,
+              38,
+              17,
+              5,
+              1,
+              0,
+              0
+            ],
+            "burst_peak_queue": 154,
+            "burst_peak_after_s": 4800,
+            "burst_recovery_s": 5453,
             "gpu_seconds": 7532520,
             "busy": 2266436433,
             "idle": 1146218112,
@@ -4276,6 +9439,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 5,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 600660,
               "busy": 183843747,
               "idle": 150221109,
@@ -4296,6 +9485,32 @@
               "capacity_unavailable": 15,
               "peak_queue": 2,
               "peak_alive_nodes": 8,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 0,
+              "burst_peak_after_s": 0,
+              "burst_recovery_s": null,
               "gpu_seconds": 1316340,
               "busy": 399613533,
               "idle": 311680348,
@@ -4316,6 +9531,32 @@
               "capacity_unavailable": 0,
               "peak_queue": 2,
               "peak_alive_nodes": 3,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                2,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 2,
+              "burst_peak_after_s": 7020,
+              "burst_recovery_s": -2220,
               "gpu_seconds": 694260,
               "busy": 216733332,
               "idle": 191139166,
@@ -4336,6 +9577,32 @@
               "capacity_unavailable": 8,
               "peak_queue": 3,
               "peak_alive_nodes": 6,
+              "burst_queue": [
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                0,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                1,
+                0,
+                0
+              ],
+              "burst_peak_queue": 1,
+              "burst_peak_after_s": 60,
+              "burst_recovery_s": 5453,
               "gpu_seconds": 3548160,
               "busy": 1048537493,
               "idle": 199825132,
@@ -4356,6 +9623,32 @@
               "capacity_unavailable": 5,
               "peak_queue": 154,
               "peak_alive_nodes": 9,
+              "burst_queue": [
+                0,
+                0,
+                1,
+                4,
+                0,
+                153,
+                154,
+                139,
+                131,
+                117,
+                101,
+                92,
+                72,
+                60,
+                44,
+                37,
+                16,
+                4,
+                0,
+                0,
+                0
+              ],
+              "burst_peak_queue": 154,
+              "burst_peak_after_s": 4800,
+              "burst_recovery_s": 4966,
               "gpu_seconds": 1373100,
               "busy": 417708328,
               "idle": 293352357,
@@ -4431,6 +9724,128 @@
             "median": 10,
             "min": 10,
             "max": 10
+          },
+          "burst_queue": [
+            {
+              "median": 1,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 1,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 4,
+              "min": 3,
+              "max": 4
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            {
+              "median": 150,
+              "min": 149,
+              "max": 153
+            },
+            {
+              "median": 151,
+              "min": 150,
+              "max": 154
+            },
+            {
+              "median": 138,
+              "min": 132,
+              "max": 139
+            },
+            {
+              "median": 131,
+              "min": 125,
+              "max": 133
+            },
+            {
+              "median": 113,
+              "min": 108,
+              "max": 117
+            },
+            {
+              "median": 96,
+              "min": 91,
+              "max": 102
+            },
+            {
+              "median": 84,
+              "min": 77,
+              "max": 93
+            },
+            {
+              "median": 67,
+              "min": 57,
+              "max": 74
+            },
+            {
+              "median": 50,
+              "min": 43,
+              "max": 62
+            },
+            {
+              "median": 35,
+              "min": 28,
+              "max": 45
+            },
+            {
+              "median": 19,
+              "min": 10,
+              "max": 38
+            },
+            {
+              "median": 4,
+              "min": 2,
+              "max": 18
+            },
+            {
+              "median": 1,
+              "min": 0,
+              "max": 5
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 1
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            }
+          ],
+          "burst_peak_queue": {
+            "median": 151,
+            "min": 150,
+            "max": 154
+          },
+          "burst_peak_after_s": {
+            "median": 4800,
+            "min": 4800,
+            "max": 4800
+          },
+          "burst_recovery_s": {
+            "median": 4540,
+            "min": 3798,
+            "max": 5593
           },
           "gpu_seconds": {
             "median": 7532520,
@@ -4541,6 +9956,124 @@
               "min": 5,
               "max": 6
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 600660,
               "min": 600660,
@@ -4629,6 +10162,124 @@
               "min": 7,
               "max": 8
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_peak_after_s": {
+              "median": 0,
+              "min": 0,
+              "max": 0
+            },
+            "burst_recovery_s": null,
             "gpu_seconds": {
               "median": 1316340,
               "min": 1316340,
@@ -4720,6 +10371,128 @@
               "median": 3,
               "min": 3,
               "max": 3
+            },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 2,
+                "min": 2,
+                "max": 2
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 2,
+              "min": 2,
+              "max": 2
+            },
+            "burst_peak_after_s": {
+              "median": 7020,
+              "min": 7020,
+              "max": 7020
+            },
+            "burst_recovery_s": {
+              "median": -2220,
+              "min": -2220,
+              "max": -2220
             },
             "gpu_seconds": {
               "median": 694260,
@@ -4813,6 +10586,128 @@
               "min": 6,
               "max": 7
             },
+            "burst_queue": [
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 1,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 1,
+              "min": 1,
+              "max": 1
+            },
+            "burst_peak_after_s": {
+              "median": 60,
+              "min": 60,
+              "max": 60
+            },
+            "burst_recovery_s": {
+              "median": 4540,
+              "min": 3798,
+              "max": 5593
+            },
             "gpu_seconds": {
               "median": 3548160,
               "min": 3548160,
@@ -4904,6 +10799,128 @@
               "median": 9,
               "min": 9,
               "max": 9
+            },
+            "burst_queue": [
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 1,
+                "min": 0,
+                "max": 1
+              },
+              {
+                "median": 4,
+                "min": 3,
+                "max": 4
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 150,
+                "min": 149,
+                "max": 153
+              },
+              {
+                "median": 151,
+                "min": 150,
+                "max": 154
+              },
+              {
+                "median": 138,
+                "min": 132,
+                "max": 139
+              },
+              {
+                "median": 129,
+                "min": 123,
+                "max": 131
+              },
+              {
+                "median": 113,
+                "min": 108,
+                "max": 117
+              },
+              {
+                "median": 95,
+                "min": 90,
+                "max": 101
+              },
+              {
+                "median": 83,
+                "min": 76,
+                "max": 92
+              },
+              {
+                "median": 66,
+                "min": 56,
+                "max": 73
+              },
+              {
+                "median": 49,
+                "min": 42,
+                "max": 61
+              },
+              {
+                "median": 34,
+                "min": 27,
+                "max": 44
+              },
+              {
+                "median": 18,
+                "min": 9,
+                "max": 37
+              },
+              {
+                "median": 3,
+                "min": 1,
+                "max": 17
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 4
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              },
+              {
+                "median": 0,
+                "min": 0,
+                "max": 0
+              }
+            ],
+            "burst_peak_queue": {
+              "median": 151,
+              "min": 150,
+              "max": 154
+            },
+            "burst_peak_after_s": {
+              "median": 4800,
+              "min": 4800,
+              "max": 4800
+            },
+            "burst_recovery_s": {
+              "median": 3961,
+              "min": 3667,
+              "max": 4980
             },
             "gpu_seconds": {
               "median": 1373100,

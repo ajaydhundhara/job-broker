@@ -25,8 +25,9 @@ BROKER = Path(__file__).resolve().parent.parent / "broker"
 PY_FILES = sorted(BROKER.glob("*.py"))
 SQL_FILES = sorted(BROKER.glob("*.sql"))
 
-FORBIDDEN_IMPORTS = {"time"}
-FORBIDDEN_CALLS = {"now", "utcnow", "today", "uuid1"}  # uuid1 embeds the clock
+FORBIDDEN_IMPORTS = {"time", "uuid", "secrets"}  # uuid, secrets: OS randomness
+# uuid1 embeds the clock; uuid4 and os.urandom draw from the OS, unseeded.
+FORBIDDEN_CALLS = {"now", "utcnow", "today", "uuid1", "uuid4", "urandom"}
 # From the random module only the generator class may be used, and only with a
 # seed: random.random(), random.choice(), random.seed(), ... share one hidden
 # global stream, and random.Random() with no seed is seeded from the OS.
@@ -96,6 +97,10 @@ def test_no_wall_clock_calls_in_python(path):
         "import random\nrandom.Random()",
         "import time\ntime.time()",
         "from datetime import datetime\ndatetime.now()",
+        "import uuid\nx = uuid.uuid4().hex",
+        "from uuid import uuid4\nx = uuid4()",
+        "import secrets\nx = secrets.token_hex(6)",
+        "import os\nx = os.urandom(6)",
     ],
 )
 def test_the_scan_rejects_clock_reads_and_global_random(source):

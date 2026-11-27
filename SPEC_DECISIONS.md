@@ -135,8 +135,9 @@ because launching nodes are never reaped.
 
 ## 6. Deterministic queue ordering
 
-Job ids stay random (`job-` + 12 hex). Ties are broken by a persistent
-creation sequence instead:
+Ties are broken by a persistent creation sequence, not the job id (job ids
+were random when this was decided; since #16 they are derived from this
+same sequence, but the order is still defined by `created_seq`):
 
 - schema v2 adds `jobs.created_seq` (UNIQUE); a trigger assigns
   `MAX(created_seq) + 1` on insert, under the write lock, so it is gapless,
@@ -285,4 +286,57 @@ nodes.
 read and inserted in the same `BEGIN IMMEDIATE` transaction, so concurrent
 launches can't get the same id (tested with parallel connections) and the
 sequence continues after a restart. The text primary key is unchanged. Job ids
-stay random. The YAML matcher `ANY_NODE_ID` is `^node-\d{5}$`.
+are sequential too since #16. The YAML matcher `ANY_NODE_ID` is `^node-\d{5}$`.
+
+## 15. Clock advances are serialized
+
+`service.sim_advance` holds `ADVANCE_LOCK` (a process-wide `threading.Lock`)
+while it reads now, computes the target and runs the whole `advance_to()`.
+Before, `{"minutes": n}` read now outside any transaction, so two parallel
+calls could both target now + n and lose n minutes.
+
+- Relative advances are additive: k parallel `+n` move the clock by the sum.
+- Absolute `to_ts` takes the same lock (target and 409 rule unchanged), so a
+  relative target can never be overtaken while it is computed.
+- The per-group transactions inside `advance_to()` are unchanged; submits,
+  cancels and completes don't take the lock and still run between groups.
+- Lock order is always lock, then `BEGIN IMMEDIATE`, so no deadlock.
+- One process only (the documented deployment). A cross-process file lock
+  was considered and not taken: POSIX-only and an extra file, for a
+  deployment we don't support. `threading.Lock` is not FIFO, so which
+  waiting caller goes next is not defined; the totals are.
+- Tested with forced interleavings (`tests/test_clock_advance.py`).
+
+## 16. Sequential job ids; a replay is a function of its inputs
+
+Job ids were `job-` + 12 hex from `uuid4()`, the only randomness not drawn
+from the seed. Two replays of the same trace, or a replay restarted halfway,
+then differed in every job id and in every event that names one, although
+nothing else differed (checked by renaming ids in arrival order).
+
+Now `service.next_job_id` gives `job-` + the next `created_seq` as 12
+zero-padded hex digits (`job-000000000001`, ...). It is read inside the
+submit's `BEGIN IMMEDIATE`, under the write lock, as node ids are (#14), and
+the `jobs_created_seq` trigger gives the row that same number. The format is
+unchanged (`^job-[0-9a-f]{12}$`); no schema change. Jobs migrated from v1
+keep their random ids, and new ids continue after the migrated sequence. A
+repeated idempotency key reuses its job and takes no number.
+
+Replay inputs, all explicit: the trace rows (`trace.load_trace`, sorted by
+time and line), the `Config` (seed, policy, idle minutes, provider
+parameters), and a new database whose clock starts at the first row. Time
+is only `sim_clock`; provider draws are keyed by seed, purpose and node id
+or outage bucket; the provider's state, the retry backoffs and the plans
+are all in the database; every query that orders has a total `ORDER BY`.
+Nothing depends on the process, so `PYTHONHASHSEED` doesn't matter (tested
+with two processes).
+
+Trade-off: ids are guessable and show how many jobs exist. The broker has
+no auth (README "No auth"), so this exposes nothing new; ids are
+also not unique across two databases, which nothing relies on.
+
+Tested by `tests/test_replay_restart.py`: the same scenario twice, in two
+processes, and restarted mid-boot, mid-failing-launch, mid-backoff, with
+jobs running and queued, and before the drain, compared on every table and
+the cost report; `tests/test_no_wall_clock.py` now also rejects `uuid`,
+`secrets` and `os.urandom` in `broker/`.

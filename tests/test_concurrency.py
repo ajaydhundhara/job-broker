@@ -1,7 +1,9 @@
 """Concurrent requests: no HTTP 500s and no duplicate jobs.
 
 The thread-affinity bug only shows when two requests land on different worker
-threads, which is timing-dependent, so each scenario runs many rounds.
+threads, which is timing-dependent, so each scenario runs many rounds. Those
+repeated stress tests carry the `slow` marker; the deterministic, forced
+interleavings for idempotency are in tests/test_idempotency.py.
 """
 
 from concurrent.futures import ThreadPoolExecutor
@@ -42,6 +44,7 @@ def count(db_path, sql, params=()):
     return n
 
 
+@pytest.mark.slow
 def test_parallel_same_key_same_body_creates_one_job_every_round(client, db_path):
     for i in range(ROUNDS):
         key = f"round-{i}"
@@ -69,6 +72,7 @@ def test_parallel_same_key_same_body_creates_one_job_every_round(client, db_path
         ), f"round {i}"
 
 
+@pytest.mark.slow
 def test_parallel_same_key_different_bodies_one_wins_rest_conflict(client, db_path):
     for i in range(ROUNDS):
         key = f"round-{i}"
@@ -86,6 +90,7 @@ def test_parallel_same_key_different_bodies_one_wins_rest_conflict(client, db_pa
         )
 
 
+@pytest.mark.slow
 def test_parallel_submits_without_key_all_succeed(client, db_path):
     for i in range(ROUNDS):
         codes = [r.status_code for r in post_in_parallel(client, [BODY] * PARALLEL)]
@@ -119,6 +124,7 @@ def test_parallel_launches_get_unique_sequential_node_ids(db_path):
     assert sorted(ids) == [f"node-{n:05d}" for n in range(1, launches + 1)]
 
 
+@pytest.mark.slow
 def test_parallel_submits_from_many_teams_keep_every_invariant(client, db_path):
     teams = [f"team-{n}" for n in range(PARALLEL)]
     for i in range(10):

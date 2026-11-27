@@ -23,6 +23,32 @@ ALLOWED_TRANSITIONS = {
 }
 
 
+# Broker node states (nodes.state), for the same purpose. Writers outside
+# this module (engine: provider transitions, reconcile) guard with
+# "WHERE state = ..." in their UPDATE; terminate_node checks here.
+NODE_TRANSITIONS = {
+    "launching": {"ready", "failed", "terminated"},
+    "ready": {"terminated", "failed"},
+    "terminated": set(),
+    "failed": set(),
+}
+
+# The fake provider's states (provider_nodes.state) and the broker state each
+# one must be paired with once both sides agree (replay.check_invariants).
+PROVIDER_TRANSITIONS = {
+    "pending": {"ready", "failed", "terminated"},
+    "ready": {"terminated"},
+    "terminated": set(),
+    "failed": set(),
+}
+BROKER_STATE_FOR_PROVIDER = {
+    "pending": "launching",
+    "ready": "ready",
+    "terminated": "terminated",
+    "failed": "failed",
+}
+
+
 class NotFound(Exception):
     """The requested job does not exist (HTTP 404)."""
 
@@ -55,9 +81,29 @@ def running_job_count(conn, node_id: str) -> int:
     ).fetchone()[0]
 
 
+def used_gpus(conn, node_id: str) -> int:
+    return conn.execute(
+        "SELECT COALESCE(SUM(gpus), 0) FROM jobs WHERE node_id = ? AND status = 'running'",
+        (node_id,),
+    ).fetchone()[0]
+
+
 def start_job(conn, job: sqlite3.Row, node_id: str, now: int) -> None:
-    """queued -> running on node_id. The caller has checked the GPUs fit."""
+    """queued -> running on node_id.
+
+    The scheduler only picks nodes that qualify; this re-checks so a bad call
+    raises Conflict (and the caller's transaction rolls back) instead of
+    saving a job on an ended, booting, foreign or full node.
+    """
     check_transition(job["status"], "running")
+    node = conn.execute("SELECT * FROM nodes WHERE id = ?", (node_id,)).fetchone()
+    if node is None or node["state"] != "ready":
+        state = node["state"] if node is not None else "missing"
+        raise Conflict(f"cannot start job {job['id']} on {state} node {node_id}")
+    if node["team"] != job["team"]:
+        raise Conflict(f"node {node_id} belongs to {node['team']}, not {job['team']}")
+    if used_gpus(conn, node_id) + job["gpus"] > node["gpus_total"]:
+        raise Conflict(f"job {job['id']} does not fit on node {node_id}")
     conn.execute(
         """UPDATE jobs SET status = 'running', node_id = ?, started_at = ?
            WHERE id = ?""",
@@ -96,7 +142,19 @@ def terminate_node(conn, provider, node_id: str, now: int, end_reason: str,
     Provider first, then our record, both in the caller's transaction. A node
     the provider doesn't know (e.g. inserted directly by a test) is still
     ended on our side, and the event says so.
+
+    Only a ready node with no running job (what the reaper and eviction
+    pick). Anything else raises Conflict and changes nothing: ending an
+    ended node would move its billing end and log the end twice; ending a
+    busy one would leave its jobs running on a dead node.
     """
+    node = conn.execute("SELECT state FROM nodes WHERE id = ?", (node_id,)).fetchone()
+    if node is None:
+        raise Conflict(f"unknown node {node_id}")
+    if node["state"] != "ready":
+        raise Conflict(f"cannot terminate node {node_id}: it is {node['state']}")
+    if running_job_count(conn, node_id):
+        raise Conflict(f"cannot terminate node {node_id}: jobs are running on it")
     try:
         provider.terminate_node(conn, node_id, now)
         known = True
@@ -104,7 +162,7 @@ def terminate_node(conn, provider, node_id: str, now: int, end_reason: str,
         known = False
     conn.execute(
         """UPDATE nodes SET state = 'terminated', terminated_at = ?, end_reason = ?
-           WHERE id = ?""",
+           WHERE id = ? AND state = 'ready'""",
         (now, end_reason, node_id),
     )
     log_event(conn, now, "node", node_id, event_type,

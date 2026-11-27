@@ -41,17 +41,32 @@ from broker import costs, service
 from broker.api import create_app
 from broker.config import Config
 from broker.db import connect, init_db
+from broker.state import BROKER_STATE_FOR_PROVIDER
 from broker.trace import (
     DEFAULT_BURST_WINDOW,
     TraceRow,
     load_trace,
+    parse_ts,
     parse_window,
     to_iso,
 )
-from replay.metrics import PERCENTILE_METHOD, aggregate, scenario_metrics
+from replay.metrics import (
+    BURST_METHOD,
+    PERCENTILE_METHOD,
+    aggregate,
+    burst_sample_times,
+    scenario_metrics,
+)
 
 DRAIN_STEP_MINUTES = 60
 DRAIN_LIMIT_S = 14 * 24 * 3600
+
+
+# SQL for "the broker's state is the one paired with the provider's".
+_PAIRS = " OR ".join(
+    f"(p.state = '{p}' AND n.state = '{b}')"
+    for p, b in BROKER_STATE_FOR_PROVIDER.items()
+)
 
 
 class InvariantViolation(AssertionError):
@@ -80,6 +95,14 @@ def check_invariants(conn: sqlite3.Connection, cfg: Config) -> None:
         ("a running job is not on a ready node",
          """SELECT j.id, j.node_id, n.state FROM jobs j LEFT JOIN nodes n ON n.id = j.node_id
             WHERE j.status = 'running' AND (n.state IS NULL OR n.state != 'ready')"""),
+        # Broker and provider agree on every node (state.BROKER_STATE_FOR_PROVIDER).
+        # Last, so a broken job placement is reported under its own message.
+        ("a node is unknown to the provider",
+         """SELECT n.id, n.state FROM nodes n LEFT JOIN provider_nodes p ON p.id = n.id
+            WHERE p.id IS NULL"""),
+        ("broker and provider disagree on a node's state",
+         f"""SELECT n.id, n.state, p.state FROM nodes n JOIN provider_nodes p ON p.id = n.id
+             WHERE NOT ({_PAIRS})"""),
     ]  # fmt: skip
     for message, sql in checks:
         bad = conn.execute(sql).fetchall()
@@ -161,7 +184,8 @@ def replay_scenario(rows: list[TraceRow], cfg: Config, db_path: str | Path,
     Returns raw results: jobs, nodes, events, the duplicate count and the
     cost totals in integer micro-dollars over [first submission, final now + 1),
     so nodes terminated at the final moment are included with their minimum
-    charge. Job ids are random, so compare results by trace line, not id.
+    charge. Job ids are the creation sequence (SPEC_DECISIONS.md #16), so the
+    same rows and config give the same ids; "line" maps each job to its row.
     """
     if not rows:
         raise ValueError("no accepted rows to replay")
@@ -217,6 +241,7 @@ def _results(conn, start: int, run: _Run) -> dict:
 
 METHOD = {
     "percentile": PERCENTILE_METHOD,
+    "burst": BURST_METHOD,
     "wait": "started_at - submitted_at, in seconds",
     "money": "integer micro-dollars (1 USD = 1_000_000); dollars only in the markdown",
     "idle_share": "team: idle / team total; overall: teams' idle / grand total "
@@ -433,12 +458,64 @@ def render_markdown(results: dict, quality_summary: str) -> str:
         md.append(f"| {s['idle_minutes']} | {_cell(o['grand_total'], _usd)} | "
                   f"{_cell(o['idle_share'], _pct)} | {_cell(o['wait_s_p90'], _min)} | "
                   f"{_cell(o['nodes_launched'], str)} |")  # fmt: skip
-    md += ["", "## Analysis", "",
+    md += [""] + _burst_section(results, main, fair, fifo)
+    md += ["## Analysis", "",
            "- TODO: fair vs fifo",
            "- TODO: the burst window",
            "- TODO: idle timeout: cost vs wait",
            "- TODO: what we would change", ""]  # fmt: skip
     return "\n".join(md)
+
+
+def _signed_min(seconds) -> str:
+    return f"{seconds / 60:+.1f}"
+
+
+def _burst_section(results, main, fair, fifo) -> list[str]:
+    """## 5: queue over time, peak and recovery in the burst window."""
+    opts = results["options"]
+    window = tuple(parse_ts(t) for t in opts["burst_window"])
+    md = ["## 5. Burst window", "",
+          (f"Window [{opts['burst_window'][0]}, {opts['burst_window'][1]}), idle timeout "
+           f"{opts['idle_minutes']} min. Queue = jobs submitted and not yet started, at "
+           "that instant. Peak: the largest queue at any instant in the window, and how "
+           "long after its start it was first reached. Recovery: when the last job "
+           "submitted in the window started, minus the window end (negative: before it "
+           "ended). Median (min–max) across seeds."), ""]  # fmt: skip
+    if not main:
+        return md + ["Not run.", ""]
+    both = fair is not None and fifo is not None
+    head = ["metric", *(s["name"] for s in main)] + (
+        ["seeds fair < / = / > fifo"] * both
+    )
+    md += ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+
+    def row(label, path, fmt):
+        cells = []
+        for s in main:
+            x = s["summary"]
+            for key in path:
+                x = x[key]
+            cells.append(_cell(x, fmt))
+        if both:
+            cells.append(_per_seed(fair, fifo, path))
+        md.append(f"| {label} | " + " | ".join(cells) + " |")
+
+    row("jobs submitted in the window", ("overall", "burst_jobs"), str)
+    row("peak queue in the window", ("overall", "burst_peak_queue"), str)
+    row("peak reached after (min)", ("overall", "burst_peak_after_s"), _min)
+    row("recovery (min)", ("overall", "burst_recovery_s"), _signed_min)
+    for team, m in main[0]["summary"]["teams"].items():
+        if m["burst_recovery_s"] is not None:
+            row(f"recovery (min), {team}", ("teams", team, "burst_recovery_s"),
+                _signed_min)  # fmt: skip
+    md += ["", "Queue length, all teams (per team in `replay_results.json`):", "",
+           "| time (UTC) | " + " | ".join(s["name"] for s in main) + " |",
+           "|" + "---|" * (len(main) + 1)]  # fmt: skip
+    for i, t in enumerate(burst_sample_times(window)):
+        cells = [_cell(s["summary"]["overall"]["burst_queue"][i], str) for s in main]
+        md.append(f"| {to_iso(t)[:16]}Z | " + " | ".join(cells) + " |")
+    return md + [""]
 
 
 # --- CLI -----------------------------------------------------------------------------

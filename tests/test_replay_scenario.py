@@ -189,7 +189,7 @@ def test_the_invariant_check_catches_a_broken_state(tmp_path, corrupt, word):
                 """INSERT INTO jobs (id, team, request_fingerprint, gpus, estimated_minutes,
                                      priority, status, submitted_at)
                    VALUES (?, 'vision', 'x', 1, 30, 'normal', 'queued', 0)""",
-                (service.new_id("job"),),
+                (service.next_job_id(conn),),
             )
         conn.execute(corrupt)
     with pytest.raises(InvariantViolation, match=word):

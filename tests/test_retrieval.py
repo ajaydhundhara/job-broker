@@ -103,23 +103,23 @@ def test_lines_that_differ_only_in_numbers_share_a_template():
     assert a == b
 
 
-# --- is_log -------------------------------------------------------------------------
+# --- classify (was is_log; same inputs, same outcomes) ----------------------------
 
 
 @pytest.mark.parametrize("text, expected", [
-    ("line one\nline two", True),
-    ("WARN slow dataloader: 81 ms per batch", True),
-    ("RuntimeError: CUDA error: out of memory", True),
-    ("container finished with exit code 137", True),
-    ("OSError: [Errno 28] No space left on device", True),
-    ("failed with errno 13", True),
-    ("my training job ran out of memory, what should I do?", False),
-    ("Error when pulling the image from the registry", False),  # no class name
-    ("why is my loss nan", False),
-    ("  how do I fix a full disk?  \n", False),  # trailing newline is not "multi-line"
+    ("line one\nline two", "log"),
+    ("WARN slow dataloader: 81 ms per batch", "log"),
+    ("RuntimeError: CUDA error: out of memory", "log"),
+    ("container finished with exit code 137", "log"),
+    ("OSError: [Errno 28] No space left on device", "log"),
+    ("failed with errno 13", "log"),
+    ("my training job ran out of memory, what should I do?", "question"),
+    ("Error when pulling the image from the registry", "question"),  # no class name
+    ("why is my loss nan", "question"),
+    ("  how do I fix a full disk?  \n", "question"),  # trailing newline is not "multi-line"
 ])  # fmt: skip
-def test_is_log(text, expected):
-    assert clean.is_log(text) is expected
+def test_classify_former_is_log_cases(text, expected):
+    assert clean.classify(text) == expected
 
 
 # --- tokenize ---------------------------------------------------------------------
@@ -354,30 +354,31 @@ def test_a_single_word_phrase_never_bridges():
     assert glossary.expand("bloom", TOY) == "bloom"
 
 
+# classify (was is_question_like / expand_for_retrieval; same inputs, same
+# outcomes; "" was False for both old functions and is now "question").
 @pytest.mark.parametrize("text, expected", [
-    ("what does exit code 137 mean?", True),
-    ("why is training hanging", True),
-    ("Explain the NCCL error", True),
-    ("RuntimeError: CUDA error: out of memory", False),
-    ("container finished with exit code 137", False),
-    ("", False),
+    ("what does exit code 137 mean?", "question"),
+    ("why is training hanging", "question"),
+    ("Explain the NCCL error", "question"),
+    ("RuntimeError: CUDA error: out of memory", "log"),
+    ("container finished with exit code 137", "log"),
+    ("", "question"),
 ])  # fmt: skip
-def test_is_question_like(text, expected):
-    assert glossary.is_question_like(text) is expected
+def test_classify_former_is_question_like_cases(text, expected):
+    assert clean.classify(text) == expected
 
 
-def test_a_clear_question_is_expanded_even_if_it_looks_like_a_log():
-    q = "what does oom mean?"
-    assert glossary.expand_for_retrieval(q, is_log=True, entries=TOY) == (
-        q + " cuda out of memory oom"
+def test_a_clear_question_is_a_question_even_if_it_looks_like_a_log():
+    # Former expand_for_retrieval cases: the question is expanded, the log is not.
+    assert clean.classify("what does oom mean?") == "question"
+    assert glossary.expand("what does oom mean?", TOY) == (
+        "what does oom mean? cuda out of memory oom"
     )
-    log = "RuntimeError: oom while allocating"
-    assert glossary.expand_for_retrieval(log, is_log=True, entries=TOY) == log
-    assert glossary.expand_for_retrieval("oom", is_log=False, entries=TOY).endswith(
-        "oom"
-    )
+    assert clean.classify("RuntimeError: oom while allocating") == "log"
+    assert clean.classify("oom") == "question"
+    assert glossary.expand("oom", TOY).endswith("oom")
 
 
 def test_no_corpus_log_is_taken_for_a_question(corpus):
     records, _ = corpus
-    assert [r.id for r in records if glossary.is_question_like(r.log)] == []
+    assert [r.id for r in records if clean.classify(r.log) != "log"] == []

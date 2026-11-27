@@ -5,5 +5,6 @@
 # not only with `python -m pytest` (which adds the current directory).
 pythonpath = ["."]
 testpaths = ["tests"]
-# The full-trace replay smoke test; skip it with `pytest -m "not slow"`.
-markers = ["slow: replays the whole week's trace (several seconds)"]
+# The full-trace replay smoke test and the repeated concurrency stress tests;
+# skip them with `pytest -m "not slow"`.
+markers = ["slow: full-trace replay or repeated stress rounds (several seconds)"]

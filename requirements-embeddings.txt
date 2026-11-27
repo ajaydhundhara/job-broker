@@ -1,5 +1,6 @@
 # Optional: the MiniLM embedding backend (RETRIEVAL_BACKEND=minilm or auto).
-# Not installed or tested in this repo's environment, so no version is pinned
-# (TODO: pin once it is installed and the eval has run on it). The model must
-# already be in the local Hugging Face cache; the service never downloads it.
+# Not installed or evaluated in this repo's environment, so no version is
+# pinned: a pin is only meaningful for a version the eval has run on (README
+# "Known limits and next steps"). The model must already be in the local
+# Hugging Face cache; the service never downloads it.
 sentence-transformers

@@ -12,7 +12,7 @@ logic and scheduling stay in separate transactions and modules.
 
 import hashlib
 import sqlite3
-import uuid
+import threading
 from datetime import UTC, datetime
 
 from broker import costs, engine
@@ -23,6 +23,11 @@ from broker.models import JobSubmit, SimAdvance
 from broker.provider import FakeProvider
 from broker.scheduler import queue_order
 from broker.state import Conflict, NotFound, end_job, get_now, log_event
+
+# One process-wide lock for every clock advance. It protects one process only:
+# the documented deployment is one process, one worker (README "Known
+# limitations"); a second process on the same database is not serialized.
+ADVANCE_LOCK = threading.Lock()
 
 # NotFound and Conflict live in state.py (the scheduler raises them too);
 # api.py reaches them as service.NotFound / service.Conflict.
@@ -35,8 +40,16 @@ class InvalidInput(Exception):
 # --- small helpers -----------------------------------------------------------
 
 
-def new_id(prefix: str) -> str:
-    return f"{prefix}-{uuid.uuid4().hex[:12]}"
+def next_job_id(conn) -> str:
+    """'job-' + the next created_seq as 12 hex digits (SPEC_DECISIONS.md #16).
+
+    Read inside the submit's BEGIN IMMEDIATE transaction, under the write lock,
+    so two submits can't get the same number; the jobs_created_seq trigger
+    gives the new row that same number. Deterministic, so a replay gives the
+    same ids every run and after a restart.
+    """
+    n = conn.execute("SELECT COALESCE(MAX(created_seq), 0) + 1 FROM jobs").fetchone()[0]
+    return f"job-{n:012x}"
 
 
 def fingerprint(team: str, gpus: int, estimated_minutes: int, priority: str) -> str:
@@ -98,7 +111,7 @@ def submit_job(conn, req: JobSubmit) -> tuple[dict, bool]:
                 existing = _find_by_key(conn, req.team, req.idempotency_key)
                 if existing is not None:
                     return job_to_dict(_existing_or_conflict(existing, fp), now), False
-            job_id = new_id("job")
+            job_id = next_job_id(conn)
             conn.execute(
                 """INSERT INTO jobs (id, team, idempotency_key, request_fingerprint,
                                      gpus, estimated_minutes, priority, status,
@@ -127,10 +140,12 @@ def submit_job(conn, req: JobSubmit) -> tuple[dict, bool]:
             )
             return job_to_dict(_read_job(conn, job_id), now), True
     except sqlite3.IntegrityError:
-        # Defensive: BEGIN IMMEDIATE already serializes check-then-insert, so
-        # two submits with one key cannot normally race. If the UNIQUE
-        # constraint fires anyway, the transaction has rolled back; re-read
-        # in a new one and apply the same rules. Anything else re-raises.
+        # BEGIN IMMEDIATE already serializes check-then-insert, so two submits
+        # with one key cannot normally race; UNIQUE (team, idempotency_key) is
+        # the guarantee if a lookup ever misses. Then the transaction (and its
+        # event) has rolled back; re-read in a new one and apply the same
+        # rules. Anything else re-raises. Exercised by tests/test_idempotency.py
+        # with the lookup forced to miss.
         if req.idempotency_key is None:
             raise
         with transaction(conn):
@@ -212,16 +227,25 @@ def sim_now(conn) -> dict:
 
 
 def sim_advance(conn, req: SimAdvance, cfg: Config, provider: FakeProvider) -> dict:
-    # "now" is read before advance_to() locks, so two parallel {"minutes": 10}
-    # calls add 10 or 20 minutes depending on timing (if both read the same
-    # "now", the second is a no-op). Accepted: only the simulator drives the
-    # clock, one call at a time. to_ts has no such ambiguity.
-    target = req.to_ts if req.to_ts is not None else get_now(conn) + req.minutes * 60
-    try:
-        engine.advance_to(conn, target, cfg, provider)
-    except TimeWentBackwards as e:
-        raise Conflict(f"time never goes backwards: {e}") from e
-    return sim_now(conn)
+    """Move the clock by `minutes` or to `to_ts`; advances never overlap.
+
+    ADVANCE_LOCK covers reading "now", computing the target and the whole
+    advance_to() (many transactions), so concurrent relative advances add up
+    instead of reading the same "now" (SPEC_DECISIONS.md #15). Absolute ones
+    take it too, so a relative target can't be overtaken mid-computation.
+    Only advances wait: submits, cancels and completes still interleave
+    between timestamp groups.
+    """
+    with ADVANCE_LOCK:  # taken before any BEGIN IMMEDIATE, never the reverse
+        if req.to_ts is not None:
+            target = req.to_ts
+        else:
+            target = get_now(conn) + req.minutes * 60
+        try:
+            engine.advance_to(conn, target, cfg, provider)
+        except TimeWentBackwards as e:
+            raise Conflict(f"time never goes backwards: {e}") from e
+        return sim_now(conn)
 
 
 # --- nodes and cost ----------------------------------------------------------
