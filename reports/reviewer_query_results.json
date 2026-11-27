@@ -1,0 +1,1806 @@
+{
+  "backend": "tfidf",
+  "categories": {
+    "cuda_compat": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 4,
+      "queries": 4,
+      "rejected": 0
+    },
+    "dataset_path": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "disk_full": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "divergence": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "gpu_oom": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 4,
+      "queries": 4,
+      "rejected": 0
+    },
+    "mixed_question_log": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 1,
+      "queries": 1,
+      "rejected": 0
+    },
+    "nccl": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "node_reclaim": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "registry_auth": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "service_credentials": {
+      "p3": 1.0,
+      "p5": 1.0,
+      "passed": 3,
+      "queries": 3,
+      "rejected": 0
+    },
+    "timeout_ambiguous": {
+      "p3": 0.666667,
+      "p5": 0.4,
+      "passed": 2,
+      "queries": 2,
+      "rejected": 0
+    },
+    "unrelated": {
+      "p3": null,
+      "p5": null,
+      "passed": 5,
+      "queries": 6,
+      "rejected": 5
+    },
+    "unrelated_failure": {
+      "p3": null,
+      "p5": null,
+      "passed": 0,
+      "queries": 2,
+      "rejected": 0
+    }
+  },
+  "k": 5,
+  "metrics": {
+    "answerable": 32,
+    "false_acceptance_rate": 0.375,
+    "false_acceptances": 3,
+    "false_rejection_rate": 0.0,
+    "false_rejections": 0,
+    "mrr": 1.0,
+    "p3": 0.979167,
+    "p5": 0.9625,
+    "p5_ceiling_mean": 0.9625,
+    "passed": 37,
+    "recall5": 0.809028,
+    "rejection_accuracy": 0.625,
+    "unanswerable": 8
+  },
+  "params": {
+    "assign_min": 0.3,
+    "g_member": 0.7,
+    "lex_k": 2.0,
+    "noise_df": 0.15,
+    "tau": 0.419598,
+    "w_dense": 0.5
+  },
+  "params_json_sha256": "89905b5c4ea009b2f45c8e82707c16c37904b1048e667da13b0164ec0e9050f9",
+  "pass_rule": "answerable: P@5 == min(|expected|,5)/5; unanswerable: rejected",
+  "per_query": [
+    {
+      "answerable": true,
+      "category": "gpu_oom",
+      "expected_ids": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F910",
+        "F911",
+        "F912"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R01",
+      "query_redacted": "ran out of VRAM during the forward pass",
+      "recall5": 0.555556,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g07",
+        "g07",
+        "g07",
+        "g07",
+        "g07"
+      ],
+      "returned_ids": [
+        "F002",
+        "F005",
+        "F001",
+        "F003",
+        "F910"
+      ],
+      "returned_scores": [
+        0.57703,
+        0.57703,
+        0.57703,
+        0.57703,
+        0.57703
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "gpu_oom",
+      "expected_ids": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F910",
+        "F911",
+        "F912"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R02",
+      "query_redacted": "CUDA OOM, tried to allocate 2 GiB",
+      "recall5": 0.555556,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g07",
+        "g07",
+        "g07",
+        "g07",
+        "g07"
+      ],
+      "returned_ids": [
+        "F910",
+        "F002",
+        "F005",
+        "F001",
+        "F003"
+      ],
+      "returned_scores": [
+        0.710184,
+        0.710184,
+        0.710184,
+        0.710184,
+        0.710184
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "gpu_oom",
+      "expected_ids": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F910",
+        "F911",
+        "F912"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R03",
+      "query_redacted": "2025-03-06T10:02:11Z ERROR trainer: torch.cuda.OutOfMemoryError: CUDA out of memory. Tried to allocate 1.50 GiB (GPU 0; 39.4 GiB total capacity)",
+      "recall5": 0.555556,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g07",
+        "g07",
+        "g07",
+        "g07",
+        "g07"
+      ],
+      "returned_ids": [
+        "F910",
+        "F002",
+        "F005",
+        "F001",
+        "F003"
+      ],
+      "returned_scores": [
+        0.814411,
+        0.814411,
+        0.814411,
+        0.814411,
+        0.814411
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "gpu_oom",
+      "expected_ids": [
+        "F001",
+        "F002",
+        "F003",
+        "F004",
+        "F005",
+        "F006",
+        "F910",
+        "F911",
+        "F912"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R04",
+      "query_redacted": "batch too big for the card, crashes right away",
+      "recall5": 0.555556,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g07",
+        "g07",
+        "g07",
+        "g07",
+        "g07"
+      ],
+      "returned_ids": [
+        "F910",
+        "F002",
+        "F005",
+        "F001",
+        "F003"
+      ],
+      "returned_scores": [
+        0.588309,
+        0.588309,
+        0.588309,
+        0.588309,
+        0.588309
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "cuda_compat",
+      "expected_ids": [
+        "F049",
+        "F050",
+        "F051",
+        "F052",
+        "F053",
+        "F054"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R05",
+      "query_redacted": "cudnn shared library not found when importing torch",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g03",
+        "g03",
+        "g03",
+        "g03",
+        "g03"
+      ],
+      "returned_ids": [
+        "F049",
+        "F052",
+        "F054",
+        "F051",
+        "F050"
+      ],
+      "returned_scores": [
+        0.48302,
+        0.48302,
+        0.48302,
+        0.48302,
+        0.48302
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "cuda_compat",
+      "expected_ids": [
+        "F049",
+        "F050",
+        "F051",
+        "F052",
+        "F053",
+        "F054"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R06",
+      "query_redacted": "undefined symbol in cublas after upgrading pytorch",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g03",
+        "g03",
+        "g03",
+        "g03",
+        "g03"
+      ],
+      "returned_ids": [
+        "F049",
+        "F052",
+        "F050",
+        "F053",
+        "F051"
+      ],
+      "returned_scores": [
+        0.675099,
+        0.675099,
+        0.675099,
+        0.675099,
+        0.675099
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "cuda_compat",
+      "expected_ids": [
+        "F049",
+        "F050",
+        "F051",
+        "F052",
+        "F053",
+        "F054"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R07",
+      "query_redacted": "nvidia driver is older than what the framework build needs",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g03",
+        "g03",
+        "g03",
+        "g03",
+        "g03"
+      ],
+      "returned_ids": [
+        "F054",
+        "F051",
+        "F050",
+        "F053",
+        "F049"
+      ],
+      "returned_scores": [
+        0.670229,
+        0.670229,
+        0.670229,
+        0.670229,
+        0.670229
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "cuda_compat",
+      "expected_ids": [
+        "F049",
+        "F050",
+        "F051",
+        "F052",
+        "F053",
+        "F054"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R08",
+      "query_redacted": "ImportError: libcudart.so.12: cannot open shared object file: No such file or directory",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g03",
+        "g03",
+        "g03",
+        "g03",
+        "g03"
+      ],
+      "returned_ids": [
+        "F049",
+        "F052",
+        "F051",
+        "F054",
+        "F050"
+      ],
+      "returned_scores": [
+        0.694188,
+        0.694188,
+        0.694188,
+        0.694188,
+        0.694188
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "nccl",
+      "expected_ids": [
+        "F025",
+        "F026",
+        "F027",
+        "F028",
+        "F029",
+        "F030"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R09",
+      "query_redacted": "allreduce watchdog timeout across ranks",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g05",
+        "g05",
+        "g05",
+        "g05",
+        "g05"
+      ],
+      "returned_ids": [
+        "F027",
+        "F030",
+        "F028",
+        "F029",
+        "F025"
+      ],
+      "returned_scores": [
+        0.623199,
+        0.623199,
+        0.623199,
+        0.623199,
+        0.623199
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "nccl",
+      "expected_ids": [
+        "F025",
+        "F026",
+        "F027",
+        "F028",
+        "F029",
+        "F030"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R10",
+      "query_redacted": "distributed training stuck, collective op never finishes",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g05",
+        "g05",
+        "g05",
+        "g05",
+        "g05"
+      ],
+      "returned_ids": [
+        "F027",
+        "F030",
+        "F028",
+        "F029",
+        "F025"
+      ],
+      "returned_scores": [
+        0.590464,
+        0.590464,
+        0.590464,
+        0.590464,
+        0.590464
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "nccl",
+      "expected_ids": [
+        "F025",
+        "F026",
+        "F027",
+        "F028",
+        "F029",
+        "F030"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R11",
+      "query_redacted": "RuntimeError: NCCL error in: ProcessGroupNCCL.cpp:1207, unhandled system error",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g05",
+        "g05",
+        "g05",
+        "g05",
+        "g05"
+      ],
+      "returned_ids": [
+        "F028",
+        "F029",
+        "F025",
+        "F026",
+        "F030"
+      ],
+      "returned_scores": [
+        0.658677,
+        0.658677,
+        0.658677,
+        0.658677,
+        0.658677
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "disk_full",
+      "expected_ids": [
+        "F031",
+        "F032",
+        "F033",
+        "F034",
+        "F035",
+        "F036"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R12",
+      "query_redacted": "ENOSPC while writing the checkpoint",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g09",
+        "g09",
+        "g09",
+        "g09",
+        "g09"
+      ],
+      "returned_ids": [
+        "F031",
+        "F035",
+        "F036",
+        "F032",
+        "F033"
+      ],
+      "returned_scores": [
+        0.476662,
+        0.476662,
+        0.476662,
+        0.476662,
+        0.476662
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "disk_full",
+      "expected_ids": [
+        "F031",
+        "F032",
+        "F033",
+        "F034",
+        "F035",
+        "F036"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R13",
+      "query_redacted": "the volume filled up and tar could not write the archive",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g09",
+        "g09",
+        "g09",
+        "g09",
+        "g09"
+      ],
+      "returned_ids": [
+        "F031",
+        "F035",
+        "F036",
+        "F033",
+        "F034"
+      ],
+      "returned_scores": [
+        0.590672,
+        0.590672,
+        0.590672,
+        0.590672,
+        0.590672
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "disk_full",
+      "expected_ids": [
+        "F031",
+        "F032",
+        "F033",
+        "F034",
+        "F035",
+        "F036"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R14",
+      "query_redacted": "OSError: [Errno 28] No space left on device: '/scratch/ckpt/step_9000.pt'",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g09",
+        "g09",
+        "g09",
+        "g09",
+        "g09"
+      ],
+      "returned_ids": [
+        "F031",
+        "F035",
+        "F036",
+        "F033",
+        "F034"
+      ],
+      "returned_scores": [
+        0.668368,
+        0.668368,
+        0.668368,
+        0.668368,
+        0.668368
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "dataset_path",
+      "expected_ids": [
+        "F013",
+        "F014",
+        "F015",
+        "F016",
+        "F017",
+        "F018"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R15",
+      "query_redacted": "training shard parquet not found",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g01",
+        "g01",
+        "g01",
+        "g01",
+        "g01"
+      ],
+      "returned_ids": [
+        "F014",
+        "F018",
+        "F016",
+        "F017",
+        "F013"
+      ],
+      "returned_scores": [
+        0.466435,
+        0.466435,
+        0.466435,
+        0.466435,
+        0.466435
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "dataset_path",
+      "expected_ids": [
+        "F013",
+        "F014",
+        "F015",
+        "F016",
+        "F017",
+        "F018"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R16",
+      "query_redacted": "EACCES reading the labels csv from the mounted dataset",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g01",
+        "g01",
+        "g01",
+        "g01",
+        "g01"
+      ],
+      "returned_ids": [
+        "F013",
+        "F015",
+        "F017",
+        "F014",
+        "F018"
+      ],
+      "returned_scores": [
+        0.564155,
+        0.564155,
+        0.564155,
+        0.564155,
+        0.564155
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "dataset_path",
+      "expected_ids": [
+        "F013",
+        "F014",
+        "F015",
+        "F016",
+        "F017",
+        "F018"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R17",
+      "query_redacted": "FileNotFoundError: [Errno 2] No such file or directory: '/data/speech/train/shard-0001.parquet'",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g01",
+        "g01",
+        "g01",
+        "g01",
+        "g01"
+      ],
+      "returned_ids": [
+        "F014",
+        "F018",
+        "F016",
+        "F013",
+        "F015"
+      ],
+      "returned_scores": [
+        0.778356,
+        0.778356,
+        0.778356,
+        0.778356,
+        0.778356
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "registry_auth",
+      "expected_ids": [
+        "F007",
+        "F008",
+        "F009",
+        "F010",
+        "F011",
+        "F012"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R18",
+      "query_redacted": "docker pull says unauthorized for the internal registry",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g08",
+        "g08",
+        "g08",
+        "g08",
+        "g08"
+      ],
+      "returned_ids": [
+        "F012",
+        "F007",
+        "F008",
+        "F009",
+        "F010"
+      ],
+      "returned_scores": [
+        0.718521,
+        0.718521,
+        0.718521,
+        0.718521,
+        0.718521
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "registry_auth",
+      "expected_ids": [
+        "F007",
+        "F008",
+        "F009",
+        "F010",
+        "F011",
+        "F012"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R19",
+      "query_redacted": "pod stuck in ImagePullBackOff",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g08",
+        "g08",
+        "g08",
+        "g08",
+        "g08"
+      ],
+      "returned_ids": [
+        "F007",
+        "F008",
+        "F009",
+        "F010",
+        "F011"
+      ],
+      "returned_scores": [
+        0.662738,
+        0.662738,
+        0.662738,
+        0.662738,
+        0.662738
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "registry_auth",
+      "expected_ids": [
+        "F007",
+        "F008",
+        "F009",
+        "F010",
+        "F011",
+        "F012"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R20",
+      "query_redacted": "Error response from daemon: pull access denied for registry.internal/ml/eval, repository does not exist or may require login",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g08",
+        "g08",
+        "g08",
+        "g08",
+        "g08"
+      ],
+      "returned_ids": [
+        "F009",
+        "F010",
+        "F011",
+        "F007",
+        "F008"
+      ],
+      "returned_scores": [
+        0.870873,
+        0.870873,
+        0.870873,
+        0.870873,
+        0.870873
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "service_credentials",
+      "expected_ids": [
+        "F043",
+        "F044",
+        "F045",
+        "F046",
+        "F047",
+        "F048"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R21",
+      "query_redacted": "JWT expired when calling the model API",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g10",
+        "g10",
+        "g10",
+        "g10",
+        "g10"
+      ],
+      "returned_ids": [
+        "F046",
+        "F044",
+        "F048",
+        "F043",
+        "F045"
+      ],
+      "returned_scores": [
+        0.697047,
+        0.697047,
+        0.697047,
+        0.697047,
+        0.697047
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "service_credentials",
+      "expected_ids": [
+        "F043",
+        "F044",
+        "F045",
+        "F046",
+        "F047",
+        "F048"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R22",
+      "query_redacted": "bearer token no longer valid, auth service refuses it",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g10",
+        "g10",
+        "g10",
+        "g10",
+        "g10"
+      ],
+      "returned_ids": [
+        "F045",
+        "F047",
+        "F043",
+        "F044",
+        "F048"
+      ],
+      "returned_scores": [
+        0.711931,
+        0.711931,
+        0.711931,
+        0.711931,
+        0.711931
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "service_credentials",
+      "expected_ids": [
+        "F043",
+        "F044",
+        "F045",
+        "F046",
+        "F047",
+        "F048"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R23",
+      "query_redacted": "[REDACTED]\nAuthError: bearer token expired, rejected by auth service",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g10",
+        "g10",
+        "g10",
+        "g10",
+        "g10"
+      ],
+      "returned_ids": [
+        "F045",
+        "F047",
+        "F043",
+        "F044",
+        "F048"
+      ],
+      "returned_scores": [
+        0.831996,
+        0.831996,
+        0.831996,
+        0.831996,
+        0.831996
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "node_reclaim",
+      "expected_ids": [
+        "F037",
+        "F038",
+        "F039",
+        "F040",
+        "F041",
+        "F042"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R24",
+      "query_redacted": "spot instance preempted with a two minute warning",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g04",
+        "g04",
+        "g04",
+        "g04",
+        "g04"
+      ],
+      "returned_ids": [
+        "F039",
+        "F037",
+        "F041",
+        "F040",
+        "F042"
+      ],
+      "returned_scores": [
+        0.657053,
+        0.657053,
+        0.657053,
+        0.657053,
+        0.657053
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "node_reclaim",
+      "expected_ids": [
+        "F037",
+        "F038",
+        "F039",
+        "F040",
+        "F041",
+        "F042"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R25",
+      "query_redacted": "worker lost its heartbeat and the node was marked lost",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g04",
+        "g04",
+        "g04",
+        "g04",
+        "g04"
+      ],
+      "returned_ids": [
+        "F040",
+        "F042",
+        "F037",
+        "F041",
+        "F039"
+      ],
+      "returned_scores": [
+        0.644676,
+        0.644676,
+        0.644676,
+        0.644676,
+        0.644676
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "node_reclaim",
+      "expected_ids": [
+        "F037",
+        "F038",
+        "F039",
+        "F040",
+        "F041",
+        "F042"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R26",
+      "query_redacted": "WARN agent: termination notice received, instance will be reclaimed in 120s",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g04",
+        "g04",
+        "g04",
+        "g04",
+        "g04"
+      ],
+      "returned_ids": [
+        "F039",
+        "F038",
+        "F037",
+        "F041",
+        "F040"
+      ],
+      "returned_scores": [
+        0.668974,
+        0.668974,
+        0.668974,
+        0.668974,
+        0.668974
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "divergence",
+      "expected_ids": [
+        "F019",
+        "F020",
+        "F021",
+        "F022",
+        "F023",
+        "F024"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R27",
+      "query_redacted": "loss exploded to infinity",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g11",
+        "g11",
+        "g11",
+        "g11",
+        "g11"
+      ],
+      "returned_ids": [
+        "F024",
+        "F021",
+        "F020",
+        "F019",
+        "F022"
+      ],
+      "returned_scores": [
+        0.600358,
+        0.600358,
+        0.600358,
+        0.600358,
+        0.600358
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "divergence",
+      "expected_ids": [
+        "F019",
+        "F020",
+        "F021",
+        "F022",
+        "F023",
+        "F024"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R28",
+      "query_redacted": "NaN gradients halfway through training",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g11",
+        "g11",
+        "g11",
+        "g11",
+        "g11"
+      ],
+      "returned_ids": [
+        "F024",
+        "F022",
+        "F021",
+        "F020",
+        "F019"
+      ],
+      "returned_scores": [
+        0.637834,
+        0.637834,
+        0.637834,
+        0.637834,
+        0.637834
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "divergence",
+      "expected_ids": [
+        "F019",
+        "F020",
+        "F021",
+        "F022",
+        "F023",
+        "F024"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R29",
+      "query_redacted": "ERROR step 5121: loss=nan grad_norm=inf, stopping",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g11",
+        "g11",
+        "g11",
+        "g11",
+        "g11"
+      ],
+      "returned_ids": [
+        "F024",
+        "F022",
+        "F021",
+        "F020",
+        "F019"
+      ],
+      "returned_scores": [
+        0.63716,
+        0.63716,
+        0.63716,
+        0.63716,
+        0.63716
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "timeout_ambiguous",
+      "expected_ids": [
+        "F900",
+        "F901"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 0.666667,
+      "p5": 0.4,
+      "p5_ceiling": 0.4,
+      "pass": true,
+      "qid": "R30",
+      "query_redacted": "upstream request timed out after 30 seconds and kept retrying",
+      "recall5": 1.0,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g06",
+        "g02"
+      ],
+      "returned_ids": [
+        "F900",
+        "F901"
+      ],
+      "returned_scores": [
+        0.681474,
+        0.664386
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "timeout_ambiguous",
+      "expected_ids": [
+        "F900",
+        "F901"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "question",
+      "mrr": 1.0,
+      "p3": 0.666667,
+      "p5": 0.4,
+      "p5_ceiling": 0.4,
+      "pass": true,
+      "qid": "R31",
+      "query_redacted": "Timed out waiting for response (30000 ms)",
+      "recall5": 1.0,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g02",
+        "g06"
+      ],
+      "returned_ids": [
+        "F901",
+        "F900"
+      ],
+      "returned_scores": [
+        0.756373,
+        0.746273
+      ]
+    },
+    {
+      "answerable": true,
+      "category": "mixed_question_log",
+      "expected_ids": [
+        "F025",
+        "F026",
+        "F027",
+        "F028",
+        "F029",
+        "F030"
+      ],
+      "first_relevant_rank": 1,
+      "input_type": "log",
+      "mrr": 1.0,
+      "p3": 1.0,
+      "p5": 1.0,
+      "p5_ceiling": 1.0,
+      "pass": true,
+      "qid": "R32",
+      "query_redacted": "why did my job fail?\n2025-03-06T11:00:00Z ERROR NCCL communicator was aborted on rank 3",
+      "recall5": 0.833333,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g05",
+        "g05",
+        "g05",
+        "g05",
+        "g05"
+      ],
+      "returned_ids": [
+        "F030",
+        "F028",
+        "F029",
+        "F025",
+        "F026"
+      ],
+      "returned_scores": [
+        0.653257,
+        0.653257,
+        0.653257,
+        0.653257,
+        0.653257
+      ]
+    },
+    {
+      "answerable": false,
+      "category": "unrelated",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": true,
+      "qid": "R33",
+      "query_redacted": "how much does a gpu-l node cost per hour",
+      "recall5": null,
+      "rejected": true,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [],
+      "returned_ids": [],
+      "returned_scores": []
+    },
+    {
+      "answerable": false,
+      "category": "unrelated",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": true,
+      "qid": "R34",
+      "query_redacted": "what is the office wifi password",
+      "recall5": null,
+      "rejected": true,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [],
+      "returned_ids": [],
+      "returned_scores": []
+    },
+    {
+      "answerable": false,
+      "category": "unrelated",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": true,
+      "qid": "R35",
+      "query_redacted": "book a meeting room for friday afternoon",
+      "recall5": null,
+      "rejected": true,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [],
+      "returned_ids": [],
+      "returned_scores": []
+    },
+    {
+      "answerable": false,
+      "category": "unrelated",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": true,
+      "qid": "R36",
+      "query_redacted": "how do I request a bigger GPU quota for my team",
+      "recall5": null,
+      "rejected": true,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [],
+      "returned_ids": [],
+      "returned_scores": []
+    },
+    {
+      "answerable": false,
+      "category": "unrelated",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": false,
+      "qid": "R37",
+      "query_redacted": "explain what a learning rate is",
+      "recall5": null,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g11",
+        "g11",
+        "g11",
+        "g11",
+        "g11"
+      ],
+      "returned_ids": [
+        "F022",
+        "F023",
+        "F021",
+        "F020",
+        "F019"
+      ],
+      "returned_scores": [
+        0.523972,
+        0.523972,
+        0.523972,
+        0.523972,
+        0.523972
+      ]
+    },
+    {
+      "answerable": false,
+      "category": "unrelated_failure",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": false,
+      "qid": "R38",
+      "query_redacted": "segmentation fault in our custom C++ extension",
+      "recall5": null,
+      "rejected": false,
+      "response_contains_redaction_marker": true,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g03",
+        "g03",
+        "g03",
+        "g03",
+        "g03"
+      ],
+      "returned_ids": [
+        "F050",
+        "F053",
+        "F049",
+        "F052",
+        "F054"
+      ],
+      "returned_scores": [
+        0.560598,
+        0.560598,
+        0.560598,
+        0.560598,
+        0.560598
+      ]
+    },
+    {
+      "answerable": false,
+      "category": "unrelated_failure",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": false,
+      "qid": "R39",
+      "query_redacted": "SSL certificate verify failed while downloading model weights",
+      "recall5": null,
+      "rejected": false,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [
+        "g10",
+        "g10",
+        "g10",
+        "g10",
+        "g10"
+      ],
+      "returned_ids": [
+        "F046",
+        "F043",
+        "F045",
+        "F047",
+        "F044"
+      ],
+      "returned_scores": [
+        0.452947,
+        0.452947,
+        0.452947,
+        0.452947,
+        0.452947
+      ]
+    },
+    {
+      "answerable": false,
+      "category": "unrelated",
+      "expected_ids": [],
+      "first_relevant_rank": null,
+      "input_type": "question",
+      "mrr": null,
+      "p3": null,
+      "p5": null,
+      "p5_ceiling": null,
+      "pass": true,
+      "qid": "R40",
+      "query_redacted": "is the cluster down today",
+      "recall5": null,
+      "rejected": true,
+      "response_contains_redaction_marker": false,
+      "response_redacted_secret_free": true,
+      "returned_groups": [],
+      "returned_ids": [],
+      "returned_scores": []
+    }
+  ],
+  "queries_file": "tests/data/reviewer_retrieval_queries.jsonl",
+  "split": "reviewer-holdout (final validation only; never used for tuning)"
+}
